@@ -28,7 +28,7 @@ npm run preview
 
 ## 原型边界
 
-`src/data/demo.ts` 是独立视觉样例，不是真实曲库或经过核验的游戏数据。单谱 Rating 与 Rank 为展示用值，首页汇总仅基于样例。正式版须接入设计文档规定的精确计算、稳定 ID 和权威曲库。
+`src/data/demo.ts` 是独立视觉样例，不是真实曲库或经过核验的游戏数据。单谱 Rating 为展示用值，首页汇总仅基于样例；Rank 按设计文档第 12.4 节由 Score 实时推导。正式版须接入设计文档规定的精确计算、稳定 ID 和权威曲库。
 
 截图选择仅读取文件名并模拟状态，不读取图像内容、不上传、不保存；新增／编辑仅预览表单及提示，不修改成绩。没有 OCR、IndexedDB、真实成绩 CRUD、Excel、分享图或云服务。
 
@@ -36,4 +36,9 @@ Vue 3 + TypeScript + Vite + UnoCSS；当前简单控件使用原生 HTML。vue-i
 
 ## 视觉方向
 
-暖白／墨绿双主题，青绿色强调，大数字 Rating、轻边框卡片与紧凑列表。曲目旁为抽象图形标记，不依赖或假冒真实专辑封面。颜色等公共样式集中在 `src/style.css`，导航与页面原型位于 `src/App.vue`，表格抽为独立组件。
+冷白／深靛双主题，使用 Future Performers Logo 的青蓝至亮粉渐变强调，大数字 Rating、轻边框卡片与紧凑列表。曲目旁为抽象图形标记，不依赖或假冒真实专辑封面。颜色等公共样式集中在 `src/style.css`，导航与页面原型位于 `src/App.vue`，表格抽为独立组件。
+
+
+Logo 使用原始图片，存放于 `public/images/gcfp-logo.png`，顶部以 Logo + B30 替代原面包屑。主题色值与 Logo 规范见设计文档第 5.4 节。
+
+Rank 边界检查：`node --experimental-strip-types --test tests/rank.test.mjs`（Node.js 22.12+）。

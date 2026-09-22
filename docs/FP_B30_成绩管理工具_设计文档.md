@@ -1,8 +1,8 @@
 # Groove Coaster: Future Performers 成绩管理工具设计文档
 
-> 版本：v1.3
+> 版本：v1.4
 > 状态：一期设计基线已确定，实施规格开发时补齐
-> 最后更新：2026-09-21
+> 最后更新：2026-09-22
 
 ---
 
@@ -275,6 +275,29 @@ window.matchMedia('(prefers-color-scheme: dark)')
 Naive UI 的 theme 同步跟随最终解析出的亮 / 暗状态。
 
 ---
+
+### 5.4 视觉主题色与 Logo
+
+采用 Future Performers Logo 下方副标题的青蓝与亮粉作为视觉参考。以下色值为网站设计用色，不作为官方品牌色值声明。
+
+| 用途                | 色值 / 规则                                                      |
+| ------------------- | ---------------------------------------------------------------- |
+| 青蓝主色            | `#19CBEA`                                                        |
+| 渐变中间色          | `#83B8EF`                                                        |
+| 亮粉主色            | `#F15BB5`                                                        |
+| 主渐变              | `linear-gradient(110deg, #19CBEA 0%, #83B8EF 48%, #F15BB5 100%)` |
+| 亮色页面 / 卡片背景 | `#F6F7FC` / `#FFFFFF`                                            |
+| 深色页面 / 卡片背景 | `#121421` / `#1B1E30`                                            |
+| 亮色 / 深色强调文字 | `#087EAE` / `#64D5F3`                                            |
+| 主渐变上的文字      | 深色 `#172039`，保证文字可读性                                   |
+
+主渐变用于 Groove Rating 主卡、主要按钮、进度条、品牌图标及顶部细线。导航选中态、引导卡片使用低饱和度蓝粉渐变；亮暗模式共享同一组品牌色，背景与文字对比度随主题调整。Rank、难度和警告等语义颜色独立保留。
+
+Logo 使用用户提供的原始 `GCFP_logo.png`，资源统一存放于 `public/images/gcfp-logo.png`，页面引用 `/images/gcfp-logo.png`。保持原始宽高比与透明区域，不裁切、不拉伸、不改色。
+
+顶部栏左侧以 Logo + `B30` 标识替代“我的空间”及原面包屑，明确本站对应 Groove Coaster: Future Performers。点击标识返回首页，图片提供完整游戏名的替代文本，链接提供首页用途说明。桌面 Logo 宽 166 px，手机宽 136 px，极窄屏宽 118 px，高度按比例自适应；顶部操作区不得遮挡 Logo。
+
+## 颜色变量集中在 `src/style.css`，Logo 与顶部结构位于 `src/App.vue`。
 
 ## 6. 曲库设计
 
@@ -844,9 +867,12 @@ Rank 只根据 Score 推导，不从 OCR 结果或用户输入获取。
 
 项目采用以下阈值：
 
-|                    Score | Rank |
+|        Score（含上下界） | Rank |
 | -----------------------: | ---- |
-|              `< 800,000` | B    |
+|           `0 ～ 299,999` | E    |
+|     `300,000 ～ 499,999` | D    |
+|     `500,000 ～ 699,999` | C    |
+|     `700,000 ～ 799,999` | B    |
 |     `800,000 ～ 849,999` | A    |
 |     `850,000 ～ 899,999` | AA   |
 |     `900,000 ～ 949,999` | AAA  |
@@ -855,9 +881,13 @@ Rank 只根据 Score 推导，不从 OCR 结果或用户输入获取。
 | `1,010,000 ～ 1,019,999` | SS   |
 | `1,020,000 ～ 1,029,999` | SS+  |
 | `1,030,000 ～ 1,039,999` | SSS  |
-|           `>= 1,040,000` | SSS+ |
+| `1,040,000 ～ 1,050,000` | SSS+ |
 
-其中 700,000 以下仍按 B Rank 处理。
+来源：[グルーヴコースター Wiki — Groove Coaster（SwitchFP版）/ ゲーム概要，スコアランク](https://www.wikihouse.com/groove/index.php?Groove%20Coaster%A1%CASwitchFP%C8%C7%A1%CB%2F%A5%B2%A1%BC%A5%E0%B3%B5%CD%D7)，核对日期：2026-09-22。表中阈值均含下界，Score 合法范围为 0～1,050,000 的整数。
+
+原网页在 SS 起的高分段注明仅在启用 PERFECT+ 判定时可达到；理论满分仍为 SSS+。本工具按最终 Score 推导 Rank，不额外增加 PERFECT+ 设置字段。
+
+前端统一调用 `src/core/rating/rank.ts` 的 `getRankByScore(score)`；包括演示列表在内，Rank 均由 Score 实时推导，不在演示数据或成绩记录中维护独立 Rank 值。非法 Score 应先拒绝，不能默认为 E 或截断到合法边界。
 
 ### 12.5 Score Offset
 
@@ -973,7 +1003,7 @@ B30 按以下顺序逐项比较，前一项相同才比较下一项：
 
 按照已确定的项目口径：
 
-- Rank 仍为 B。
+- Rank 按 12.4 节推导：300,000 以下为 E，300,000～499,999 为 D，500,000～699,999 为 C；700,000 起为 B。Rank 与本节 Rating 公式分别计算。
 - `0 <= score <= 500,000`：单谱 Rating 为 `0.00`。
 - `500,000 < score < 700,000`：在 `(500,000, 0)` 与 `(700,000, max(0, Chart Base - 3.5))` 两个端点之间，对 Rating 本身进行线性插值。
 - `score = 700,000`：衔接 12.5 节的 Offset 节点，Rating 为 `truncate2(max(0, Chart Base - 3.5))`。
@@ -1161,7 +1191,7 @@ stores/
 - 一期仅简体中文 UI，预留国际化结构；按用户语言匹配时，未交付的语言回退简体中文
 - 可切换亮 / 暗主题，默认跟随系统
 - 可切换日 / 英曲目元数据；简 / 繁 / 日用户默认日语，英语用户默认英语
-- 自动根据 Score 推导 Rank
+- 自动根据 Score 推导 E / D / C / B / A / AA / AAA / S / S+ / SS / SS+ / SSS / SSS+；验证每个分段的上下边界，理论满分仍为 SSS+
 - 自动计算单谱 Rating
 - 同时显示 Groove Rating 与 B30 Floor；Floor 取 B30 最后一条已有记录的 Rating，无记录时显示 —
 - 可查看按谱面排序的简单 B30 列表，不同模式 / 难度可分别入选；只显示已有记录，最多 30 条
@@ -1286,6 +1316,9 @@ PWA 仅作为二期之后的未来设计选项，不属于一期或二期交付�
 ---
 
 ## 18. 参考资料
+
+- グルーヴコースター Wiki — SwitchFP 游戏概要 / Score Rank（核对日期：2026-09-22）
+  https://www.wikihouse.com/groove/index.php?Groove%20Coaster%A1%CASwitchFP%C8%C7%A1%CB%2F%A5%B2%A1%BC%A5%E0%B3%B5%CD%D7
 
 - GrooveCoaster.Link — Future Performers 曲库  
   https://groovecoaster.link/fp
