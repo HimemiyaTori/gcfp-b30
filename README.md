@@ -4,18 +4,19 @@
 
 ## 启动
 
-需要 Node.js 22.12+（建议使用当前 LTS）。
+需要 Node.js 22.23.2+（建议使用当前 LTS），并启用 Corepack（每台机器执行一次）。
 
 ```sh
-npm install
-npm run dev
+corepack enable
+yarn install
+yarn dev
 ```
 
 开发地址以终端输出为准，默认 http://127.0.0.1:5173 。
 
 ```sh
-npm run build
-npm run preview
+yarn build
+yarn preview
 ```
 
 ## 可预览内容
@@ -37,7 +38,6 @@ Vue 3 + TypeScript + Vite + UnoCSS；当前简单控件使用原生 HTML。vue-i
 ## 视觉方向
 
 冷白／深靛双主题，使用 Future Performers Logo 的青蓝至亮粉渐变强调，大数字 Rating、轻边框卡片与紧凑列表。曲目旁为抽象图形标记，不依赖或假冒真实专辑封面。颜色等公共样式集中在 `src/style.css`，导航与页面原型位于 `src/App.vue`，表格抽为独立组件。
-
 
 Logo 使用原始图片，存放于 `public/images/gcfp-logo.png`，顶部以 Logo + B30 替代原面包屑。主题色值与 Logo 规范见设计文档第 5.4 节。
 
