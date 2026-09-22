@@ -335,8 +335,18 @@ interface Song {
         en: string
     }
 
-    bpm?: number
+    bpm: number
 
+    // 歌曲分类，保存固定 ID；显示名称见下表
+    category:
+        | 'anime-pop'
+        | 'vtuber'
+        | 'virtual-singer'
+        | 'touhou'
+        | 'music-game'
+        | 'original'
+
+    // 曲包：为空时属于游戏内免费曲包；有值时为 DLC 曲包名称
     pack?: string
 
     searchAliases?: string[]
@@ -363,6 +373,27 @@ interface Chart {
 ```
 
 level 为谱面定数表示；整数代表普通等级，.5 代表游戏中的 + 等级。除明确展示定数的场景，UI 展示时要将 N.5 格式化为 N+。
+
+#### Song.category：歌曲分类
+
+`category` 为必填字段，保存以下六种分类的固定 ID。曲目分类名称根据曲目信息语言设置在日文与英文之间切换，同一歌曲的所有谱面共用该分类。
+
+| category 值      | 日文名称             | 英文名称             |
+| ---------------- | -------------------- | -------------------- |
+| `anime-pop`      | アニメ・ポップス     | Anime/Pop            |
+| `vtuber`         | VTuber               | VTuber               |
+| `virtual-singer` | バーチャル・シンガー | Virtual Singer       |
+| `touhou`         | 東方アレンジ         | Touhou Project       |
+| `music-game`     | 音楽ゲーム           | Music Game / Variety |
+| `original`       | オリジナル           | Original             |
+
+#### Song.pack：所属曲包
+
+`pack` 表示歌曲所属的曲包，与 `category` 歌曲分类是两个独立属性。
+
+- `pack` 为空（未提供该可选字段或值为空字符串）时，表示歌曲属于游戏内的免费曲包。
+- `pack` 有值时，其值为该歌曲所属的 **DLC 曲包名称**。
+- 当前类型为可选字符串 `pack?: string`；不使用 `null` 表示空值。
 
 ### 6.3 曲名搜索
 
@@ -748,6 +779,25 @@ interface RatingCalculationMetadata {
 - 删除成绩
 
 实现时视情况使用 Naive UI `NDataTable`。
+
+### 11.2.1 表格排序与分类筛选
+
+成绩管理与 B30 表格支持点击表头在升序／降序之间切换，箭头标明当前方向。可排序字段包括曲目、难度、等级、Score、Rank、Rating；B30 另支持原名次排序。难度与等级共用单元格，分别提供排序按钮。艺术家与模式保留信息展示，不提供排序入口。
+
+Score、Rating 按数值排序；等级将 `N+` 视为 `N.5`；难度顺序为 easy < normal < hard < master；Rank 按第 12.4 节等级顺序排序。曲名使用当前显示语言排序，同值用稳定 ID 保持确定顺序。成绩管理默认 Score 降序，B30 默认原名次升序。B30 表头排序仅调整已入选记录的展示顺序，不重新选取 B30，不改变原名次、Floor 和总 RT。
+
+成绩管理增加歌曲分类筛选，可与曲名搜索、模式及难度筛选叠加。分类属于歌曲元数据，同曲不同谱面共享同一分类；以固定分类 ID 保存筛选值，日／英文名称跟随曲目信息语言切换，切换后不重置筛选。全部分类选项作为简体中文 UI 文案保留。
+
+| 分类 ID        | 日文                 | 英文                 |
+| -------------- | -------------------- | -------------------- |
+| anime-pop      | アニメ・ポップス     | Anime/Pop            |
+| vtuber         | VTuber               | VTuber               |
+| virtual-singer | バーチャル・シンガー | Virtual Singer       |
+| touhou         | 東方アレンジ         | Touhou Project       |
+| music-game     | 音楽ゲーム           | Music Game / Variety |
+| original       | オリジナル           | Original             |
+
+正式曲库的 `Song.category` 按第 6.2 节定义保存以上分类 ID 之一；`Song.pack` 则独立表示免费曲包或 DLC 曲包名称。分类映射统一存放于 `src/data/categories.ts`。当前原型仅对示例歌曲配置分类，不代表完整曲库；没有示例成绩的分类显示空结果。
 
 ### 11.3 成绩新增与编辑
 
