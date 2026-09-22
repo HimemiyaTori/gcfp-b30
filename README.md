@@ -42,3 +42,5 @@ Vue 3 + TypeScript + Vite + UnoCSS；当前简单控件使用原生 HTML。vue-i
 Logo 使用原始图片，存放于 `public/images/gcfp-logo.png`，顶部以 Logo + B30 替代原面包屑。主题色值与 Logo 规范见设计文档第 5.4 节。
 
 Rank 边界检查：`node --experimental-strip-types --test tests/rank.test.mjs`（Node.js 22.12+）。
+
+录入交互：进度在弹窗展示；全成功后显示自动消失的完成通知（桌面右下卡片／手机顶部 toast），错误保留逐图原因。首页提供成功与失败两种演示入口。新增／编辑共用弹窗，支持搜索选曲、模式／难度按钮与实时 Rank、Rating；新增默认 ADV、MASTER。实时 Rating 使用设计文档公式，原列表仍为演示数据，尚未接入真实 OCR 或成绩写入。

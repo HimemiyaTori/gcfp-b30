@@ -1,0 +1,34 @@
+/* Shared motion language: explicit opt-in, no animation on every card descendant. */
+:root { --motion-ease-out: cubic-bezier(.2, .8, .2, 1); }
+.card-motion-enter-active,
+.notice-motion-enter-active {
+    transition: opacity var(--motion-enter, 280ms) ease,
+                transform var(--motion-enter, 280ms) var(--motion-ease-out);
+}
+.card-motion-leave-active,
+.notice-motion-leave-active {
+    transition: opacity var(--motion-leave, 180ms) ease,
+                transform var(--motion-leave, 180ms) ease-in;
+    pointer-events: none;
+}
+.card-motion-enter-from,
+.card-motion-leave-to { opacity: 0; transform: translateY(12px) scale(.98); }
+.notice-motion-enter-from,
+.notice-motion-leave-to { opacity: 0; transform: translateX(24px) scale(.98); }
+.animated-progress { height: 8px; width: 100%; overflow: hidden; background: var(--line); border-radius: 8px; }
+.animated-progress-fill {
+    height: 100%; width: 100%; background: var(--brand-gradient); border-radius: inherit;
+    transform-origin: left center;
+    transition: transform var(--motion-progress, 400ms) var(--motion-ease-out);
+}
+@media (max-width: 680px) {
+    .notice-motion-enter-from,
+    .notice-motion-leave-to { transform: translateY(-16px); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .card-motion-enter-active, .card-motion-leave-active,
+    .notice-motion-enter-active, .notice-motion-leave-active,
+    .animated-progress-fill { transition: none; }
+    .card-motion-enter-from, .card-motion-leave-to,
+    .notice-motion-enter-from, .notice-motion-leave-to { transform: none; }
+}

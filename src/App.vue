@@ -28,6 +28,11 @@ import {
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { songCategories, type SongCategory } from './data/categories'
+import { getRankByScore } from './core/rating/rank'
+import { getChartRating } from './core/rating/calculator'
+import AnimatedProgress from './components/common/AnimatedProgress.vue'
+import CardTransition from './components/common/CardTransition.vue'
+import { motionTiming } from './components/common/motion'
 import ScoreTable from './components/ScoreTable.vue'
 import { isDark, songLanguage, theme } from './composables/useSettings'
 import { demoScores, type DemoScore } from './data/demo'
@@ -82,33 +87,57 @@ const filtered = computed(() =>
 )
 const fileInput = ref<HTMLInputElement>(),
     dragging = ref(false)
-const jobs = ref<{ name: string; status: 'running' | 'success' | 'failed' }[]>(
-    [],
-)
+type ImportJob = { name: string; index: number; status: 'queued' | 'running' | 'success' | 'failed'; error: string }
+const importDialog = ref<HTMLDialogElement>()
+const jobs = ref<ImportJob[]>([])
+const completed = computed(() => jobs.value.filter(j => j.status === 'success' || j.status === 'failed').length)
+const failures = computed(() => jobs.value.filter(j => j.status === 'failed'))
+const importing = computed(() => jobs.value.some(j => j.status === 'running' || j.status === 'queued'))
 let timer: ReturnType<typeof setTimeout>
 function clearJobs() {
     clearTimeout(timer)
+    importDialog.value?.close()
     jobs.value = []
 }
-function simulate(
-    names = ['FP_result_001.png', 'FP_result_002.png', 'FP_result_003.png'],
-) {
-    clearTimeout(timer)
-    jobs.value = names.map((name) => ({ name, status: 'running' }))
-    timer = setTimeout(() => {
-        jobs.value = jobs.value.map((j, i) => ({
-            ...j,
-            status: i === 1 ? 'failed' : 'success',
-        }))
-    }, 1300)
+function startImport(entries: { name: string; error?: string }[]) {
+    clearJobs()
+    jobs.value = entries.map((j, i) => ({ name: j.name, index: i + 1, status: 'queued', error: j.error ?? '' }))
+    importDialog.value?.showModal()
+    function process(index: number) {
+        const job = jobs.value[index]
+        if (!job) {
+            if (!failures.value.length) {
+                // Let the final progress segment reach 100% before closing the dialog.
+                const delay = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : motionTiming.progress + 40
+                timer = setTimeout(() => {
+                    importDialog.value?.close()
+                    notify(`已完成 ${jobs.value.length} 张截图的录入流程演示，未写入成绩。`, '录入完成')
+                    jobs.value = []
+                }, delay)
+            }
+            return
+        }
+        job.status = 'running'
+        timer = setTimeout(() => {
+            job.status = job.error ? 'failed' : 'success'
+            process(index + 1)
+        }, 650)
+    }
+    process(0)
+}
+function simulate(withErrors = false) {
+    startImport([
+        { name: 'FP_result_001.png' },
+        { name: 'FP_result_002.png', error: withErrors ? '未匹配到曲目。请使用完整、清晰的成绩截图，或手动新增该成绩。' : '' },
+        { name: 'FP_result_003.png', error: withErrors ? '无法解析 Score：分数区域不完整。请重新截取完整成绩画面。' : '' },
+    ])
 }
 function selectFiles(files: FileList | null) {
     if (!files?.length) return
-    const valid = Array.from(files).filter((f) =>
-        ['image/png', 'image/jpeg', 'image/webp'].includes(f.type),
-    )
-    if (valid.length) simulate(valid.map((f) => f.name))
-    else notify('请选择 PNG、JPG 或 WebP 图片。')
+    startImport(Array.from(files).map(f => ({
+        name: f.name,
+        error: !['image/png', 'image/jpeg', 'image/webp'].includes(f.type) ? '不支持的图片格式，请选择 PNG、JPG 或 WebP。' : f.size === 0 ? '图片文件为空，请重新选择。' : '',
+    })))
     if (fileInput.value) fileInput.value.value = ''
 }
 function drop(e: DragEvent) {
@@ -116,8 +145,7 @@ function drop(e: DragEvent) {
     selectFiles(e.dataTransfer?.files ?? null)
 }
 watch(page, () => {
-    clearTimeout(timer)
-    jobs.value = []
+    clearJobs()
     dragging.value = false
 })
 const deleteDialog = ref<HTMLDialogElement>(),
@@ -126,27 +154,35 @@ function openDelete(s: DemoScore) {
     deleting.value = s
     deleteDialog.value?.showModal()
 }
-const toast = ref('')
-function notify(message: string) {
+const toast = ref(''), toastTitle = ref('')
+let toastTimer: ReturnType<typeof setTimeout>
+function notify(message: string, title = '提示') {
+    clearTimeout(toastTimer)
     toast.value = message
+    toastTitle.value = title
+    toastTimer = setTimeout(() => toast.value = '', 5000)
 }
-const dialog = ref<HTMLDialogElement>(),
-    editing = ref<DemoScore | null>(null),
-    selected = ref(1),
-    inputScore = ref<number | string>(1040000)
-const validScore = computed(
-    () =>
-        inputScore.value !== '' &&
-        Number.isInteger(Number(inputScore.value)) &&
-        Number(inputScore.value) >= 0 &&
-        Number(inputScore.value) <= 1050000,
-)
-const lowered = computed(
-    () => editing.value && Number(inputScore.value) < editing.value.score,
-)
+const dialog = ref<HTMLDialogElement>(), editing = ref<DemoScore | null>(null)
+const inputScore = ref<number | string>(1040000)
+const songQuery = ref(''), selectedSong = ref(1)
+const editorMode = ref('ADVANCED'), editorDifficulty = ref('MASTER')
+const songOptions = demoScores.filter((s, i, all) => all.findIndex(other => other.ja === s.ja) === i)
+const filteredSongs = computed(() => songOptions.filter(s => `${s.ja} ${s.en} ${s.artist}`.toLocaleLowerCase().includes(songQuery.value.trim().toLocaleLowerCase())))
+const currentSong = computed(() => songOptions.find(s => s.id === selectedSong.value)!)
+// Prototype chart catalogue: expose both modes without claiming authoritative chart data.
+const chartOptions = computed(() => demoScores.filter(s => s.ja === currentSong.value.ja))
+const currentChart = computed(() => editing.value ?? chartOptions.value.find(s => s.difficulty === editorDifficulty.value)!)
+const chartBase = computed(() => Number(currentChart.value.level.replace('+', '')) + (currentChart.value.level.includes('+') ? .5 : 0))
+const validScore = computed(() => inputScore.value !== '' && Number.isInteger(Number(inputScore.value)) && Number(inputScore.value) >= 0 && Number(inputScore.value) <= 1050000)
+const liveRank = computed(() => validScore.value ? getRankByScore(Number(inputScore.value)) : '—')
+const liveRating = computed(() => validScore.value ? getChartRating(Number(inputScore.value), chartBase.value).toFixed(2) : '—')
+const lowered = computed(() => editing.value && Number(inputScore.value) < editing.value.score)
 function openEditor(s?: DemoScore) {
     editing.value = s ?? null
-    selected.value = s?.id ?? 1
+    selectedSong.value = songOptions.find(song => song.ja === s?.ja)?.id ?? songOptions[0]!.id
+    songQuery.value = ''
+    editorMode.value = s?.mode ?? 'ADVANCED'
+    editorDifficulty.value = s?.difficulty ?? 'MASTER'
     inputScore.value = s?.score ?? 1040000
     dialog.value?.showModal()
 }
@@ -155,6 +191,7 @@ function previewSave() {
     dialog.value?.close()
     notify('表单交互演示完成。当前为视觉原型，成绩数据未写入。')
 }
+onUnmounted(() => clearTimeout(toastTimer))
 </script>
 
 <template>
@@ -386,9 +423,10 @@ function previewSave() {
                                 <span class="row gap-2"
                                     ><ShieldCheck :size="14" />
                                     截图仅用于当前预览，不上传、不保存</span
-                                ><button class="text-link" @click="simulate()">
-                                    体验识别演示 <ArrowRight :size="13" />
+                                ><button class="text-link" @click="simulate(false)">
+                                    演示成功 <ArrowRight :size="13" />
                                 </button>
+                                <button class="text-link" @click="simulate(true)">演示识别错误</button>
                             </div>
                         </article>
                         <article class="guide-panel">
@@ -430,40 +468,7 @@ function previewSave() {
                             </div>
                         </article>
                     </section>
-                    <section v-if="jobs.length" class="panel jobs-panel">
-                        <div class="section-title between">
-                            <h2>识别流程演示</h2>
-                            <button class="text-link" @click="clearJobs()">
-                                清除演示
-                            </button>
-                        </div>
-                        <p class="muted">
-                            当前仅模拟处理状态，没有执行 OCR，也不会录入成绩。
-                        </p>
-                        <div
-                            v-for="job in jobs"
-                            :key="job.name"
-                            class="job-row between">
-                            <span class="row gap-2"
-                                ><FileImage :size="17" />{{ job.name }}</span
-                            ><span class="row gap-2" :class="job.status"
-                                ><LoaderCircle
-                                    v-if="job.status === 'running'"
-                                    class="spin"
-                                    :size="16" /><CheckCircle2
-                                    v-else-if="job.status === 'success'"
-                                    :size="16" /><CircleHelp
-                                    v-else
-                                    :size="16" />{{
-                                    job.status === 'running'
-                                        ? '模拟识别中…'
-                                        : job.status === 'success'
-                                          ? '演示：识别成功'
-                                          : '演示：未匹配到曲目，请手动新增'
-                                }}</span
-                            >
-                        </div>
-                    </section>
+
                     <section class="panel">
                         <div class="section-title between">
                             <div class="row gap-2">
@@ -685,27 +690,27 @@ function previewSave() {
                             : '选择曲目与谱面，记录你的精彩发挥。'
                     }}
                 </p>
-                <label
-                    >曲目 / 谱面<select
-                        v-model="selected"
-                        :disabled="!!editing">
-                        <option
-                            v-for="s in demoScores"
-                            :key="s.id"
-                            :value="s.id">
-                            {{ s[songLanguage] }} · {{ s.mode }} ·
-                            {{ s.difficulty }} {{ s.level }}
-                        </option>
-                    </select></label
-                ><label
-                    >Score<input
-                        v-model="inputScore"
-                        type="number"
-                        min="0"
-                        max="1050000"
-                        step="1"
-                        required
-                /></label>
+                <div class="song-picker">
+                    <label v-if="!editing">搜索曲目<input v-model="songQuery" type="search" placeholder="输入日文 / 英文曲名或艺术家" /></label>
+                    <div v-if="!editing" class="song-options" aria-label="曲目搜索结果">
+                        <button v-for="song in filteredSongs" :key="song.id" type="button" :class="{ selected: selectedSong === song.id }" :aria-pressed="selectedSong === song.id" @click="selectedSong = song.id">
+                            <span>{{ song[songLanguage] }}<small>{{ song.artist }}</small></span><Check v-if="selectedSong === song.id" :size="16" />
+                        </button>
+                        <p v-if="!filteredSongs.length" class="form-note">未找到匹配曲目，试试其他关键词。已选曲目保持不变。</p>
+                    </div>
+                    <div class="selected-song"><small>{{ editing ? '当前曲目' : '已选曲目' }}</small><strong>{{ currentSong[songLanguage] }}</strong></div>
+                </div>
+                <fieldset class="chart-picker" :disabled="!!editing"><legend>模式</legend><div class="chart-buttons">
+                    <button v-for="item in [{ id: 'BASIC', label: 'BASIC' }, { id: 'ADVANCED', label: 'ADV' }]" :key="item.id" type="button" :aria-pressed="editorMode === item.id" :class="{ selected: editorMode === item.id }" @click="editorMode = item.id">{{ item.label }}</button>
+                </div></fieldset>
+                <fieldset class="chart-picker" :disabled="!!editing"><legend>难度</legend><div class="chart-buttons">
+                    <button v-for="chart in chartOptions" :key="chart.id" type="button" :aria-pressed="editorDifficulty === chart.difficulty" :class="{ selected: editorDifficulty === chart.difficulty }" @click="editorDifficulty = chart.difficulty">{{ chart.difficulty }} {{ chart.level }}</button>
+                </div></fieldset>
+                <label>Score<input v-model="inputScore" type="number" min="0" max="1050000" step="1" required /></label>
+                <div class="live-metrics" aria-live="polite">
+                    <div><small>Rank</small><strong>{{ liveRank }}</strong></div>
+                    <div><small>歌曲定数 → 单曲 Rating</small><strong>{{ chartBase.toFixed(1) }} <span>→</span> {{ liveRating }}</strong></div>
+                </div>
                 <p v-if="!validScore" class="error">
                     请输入 0～1,050,000 范围内的整数。
                 </p>
@@ -714,7 +719,7 @@ function previewSave() {
                     Rank 与 Rating 会重新计算。
                 </p>
                 <div class="form-note">
-                    Rank 与 Rating 由成绩自动推导，不提供手动修改。<br />此处仅预览表单，不会保存成绩。
+                    Rank 与 Rating 随 Score 实时计算。谱面定数为演示配置；当前仅预览表单，不会保存成绩。
                 </div>
                 <div class="dialog-actions">
                     <button
@@ -727,6 +732,20 @@ function previewSave() {
                     </button>
                 </div>
             </form>
+        </dialog>
+        <dialog ref="importDialog" class="editor-dialog import-dialog" aria-labelledby="import-title" @cancel.prevent="clearJobs()">
+            <div class="between"><div><div class="eyebrow">SCREENSHOT IMPORT</div><h2 id="import-title">{{ importing ? '正在录入成绩' : failures.length ? '部分图片识别失败' : '录入完成' }}</h2></div><button class="icon-button" aria-label="关闭识别弹窗并取消未完成任务" @click="clearJobs()"><X :size="20" /></button></div>
+            <p class="muted">当前为流程演示，不执行真实 OCR，也不会写入成绩。</p>
+            <div class="between import-counter" aria-live="polite"><span>{{ completed }} / {{ jobs.length }} 已处理</span><strong>识别错误数 / 总数：{{ failures.length }} / {{ jobs.length }}</strong></div>
+            <AnimatedProgress :value="completed" :max="jobs.length" />
+            <div class="import-results">
+                <article v-for="job in jobs" :key="job.index" class="import-result" :class="job.status">
+                    <div class="between"><strong>#{{ job.index }} · {{ job.name }}</strong><span class="row gap-2"><LoaderCircle v-if="job.status === 'running'" class="spin" :size="15" />{{ job.status === 'queued' ? '排队中' : job.status === 'running' ? '识别中' : job.status === 'failed' ? '识别错误' : '演示成功' }}</span></div>
+                    <p v-if="job.status === 'failed'">{{ job.error }}</p>
+                </article>
+            </div>
+            <p class="form-note">{{ importing ? '关闭弹窗将取消未完成任务。' : `成功 ${jobs.length - failures.length} 张，失败 ${failures.length} 张。失败图片不会生成成绩，可以重新选择图片或手动新增。` }}</p>
+            <div class="dialog-actions"><button class="button secondary" @click="clearJobs()">{{ importing ? '取消识别' : '关闭' }}</button><button v-if="!importing && failures.length" class="button primary" @click="clearJobs(); openEditor()">手动新增</button></div>
         </dialog>
         <dialog ref="deleteDialog" class="editor-dialog">
             <h2>删除这份成绩？</h2>
@@ -752,8 +771,9 @@ function previewSave() {
                 </button>
             </div>
         </dialog>
-        <div v-if="toast" role="status" class="toast row gap-3">
-            <CheckCircle2 :size="19" /><span>{{ toast }}</span>
+        <CardTransition variant="notice" v-slot="{ motionStyle }">
+        <div v-if="toast" role="status" class="toast row gap-3" :style="motionStyle">
+            <CheckCircle2 :size="19" /><div class="notification-copy"><strong>{{ toastTitle }}</strong><span>{{ toast }}</span></div>
             <button
                 class="icon-button"
                 aria-label="关闭提示"
@@ -761,5 +781,6 @@ function previewSave() {
                 <X :size="16" />
             </button>
         </div>
+        </CardTransition>
     </div>
 </template>

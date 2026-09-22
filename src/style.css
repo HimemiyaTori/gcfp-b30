@@ -1490,3 +1490,43 @@ input::placeholder {
 @media (max-width: 680px) {
     .filter-bar select[aria-label="筛选歌曲分类"] { flex-basis: calc(100% - 30px); }
 }
+
+.song-options { max-height: 160px; overflow-y: auto; margin-top: 10px; border: 1px solid var(--line); border-radius: 8px; }
+.song-options button { width: 100%; display: flex; justify-content: space-between; align-items: center; text-align: left; padding: 11px 12px; background: var(--panel); border-bottom: 1px solid var(--line); font-size: 12px; gap: 10px; }
+.song-options button.selected { background: var(--soft-gradient); color: var(--accent); }
+.song-options small { font-size: 10px; margin-top: 4px; color: var(--muted); }
+.selected-song { margin-top: 14px; padding: 12px; background: var(--field); border-radius: 7px; }
+.selected-song small { font-size: 10px; color: var(--muted); margin-bottom: 5px; }
+.selected-song strong { font-size: 13px; }
+.chart-picker { margin: 18px 0 0; padding: 0; border: 0; min-width: 0; }
+.chart-picker legend { font-size: 12px; margin-bottom: 10px; }
+.chart-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.chart-buttons button { padding: 9px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--field); font-size: 11px; }
+.chart-buttons button.selected { border-color: var(--accent); color: var(--accent); background: var(--soft-gradient); }
+.chart-picker:disabled button { cursor: default; opacity: .65; }
+.chart-picker:disabled button.selected { opacity: 1; }
+.live-metrics { display: grid; grid-template-columns: 1fr 2fr; gap: 12px; margin-top: 16px; padding: 16px; background: var(--soft-gradient); border-radius: 9px; }
+.live-metrics small { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+.live-metrics strong { font-size: 23px; color: var(--accent); font-variant-numeric: tabular-nums; }
+.live-metrics strong span { font-size: 16px; color: var(--muted); }
+.editor-dialog { max-height: calc(100dvh - 32px); overflow-y: auto; }
+.import-dialog { width: min(620px, calc(100% - 32px)); }
+.import-counter { gap: 12px; flex-wrap: wrap; font-size: 12px; margin-bottom: 12px; }
+.import-dialog progress { width: 100%; height: 8px; accent-color: var(--accent); }
+.import-results { max-height: 320px; overflow-y: auto; margin-top: 20px; }
+.import-result { padding: 14px 0; border-bottom: 1px solid var(--line); font-size: 12px; }
+.import-result .between { align-items: flex-start; gap: 14px; }
+.import-result strong { overflow-wrap: anywhere; min-width: 0; color: var(--text); }
+.import-result .row { white-space: nowrap; }
+.import-result p { font-size: 11px; line-height: 1.8; margin-top: 9px; }
+.toast { left: auto; right: 24px; bottom: 24px; transform: none; width: 360px; align-items: flex-start; }
+.notification-copy { flex: 1; min-width: 0; }
+.notification-copy strong { display: block; margin-bottom: 7px; }
+.notification-copy span { display: block; color: var(--muted); line-height: 1.7; font-size: 11px; }
+@media(max-width: 680px) {
+    .toast { top: max(12px, env(safe-area-inset-top)); bottom: auto; right: 12px; left: 12px; width: auto; padding: 10px 12px; }
+    .notification-copy strong { margin-bottom: 2px; }
+    .editor-dialog { padding: 20px; }
+    .chart-buttons button { flex: 1; padding-inline: 8px; white-space: nowrap; }
+}
+.editor-dialog input[type="search"] { font-size: 13px; }
