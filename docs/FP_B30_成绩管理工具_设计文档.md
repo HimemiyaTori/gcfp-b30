@@ -353,16 +353,12 @@ interface Song {
         en: string
     }
 
+    // 部分歌曲有 BPM 范围，此时 bpm 作为最小值。若 bpmMax 为空表示 BPM 固定。
     bpm: number
+    bpmMax?: number
 
     // 歌曲分类，保存固定 ID；显示名称见下表
-    category:
-        | 'anime-pop'
-        | 'vtuber'
-        | 'virtual-singer'
-        | 'touhou'
-        | 'music-game'
-        | 'original'
+    genre: 'anime-pop' | 'vtuber' | 'virtual-singer' | 'touhou' | 'music-game' | 'original'
 
     // 曲包：为空时属于游戏内免费曲包；有值时为 DLC 曲包名称
     pack?: string
@@ -396,14 +392,14 @@ level 为谱面定数表示；整数代表普通等级，.5 代表游戏中的 +
 
 `category` 为必填字段，保存以下六种分类的固定 ID。曲目分类名称根据曲目信息语言设置在日文与英文之间切换，同一歌曲的所有谱面共用该分类。
 
-| category 值      | 日文名称             | 英文名称             |
-| ---------------- | -------------------- | -------------------- |
-| `anime-pop`      | アニメ・ポップス     | Anime/Pop            |
-| `vtuber`         | VTuber               | VTuber               |
-| `virtual-singer` | バーチャル・シンガー | Virtual Singer       |
-| `touhou`         | 東方アレンジ         | Touhou Project       |
-| `music-game`     | 音楽ゲーム           | Music Game / Variety |
-| `original`       | オリジナル           | Original             |
+| category 值      | 日文名称               | 英文名称             |
+| ---------------- | ---------------------- | -------------------- |
+| `anime-pop`      | アニメ・ポップス       | Anime / Pop          |
+| `vtuber`         | VTuber                 | VTuber               |
+| `virtual-singer` | バーチャルシンガー     | Virtual Singer       |
+| `touhou`         | 東方アレンジ           | Touhou Project       |
+| `music-game`     | 音楽ゲーム・バラエティ | Music Game / Variety |
+| `original`       | オリジナル             | Original             |
 
 #### Song.pack：所属曲包
 
