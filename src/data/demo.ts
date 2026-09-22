@@ -1,9 +1,11 @@
+import type { SongCategory } from './categories'
 // Visual fixtures only. These are not an authoritative song library or rating implementation.
 export interface DemoScore {
     id: number
     ja: string
     en: string
     artist: string
+    category: SongCategory
     difficulty: string
     mode: string
     level: string
@@ -102,6 +104,7 @@ export const demoScores: DemoScore[] = Array.from({ length: 32 }, (_, i) => {
         ja: s[0],
         en: s[1],
         artist: s[2],
+        category: (['original', 'original', 'original', 'touhou', 'music-game', 'original', 'virtual-singer', 'touhou'] as const)[i % songs.length]!,
         difficulty:
             group === 0
                 ? 'MASTER'

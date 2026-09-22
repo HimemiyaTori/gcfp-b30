@@ -27,6 +27,7 @@ import {
 } from 'lucide-vue-next'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { songCategories, type SongCategory } from './data/categories'
 import ScoreTable from './components/ScoreTable.vue'
 import { isDark, songLanguage, theme } from './composables/useSettings'
 import { demoScores, type DemoScore } from './data/demo'
@@ -51,6 +52,7 @@ onUnmounted(() => {
     window.removeEventListener('hashchange', readHash)
     clearTimeout(timer)
 })
+const category = ref<SongCategory | 'ALL'>('ALL')
 const query = ref(''),
     difficulty = ref('ALL'),
     mode = ref('ALL'),
@@ -74,7 +76,8 @@ const filtered = computed(() =>
                 .toLowerCase()
                 .includes(query.value.toLowerCase()) &&
             (difficulty.value === 'ALL' || s.difficulty === difficulty.value) &&
-            (mode.value === 'ALL' || s.mode === mode.value),
+            (mode.value === 'ALL' || s.mode === mode.value) &&
+            (category.value === 'ALL' || s.category === category.value),
     ),
 )
 const fileInput = ref<HTMLInputElement>(),
@@ -490,7 +493,11 @@ function previewSave() {
                                     aria-label="搜索成绩"
                             /></label>
                             <div class="row gap-2">
-                                <SlidersHorizontal :size="16" /><select
+                                <SlidersHorizontal :size="16" />
+                                <select v-model="category" aria-label="筛选歌曲分类">
+                                    <option value="ALL">全部分类</option>
+                                    <option v-for="item in songCategories" :key="item.id" :value="item.id">{{ item[songLanguage] }}</option>
+                                </select><select
                                     v-model="mode"
                                     aria-label="筛选模式">
                                     <option value="ALL">全部模式</option>
@@ -531,7 +538,7 @@ function previewSave() {
                                     >{{ b30.length }} 谱面</span
                                 >
                             </div>
-                            <span class="muted">按单谱 Rating 降序</span>
+                            <span class="muted">点击表头排序 · 排名保留 B30 原名次</span>
                         </div>
                         <ScoreTable :items="b30" ranked />
                     </section>
@@ -756,5 +763,3 @@ function previewSave() {
         </div>
     </div>
 </template>
-
-
