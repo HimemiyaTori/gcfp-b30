@@ -1,4 +1,4 @@
-// Exact integer interpolation; return truncated hundredths as specified in §12.
+// 按第 12 节规定进行精确整数插值，并返回截断到百分位的结果
 export function getChartRating(score: number, level: number): number {
     if (!Number.isInteger(score) || score < 0 || score > 1050000 || !Number.isFinite(level) || level < 0 || !Number.isInteger(level * 2)) {
         throw new RangeError('Invalid score or chart level')

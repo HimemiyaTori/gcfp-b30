@@ -1,4 +1,4 @@
-/* Shared motion language: explicit opt-in, no animation on every card descendant. */
+/* 统一动效规范：显式启用，不为每个卡片后代元素添加动画 */
 :root { --motion-ease-out: cubic-bezier(.2, .8, .2, 1); }
 .card-motion-enter-active,
 .notice-motion-enter-active {

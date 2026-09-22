@@ -1,5 +1,5 @@
 import type { SongCategory } from './categories'
-// Visual fixtures only. These are not an authoritative song library or rating implementation.
+// 仅用于视觉展示，不代表权威曲库或评级实现
 export interface DemoScore {
     id: number
     ja: string

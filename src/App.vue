@@ -107,7 +107,7 @@ function startImport(entries: { name: string; error?: string }[]) {
         const job = jobs.value[index]
         if (!job) {
             if (!failures.value.length) {
-                // Let the final progress segment reach 100% before closing the dialog.
+                // 让最后一段进度先达到 100% 再关闭弹窗
                 const delay = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : motionTiming.progress + 40
                 timer = setTimeout(() => {
                     importDialog.value?.close()
@@ -169,7 +169,7 @@ const editorMode = ref('ADVANCED'), editorDifficulty = ref('MASTER')
 const songOptions = demoScores.filter((s, i, all) => all.findIndex(other => other.ja === s.ja) === i)
 const filteredSongs = computed(() => songOptions.filter(s => `${s.ja} ${s.en} ${s.artist}`.toLocaleLowerCase().includes(songQuery.value.trim().toLocaleLowerCase())))
 const currentSong = computed(() => songOptions.find(s => s.id === selectedSong.value)!)
-// Prototype chart catalogue: expose both modes without claiming authoritative chart data.
+// 原型曲谱目录：提供两种模式，不代表权威曲谱数据
 const chartOptions = computed(() => demoScores.filter(s => s.ja === currentSong.value.ja))
 const currentChart = computed(() => editing.value ?? chartOptions.value.find(s => s.difficulty === editorDifficulty.value)!)
 const chartBase = computed(() => Number(currentChart.value.level.replace('+', '')) + (currentChart.value.level.includes('+') ? .5 : 0))

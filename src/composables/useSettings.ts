@@ -28,6 +28,6 @@ watchEffect(() => {
         localStorage.setItem('ga-theme', theme.value)
         localStorage.setItem('ga-language', songLanguage.value)
     } catch {
-        /* Preview still works without storage. */
+        /* 没有存储权限时仍可继续预览 */
     }
 })

@@ -1,6 +1,19 @@
-// Source: Groove Coaster Wiki, SwitchFP / ゲーム概要, スコアランク.
-// Verified 2026-09-22. Full source URL is recorded in design document §12.4.
-export type ScoreRank = 'E' | 'D' | 'C' | 'B' | 'A' | 'AA' | 'AAA' | 'S' | 'S+' | 'SS' | 'SS+' | 'SSS' | 'SSS+'
+// 来源：Groove Coaster Wiki，SwitchFP / ゲーム概要, スコアランク
+// 核验日期：2026-09-22，完整来源链接记录在设计文档第 12.4 节
+export type ScoreRank =
+    | 'E'
+    | 'D'
+    | 'C'
+    | 'B'
+    | 'A'
+    | 'AA'
+    | 'AAA'
+    | 'S'
+    | 'S+'
+    | 'SS'
+    | 'SS+'
+    | 'SSS'
+    | 'SSS+'
 
 const thresholds: readonly (readonly [number, ScoreRank])[] = [
     [1040000, 'SSS+'],

@@ -11,7 +11,12 @@
     --accent: #087eae;
     --brand-cyan: #19cbea;
     --brand-pink: #f15bb5;
-    --brand-gradient: linear-gradient(110deg, var(--brand-cyan) 0%, #83b8ef 48%, var(--brand-pink) 100%);
+    --brand-gradient: linear-gradient(
+        110deg,
+        var(--brand-cyan) 0%,
+        #83b8ef 48%,
+        var(--brand-pink) 100%
+    );
     --soft-gradient: linear-gradient(115deg, #ebfaff 0%, #f3f3fd 52%, #fff0f8 100%);
     --soft: #eaf5ff;
     --field: #f8f9fd;
@@ -698,11 +703,7 @@ h2 {
     width: 38px;
     height: 38px;
     border-radius: 5px;
-    background: linear-gradient(
-        145deg,
-        color-mix(in srgb, var(--art), white 20%),
-        var(--art)
-    );
+    background: linear-gradient(145deg, color-mix(in srgb, var(--art), white 20%), var(--art));
     color: #ffffffc9;
     display: grid;
     place-items: center;
@@ -1421,7 +1422,7 @@ input::placeholder {
     }
 }
 
-/* Future Performers identity: cyan-to-pink, shared across both themes. */
+/* Future Performers 主题色：青色到粉色渐变，两个主题共用 */
 .topbar {
     height: 90px;
     position: relative;
@@ -1433,7 +1434,7 @@ input::placeholder {
     inset: auto 0 -1px;
     height: 2px;
     background: var(--brand-gradient);
-    opacity: .6;
+    opacity: 0.6;
 }
 .game-identity {
     display: inline-flex;
@@ -1454,79 +1455,284 @@ input::placeholder {
     letter-spacing: 2px;
     color: var(--text);
 }
-.active-dot, .tiny-dot, .switch.on {
+.active-dot,
+.tiny-dot,
+.switch.on {
     background: var(--brand-gradient);
 }
 .stat-icon.amber {
     background: color-mix(in srgb, var(--brand-pink) 13%, var(--panel));
     color: #c24795;
 }
-.dark .stat-icon.amber { color: #f48acb; }
+.dark .stat-icon.amber {
+    color: #f48acb;
+}
 .stat-icon.blue {
     background: var(--soft);
     color: var(--accent);
 }
-.brand-mark, .plus-bubble { color: #172039; }
+.brand-mark,
+.plus-bubble {
+    color: #172039;
+}
 @media (max-width: 680px) {
-    .topbar { height: 76px; gap: 10px; padding-inline: 16px; }
-    .game-identity { gap: 10px; }
-    .game-logo { width: 136px; }
-    .game-edition { padding-left: 10px; font-size: 14px; letter-spacing: 1px; }
-    .topbar .avatar { display: none; }
-    .topbar .gap-4 { gap: 7px; }
-    .topbar .preview-pill { font-size: 10px; padding: 5px 7px; }
+    .topbar {
+        height: 76px;
+        gap: 10px;
+        padding-inline: 16px;
+    }
+    .game-identity {
+        gap: 10px;
+    }
+    .game-logo {
+        width: 136px;
+    }
+    .game-edition {
+        padding-left: 10px;
+        font-size: 14px;
+        letter-spacing: 1px;
+    }
+    .topbar .avatar {
+        display: none;
+    }
+    .topbar .gap-4 {
+        gap: 7px;
+    }
+    .topbar .preview-pill {
+        font-size: 10px;
+        padding: 5px 7px;
+    }
 }
 @media (max-width: 360px) {
-    .game-logo { width: 118px; }
-    .topbar .preview-pill { display: none; }
+    .game-logo {
+        width: 118px;
+    }
+    .topbar .preview-pill {
+        display: none;
+    }
 }
 
-.sort-head { display: flex; align-items: center; gap: 12px; }
-.sort-numeric { justify-content: flex-end; }
-.sort-button { display: inline-flex; align-items: center; gap: 4px; padding: 4px 0; background: transparent; color: var(--muted); font-size: inherit; white-space: nowrap; }
-.sort-button:hover, .sort-button.selected { color: var(--accent); }
-.filter-bar { flex-wrap: wrap; }
-.filter-bar > .row { flex-wrap: wrap; }
+.sort-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.sort-numeric {
+    justify-content: flex-end;
+}
+.sort-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 0;
+    background: transparent;
+    color: var(--muted);
+    font-size: inherit;
+    white-space: nowrap;
+}
+.sort-button:hover,
+.sort-button.selected {
+    color: var(--accent);
+}
+.filter-bar {
+    flex-wrap: wrap;
+}
+.filter-bar > .row {
+    flex-wrap: wrap;
+}
 @media (max-width: 680px) {
-    .filter-bar select[aria-label="筛选歌曲分类"] { flex-basis: calc(100% - 30px); }
+    .filter-bar select[aria-label='筛选歌曲分类'] {
+        flex-basis: calc(100% - 30px);
+    }
 }
 
-.song-options { max-height: 160px; overflow-y: auto; margin-top: 10px; border: 1px solid var(--line); border-radius: 8px; }
-.song-options button { width: 100%; display: flex; justify-content: space-between; align-items: center; text-align: left; padding: 11px 12px; background: var(--panel); border-bottom: 1px solid var(--line); font-size: 12px; gap: 10px; }
-.song-options button.selected { background: var(--soft-gradient); color: var(--accent); }
-.song-options small { font-size: 10px; margin-top: 4px; color: var(--muted); }
-.selected-song { margin-top: 14px; padding: 12px; background: var(--field); border-radius: 7px; }
-.selected-song small { font-size: 10px; color: var(--muted); margin-bottom: 5px; }
-.selected-song strong { font-size: 13px; }
-.chart-picker { margin: 18px 0 0; padding: 0; border: 0; min-width: 0; }
-.chart-picker legend { font-size: 12px; margin-bottom: 10px; }
-.chart-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
-.chart-buttons button { padding: 9px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--field); font-size: 11px; }
-.chart-buttons button.selected { border-color: var(--accent); color: var(--accent); background: var(--soft-gradient); }
-.chart-picker:disabled button { cursor: default; opacity: .65; }
-.chart-picker:disabled button.selected { opacity: 1; }
-.live-metrics { display: grid; grid-template-columns: 1fr 2fr; gap: 12px; margin-top: 16px; padding: 16px; background: var(--soft-gradient); border-radius: 9px; }
-.live-metrics small { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
-.live-metrics strong { font-size: 23px; color: var(--accent); font-variant-numeric: tabular-nums; }
-.live-metrics strong span { font-size: 16px; color: var(--muted); }
-.editor-dialog { max-height: calc(100dvh - 32px); overflow-y: auto; }
-.import-dialog { width: min(620px, calc(100% - 32px)); }
-.import-counter { gap: 12px; flex-wrap: wrap; font-size: 12px; margin-bottom: 12px; }
-.import-dialog progress { width: 100%; height: 8px; accent-color: var(--accent); }
-.import-results { max-height: 320px; overflow-y: auto; margin-top: 20px; }
-.import-result { padding: 14px 0; border-bottom: 1px solid var(--line); font-size: 12px; }
-.import-result .between { align-items: flex-start; gap: 14px; }
-.import-result strong { overflow-wrap: anywhere; min-width: 0; color: var(--text); }
-.import-result .row { white-space: nowrap; }
-.import-result p { font-size: 11px; line-height: 1.8; margin-top: 9px; }
-.toast { left: auto; right: 24px; bottom: 24px; transform: none; width: 360px; align-items: flex-start; }
-.notification-copy { flex: 1; min-width: 0; }
-.notification-copy strong { display: block; margin-bottom: 7px; }
-.notification-copy span { display: block; color: var(--muted); line-height: 1.7; font-size: 11px; }
-@media(max-width: 680px) {
-    .toast { top: max(12px, env(safe-area-inset-top)); bottom: auto; right: 12px; left: 12px; width: auto; padding: 10px 12px; }
-    .notification-copy strong { margin-bottom: 2px; }
-    .editor-dialog { padding: 20px; }
-    .chart-buttons button { flex: 1; padding-inline: 8px; white-space: nowrap; }
+.song-options {
+    max-height: 160px;
+    overflow-y: auto;
+    margin-top: 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
 }
-.editor-dialog input[type="search"] { font-size: 13px; }
+.song-options button {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: left;
+    padding: 11px 12px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+    font-size: 12px;
+    gap: 10px;
+}
+.song-options button.selected {
+    background: var(--soft-gradient);
+    color: var(--accent);
+}
+.song-options small {
+    font-size: 10px;
+    margin-top: 4px;
+    color: var(--muted);
+}
+.selected-song {
+    margin-top: 14px;
+    padding: 12px;
+    background: var(--field);
+    border-radius: 7px;
+}
+.selected-song small {
+    font-size: 10px;
+    color: var(--muted);
+    margin-bottom: 5px;
+}
+.selected-song strong {
+    font-size: 13px;
+}
+.chart-picker {
+    margin: 18px 0 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+}
+.chart-picker legend {
+    font-size: 12px;
+    margin-bottom: 10px;
+}
+.chart-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.chart-buttons button {
+    padding: 9px 12px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--field);
+    font-size: 11px;
+}
+.chart-buttons button.selected {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--soft-gradient);
+}
+.chart-picker:disabled button {
+    cursor: default;
+    opacity: 0.65;
+}
+.chart-picker:disabled button.selected {
+    opacity: 1;
+}
+.live-metrics {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 12px;
+    margin-top: 16px;
+    padding: 16px;
+    background: var(--soft-gradient);
+    border-radius: 9px;
+}
+.live-metrics small {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 8px;
+}
+.live-metrics strong {
+    font-size: 23px;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+}
+.live-metrics strong span {
+    font-size: 16px;
+    color: var(--muted);
+}
+.editor-dialog {
+    max-height: calc(100dvh - 32px);
+    overflow-y: auto;
+}
+.import-dialog {
+    width: min(620px, calc(100% - 32px));
+}
+.import-counter {
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    margin-bottom: 12px;
+}
+.import-dialog progress {
+    width: 100%;
+    height: 8px;
+    accent-color: var(--accent);
+}
+.import-results {
+    max-height: 320px;
+    overflow-y: auto;
+    margin-top: 20px;
+}
+.import-result {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 12px;
+}
+.import-result .between {
+    align-items: flex-start;
+    gap: 14px;
+}
+.import-result strong {
+    overflow-wrap: anywhere;
+    min-width: 0;
+    color: var(--text);
+}
+.import-result .row {
+    white-space: nowrap;
+}
+.import-result p {
+    font-size: 11px;
+    line-height: 1.8;
+    margin-top: 9px;
+}
+.toast {
+    left: auto;
+    right: 24px;
+    bottom: 24px;
+    transform: none;
+    width: 360px;
+    align-items: flex-start;
+}
+.notification-copy {
+    flex: 1;
+    min-width: 0;
+}
+.notification-copy strong {
+    display: block;
+    margin-bottom: 7px;
+}
+.notification-copy span {
+    display: block;
+    color: var(--muted);
+    line-height: 1.7;
+    font-size: 11px;
+}
+@media (max-width: 680px) {
+    .toast {
+        top: max(12px, env(safe-area-inset-top));
+        bottom: auto;
+        right: 12px;
+        left: 12px;
+        width: auto;
+        padding: 10px 12px;
+    }
+    .notification-copy strong {
+        margin-bottom: 2px;
+    }
+    .editor-dialog {
+        padding: 20px;
+    }
+    .chart-buttons button {
+        flex: 1;
+        padding-inline: 8px;
+        white-space: nowrap;
+    }
+}
+.editor-dialog input[type='search'] {
+    font-size: 13px;
+}
