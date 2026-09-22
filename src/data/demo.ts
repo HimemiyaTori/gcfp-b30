@@ -8,7 +8,6 @@ export interface DemoScore {
     mode: string
     level: string
     score: number
-    rank: string
     rating: number
     color: string
     symbol: string
@@ -20,7 +19,6 @@ const songs = [
         'Cranky vs MASAKI',
         '15',
         1045120,
-        'SSS+',
         17.5,
         '#516c84',
         '∞',
@@ -31,7 +29,6 @@ const songs = [
         't+pazolite',
         '15',
         1042080,
-        'SSS+',
         17.2,
         '#686289',
         '✦',
@@ -42,7 +39,6 @@ const songs = [
         'E.G.G.',
         '15',
         1038240,
-        'SSS',
         16.91,
         '#b76d53',
         '≋',
@@ -53,7 +49,6 @@ const songs = [
         'A-One',
         '14+',
         1040560,
-        'SSS+',
         16.55,
         '#347f84',
         '◇',
@@ -64,7 +59,6 @@ const songs = [
         'Toby Fox',
         '14',
         1045000,
-        'SSS+',
         16.5,
         '#775e77',
         '⌁',
@@ -75,7 +69,6 @@ const songs = [
         'COSIO',
         '14+',
         1036800,
-        'SSS',
         16.34,
         '#90704a',
         '◎',
@@ -86,7 +79,6 @@ const songs = [
         'cosMo@暴走P',
         '14',
         1036500,
-        'SSS',
         15.82,
         '#458b80',
         'M',
@@ -97,7 +89,6 @@ const songs = [
         'ビートまりお',
         '13+',
         1041120,
-        'SSS+',
         15.61,
         '#6d7ca0',
         'N',
@@ -122,9 +113,8 @@ export const demoScores: DemoScore[] = Array.from({ length: 32 }, (_, i) => {
         mode: i % 3 === 0 ? 'BASIC' : 'ADVANCED',
         level: group ? String(12 - group) : s[3],
         score: group ? 1020000 - (i % 8) * 2000 : s[4],
-        rank: group ? (i % 8 === 0 ? 'SS+' : i % 8 <= 5 ? 'SS' : 'S+') : s[5],
-        rating: group ? 13 - group - (i % 8) * 0.1 : s[6],
-        color: s[7],
-        symbol: s[8],
+        rating: group ? 13 - group - (i % 8) * 0.1 : s[5],
+        color: s[6],
+        symbol: s[7],
     }
 })

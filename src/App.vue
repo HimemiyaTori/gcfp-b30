@@ -5,7 +5,6 @@ import {
     ArrowRight,
     Check,
     CheckCircle2,
-    ChevronRight,
     CircleHelp,
     Disc3,
     FileImage,
@@ -197,12 +196,10 @@ function previewSave() {
         </aside>
         <div class="workspace">
             <header class="topbar between">
-                <div class="row gap-2">
-                    <span class="muted">我的空间</span
-                    ><ChevronRight :size="14" /><span>{{
-                        t(`nav.${page}`)
-                    }}</span>
-                </div>
+                <a href="#home" class="game-identity" aria-label="Groove Coaster Future Performers B30 首页">
+                    <img class="game-logo" src="/images/gcfp-logo.png" alt="Groove Coaster Future Performers" width="700" height="296" />
+                    <span class="game-edition">B30</span>
+                </a>
                 <div class="row gap-4">
                     <span class="preview-pill"
                         ><span class="tiny-dot"></span> 界面预览</span
@@ -759,3 +756,5 @@ function previewSave() {
         </div>
     </div>
 </template>
+
+

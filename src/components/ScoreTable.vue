@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ArrowUpRight, Music2, Pencil, Trash2 } from 'lucide-vue-next'
 import { songLanguage } from '../composables/useSettings'
+import { getRankByScore } from '../core/rating/rank'
 import type { DemoScore } from '../data/demo'
 defineProps<{ items: DemoScore[]; ranked?: boolean; editable?: boolean }>()
 defineEmits<{ edit: [score: DemoScore]; remove: [score: DemoScore] }>()
@@ -52,7 +53,7 @@ defineEmits<{ edit: [score: DemoScore]; remove: [score: DemoScore] }>()
                         {{ s.score.toLocaleString('en-US') }}
                     </td>
                     <td class="num">
-                        <span class="rank">{{ s.rank }}</span>
+                        <span class="rank">{{ getRankByScore(s.score) }}</span>
                     </td>
                     <td class="num rating-num">{{ s.rating.toFixed(2) }}</td>
                     <td v-if="editable">
