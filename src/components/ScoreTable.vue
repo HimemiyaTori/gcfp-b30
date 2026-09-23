@@ -3,13 +3,13 @@ import { ArrowDown, ArrowUp, ArrowUpDown, Music2, Pencil, Trash2 } from 'lucide-
 import { computed, ref } from 'vue'
 import { songLanguage } from '../composables/useSettings'
 import { getRankByScore } from '../core/rating/rank'
+import { createScoreComparator, type ScoreSortKey } from '../core/scoreSort'
 import type { DemoScore } from '../data/demo'
 const props = defineProps<{ items: DemoScore[]; ranked?: boolean; editable?: boolean }>()
 defineEmits<{ edit: [score: DemoScore]; remove: [score: DemoScore] }>()
-type SortKey = 'position' | 'title' | 'difficulty' | 'level' | 'score' | 'rank' | 'rating'
+type SortKey = 'position' | ScoreSortKey
 const sortKey = ref<SortKey>(props.ranked ? 'position' : 'score')
 const ascending = ref(props.ranked ?? false)
-const ranks = ['E', 'D', 'C', 'B', 'A', 'AA', 'AAA', 'S', 'S+', 'SS', 'SS+', 'SSS', 'SSS+']
 const positions = computed(() => new Map(props.items.map((s, i) => [s.id, i + 1])))
 const columns = computed(() => [
     ...(props.ranked ? [{ keys: ['position'], labels: ['排名'], numeric: false }] : []),
@@ -26,23 +26,20 @@ function toggleSort(key: string) {
         ascending.value = ['title', 'position'].includes(key)
     }
 }
-function value(s: DemoScore): string | number {
-    switch (sortKey.value) {
-        case 'position': return positions.value.get(s.id)!
-        case 'title': return s[songLanguage.value]
-        case 'difficulty': return ['EASY', 'NORMAL', 'HARD', 'MASTER'].indexOf(s.difficulty)
-        case 'level': return Number(s.level.replace('+', '')) + (s.level.includes('+') ? .5 : 0)
-        case 'rank': return ranks.indexOf(getRankByScore(s.score))
-        default: return s[sortKey.value]
-    }
-}
 const sortedItems = computed(() => {
-    const collator = new Intl.Collator(songLanguage.value === 'ja' ? 'ja' : 'en', { numeric: true, sensitivity: 'base' })
-    return [...props.items].sort((a, b) => {
-        const av = value(a), bv = value(b)
-        const result = typeof av === 'number' && typeof bv === 'number' ? av - bv : collator.compare(String(av), String(bv))
-        return result * (ascending.value ? 1 : -1) || a.id - b.id
-    })
+    if (sortKey.value === 'position') {
+        return ascending.value ? [...props.items] : [...props.items].reverse()
+    }
+    const direction = ascending.value ? 1 : -1
+    if (!props.ranked || sortKey.value === 'title') {
+        const compare = createScoreComparator(sortKey.value, songLanguage.value)
+        return [...props.items].sort((a, b) => compare(a, b) * direction)
+    }
+    const compare = createScoreComparator(sortKey.value, songLanguage.value, { primaryOnly: true })
+    return props.items
+        .map((item, index) => ({ item, index }))
+        .sort((a, b) => compare(a.item, b.item) * direction || a.index - b.index)
+        .map(({ item }) => item)
 })
 </script>
 <template>

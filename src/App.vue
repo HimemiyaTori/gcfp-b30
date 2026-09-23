@@ -27,15 +27,16 @@ import {
 } from 'lucide-vue-next'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { songCategories, type SongCategory } from './data/categories'
-import { getRankByScore } from './core/rating/rank'
-import { getChartRating } from './core/rating/calculator'
 import AnimatedProgress from './components/common/AnimatedProgress.vue'
 import AnimatedSuccess from './components/common/AnimatedSuccess.vue'
 import CardTransition from './components/common/CardTransition.vue'
 import { motionTiming } from './components/common/motion'
 import ScoreTable from './components/ScoreTable.vue'
 import { isDark, songLanguage, theme } from './composables/useSettings'
+import { getChartRating } from './core/rating/calculator'
+import { getRankByScore } from './core/rating/rank'
+import { createScoreComparator } from './core/scoreSort'
+import { songCategories, type SongCategory } from './data/categories'
 import { demoScores, type DemoScore } from './data/demo'
 const { t } = useI18n()
 const navigation = [
@@ -64,16 +65,24 @@ const query = ref(''),
     mode = ref('ALL'),
     emptyPreview = ref(false)
 const scores = computed(() => (emptyPreview.value ? [] : demoScores))
-const b30 = computed(() => [...scores.value].sort((a, b) => b.rating - a.rating).slice(0, 30))
+const b30 = computed(() => {
+    const compare = createScoreComparator('rating', 'ja')
+    return [...scores.value].sort((a, b) => compare(b, a)).slice(0, 30)
+})
 const totalRating = computed(() =>
     (
-        Math.floor(b30.value.reduce((sum, s) => sum + Math.round(s.rating * 100), 0) / 30) / 100
+        Math.floor(
+            b30.value.reduce((sum, s) => sum + Math.round(s.rating * 100), 0) /
+                30,
+        ) / 100
     ).toFixed(2),
 )
 const filtered = computed(() =>
     scores.value.filter(
         (s) =>
-            `${s.ja} ${s.en} ${s.artist}`.toLowerCase().includes(query.value.toLowerCase()) &&
+            `${s.ja} ${s.en} ${s.artist}`
+                .toLowerCase()
+                .includes(query.value.toLowerCase()) &&
             (difficulty.value === 'ALL' || s.difficulty === difficulty.value) &&
             (mode.value === 'ALL' || s.mode === mode.value) &&
             (category.value === 'ALL' || s.category === category.value),
@@ -91,13 +100,18 @@ const importDialog = ref<HTMLDialogElement>()
 const importPhase = ref<'processing' | 'success' | 'leaving'>('processing')
 const jobs = ref<ImportJob[]>([])
 const completed = computed(
-    () => jobs.value.filter((j) => j.status === 'success' || j.status === 'failed').length,
+    () =>
+        jobs.value.filter(
+            (j) => j.status === 'success' || j.status === 'failed',
+        ).length,
 )
 const failures = computed(() => jobs.value.filter((j) => j.status === 'failed'))
 const importing = computed(() =>
     jobs.value.some((j) => j.status === 'running' || j.status === 'queued'),
 )
-const importHasErrors = computed(() => !importing.value && failures.value.length > 0)
+const importHasErrors = computed(
+    () => !importing.value && failures.value.length > 0,
+)
 function cancelImport() {
     // 成功后的进度收尾和动画期间，忽略按钮及 Escape 的取消操作。
     if (importing.value || importHasErrors.value) clearJobs()
@@ -123,23 +137,31 @@ function startImport(entries: { name: string; error?: string }[]) {
         if (!job) {
             if (!failures.value.length) {
                 // 先走满进度，再描绘成功图形、停留、淡出，最后显示通知。
-                const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+                const reducedMotion = window.matchMedia(
+                    '(prefers-reduced-motion: reduce)',
+                ).matches
                 const delay = reducedMotion ? 0 : motionTiming.progress + 40
                 timer = setTimeout(() => {
                     importPhase.value = 'success'
-                    const duration = motionTiming.successHold + (reducedMotion
-                        ? 0
-                        : motionTiming.successCircle + motionTiming.successCheck)
+                    const duration =
+                        motionTiming.successHold +
+                        (reducedMotion
+                            ? 0
+                            : motionTiming.successCircle +
+                              motionTiming.successCheck)
                     timer = setTimeout(() => {
                         importPhase.value = 'leaving'
-                        timer = setTimeout(() => {
-                            const count = jobs.value.length
-                            clearJobs()
-                            notify(
-                                `已完成 ${count} 张截图的录入流程演示，未写入成绩。`,
-                                '录入完成',
-                            )
-                        }, reducedMotion ? 0 : motionTiming.successFade)
+                        timer = setTimeout(
+                            () => {
+                                const count = jobs.value.length
+                                clearJobs()
+                                notify(
+                                    `已完成 ${count} 张截图的录入流程演示，未写入成绩。`,
+                                    '录入完成',
+                                )
+                            },
+                            reducedMotion ? 0 : motionTiming.successFade,
+                        )
                     }, duration)
                 }, delay)
             }
@@ -158,11 +180,15 @@ function simulate(withErrors = false) {
         { name: 'FP_result_001.png' },
         {
             name: 'FP_result_002.png',
-            error: withErrors ? '未匹配到曲目。请使用完整、清晰的成绩截图，或手动新增该成绩。' : '',
+            error: withErrors
+                ? '未匹配到曲目。请使用完整、清晰的成绩截图，或手动新增该成绩。'
+                : '',
         },
         {
             name: 'FP_result_003.png',
-            error: withErrors ? '无法解析 Score：分数区域不完整。请重新截取完整成绩画面。' : '',
+            error: withErrors
+                ? '无法解析 Score：分数区域不完整。请重新截取完整成绩画面。'
+                : '',
         },
     ])
 }
@@ -187,6 +213,7 @@ function drop(e: DragEvent) {
 watch(page, () => {
     clearJobs()
     dragging.value = false
+    window.scrollTo({ top: 0, behavior: 'smooth' })
 })
 const deleteDialog = ref<HTMLDialogElement>(),
     deleting = ref<DemoScore | null>(null)
@@ -220,11 +247,19 @@ const filteredSongs = computed(() =>
             .includes(songQuery.value.trim().toLocaleLowerCase()),
     ),
 )
-const currentSong = computed(() => songOptions.find((s) => s.id === selectedSong.value)!)
+const currentSong = computed(
+    () => songOptions.find((s) => s.id === selectedSong.value)!,
+)
 // 原型曲谱目录：提供两种模式，不代表权威曲谱数据
-const chartOptions = computed(() => demoScores.filter((s) => s.ja === currentSong.value.ja))
+const chartOptions = computed(() =>
+    demoScores.filter((s) => s.ja === currentSong.value.ja),
+)
 const currentChart = computed(
-    () => editing.value ?? chartOptions.value.find((s) => s.difficulty === editorDifficulty.value)!,
+    () =>
+        editing.value ??
+        chartOptions.value.find(
+            (s) => s.difficulty === editorDifficulty.value,
+        )!,
 )
 const chartBase = computed(
     () =>
@@ -238,14 +273,21 @@ const validScore = computed(
         Number(inputScore.value) >= 0 &&
         Number(inputScore.value) <= 1050000,
 )
-const liveRank = computed(() => (validScore.value ? getRankByScore(Number(inputScore.value)) : '—'))
-const liveRating = computed(() =>
-    validScore.value ? getChartRating(Number(inputScore.value), chartBase.value).toFixed(2) : '—',
+const liveRank = computed(() =>
+    validScore.value ? getRankByScore(Number(inputScore.value)) : '—',
 )
-const lowered = computed(() => editing.value && Number(inputScore.value) < editing.value.score)
+const liveRating = computed(() =>
+    validScore.value
+        ? getChartRating(Number(inputScore.value), chartBase.value).toFixed(2)
+        : '—',
+)
+const lowered = computed(
+    () => editing.value && Number(inputScore.value) < editing.value.score,
+)
 function openEditor(s?: DemoScore) {
     editing.value = s ?? null
-    selectedSong.value = songOptions.find((song) => song.ja === s?.ja)?.id ?? songOptions[0]!.id
+    selectedSong.value =
+        songOptions.find((song) => song.ja === s?.ja)?.id ?? songOptions[0]!.id
     songQuery.value = ''
     editorMode.value = s?.mode ?? 'ADVANCED'
     editorDifficulty.value = s?.difficulty ?? 'MASTER'
@@ -278,15 +320,21 @@ onUnmounted(() => clearTimeout(toastTimer))
                     :href="`#${n.id}`"
                     :class="['nav-item row gap-3', { active: page === n.id }]"
                     :aria-current="page === n.id ? 'page' : undefined"
-                    ><component :is="n.icon" :size="19" /><span>{{ t(`nav.${n.id}`) }}</span
+                    ><component :is="n.icon" :size="19" /><span>{{
+                        t(`nav.${n.id}`)
+                    }}</span
                     ><span v-if="n.id === 'b30'" class="nav-badge">30</span
                     ><span v-if="page === n.id" class="active-dot"></span
                 ></a>
             </nav>
             <div class="sidebar-bottom">
                 <div class="local-note">
-                    <ShieldCheck :size="20" /><strong>留在本地，专注节奏。</strong>
-                    <p>正式版将在浏览器本地处理截图，<br />只保存你的结构化成绩。</p>
+                    <ShieldCheck :size="20" /><strong
+                        >留在本地，专注节奏。</strong
+                    >
+                    <p>
+                        正式版将在浏览器本地处理截图，<br />只保存你的结构化成绩。
+                    </p>
                     <span>LOCAL FIRST <span class="tiny-dot"></span></span>
                 </div>
                 <div class="sidebar-footer row between">
@@ -299,22 +347,32 @@ onUnmounted(() => clearTimeout(toastTimer))
                 <a
                     href="#home"
                     class="game-identity"
-                    aria-label="Groove Coaster Future Performers B30 首页">
+                    aria-label="Groove Coaster Future Performers B30 首页"
+                >
                     <img
                         class="game-logo"
                         src="/images/gcfp-logo.png"
                         alt="Groove Coaster Future Performers"
                         width="700"
-                        height="296" />
+                        height="296"
+                    />
                     <span class="game-edition">B30</span>
                 </a>
                 <div class="row gap-4">
-                    <span class="preview-pill"><span class="tiny-dot"></span> 界面预览</span
+                    <span class="preview-pill"
+                        ><span class="tiny-dot"></span> 界面预览</span
                     ><button
                         class="icon-button"
-                        :aria-label="isDark ? '切换亮色主题' : '切换深色主题'"
-                        @click="theme = isDark ? 'light' : 'dark'">
-                        <Sun v-if="isDark" :size="19" /><Moon v-else :size="19" />
+                        :aria-label="
+                            isDark ? '切换到浅色主题' : '切换到深色主题'
+                        "
+                        :title="isDark ? '切换到浅色主题' : '切换到深色主题'"
+                        @click="theme = isDark ? 'light' : 'dark'"
+                    >
+                        <Sun v-if="isDark" :size="19" /><Moon
+                            v-else
+                            :size="19"
+                        />
                     </button>
                     <div class="avatar">FP</div>
                 </div>
@@ -334,7 +392,11 @@ onUnmounted(() => clearTimeout(toastTimer))
                             }}
                         </div>
                         <h1>
-                            {{ page === 'home' ? '让每一份成绩，都有迹可循。' : t(`nav.${page}`) }}
+                            {{
+                                page === 'home'
+                                    ? '让每一份成绩，都有迹可循。'
+                                    : t(`nav.${page}`)
+                            }}
                         </h1>
                         <p>
                             {{
@@ -348,37 +410,53 @@ onUnmounted(() => clearTimeout(toastTimer))
                             }}
                         </p>
                     </div>
-                    <button v-if="page === 'scores'" class="button primary" @click="openEditor()">
+                    <button
+                        v-if="page === 'scores'"
+                        class="button primary"
+                        @click="openEditor()"
+                    >
                         <Plus :size="17" /> 手动新增
                     </button>
-                    <div v-if="page === 'home' || page === 'b30'" class="demo-label">
+                    <div
+                        v-if="page === 'home' || page === 'b30'"
+                        class="demo-label"
+                    >
                         DEMO DATA <span>演示数据</span>
                     </div>
                 </div>
 
                 <template v-if="page === 'home' || page === 'b30'">
-                    <section class="stats-grid">
+                    <section v-if="scores.length" class="stats-grid">
                         <article class="rating-card">
                             <div class="row gap-2">
                                 <Activity :size="16" /><span>Groove Rating</span
                                 ><span class="metric-tag">B30</span>
                             </div>
-                            <div class="big-rating">{{ totalRating }}<span>RT</span></div>
-                            <div class="metric-bottom">每一份热爱，都在这里累积 <span>↗</span></div>
+                            <div class="big-rating">
+                                {{ totalRating }}<span>RT</span>
+                            </div>
+                            <div class="metric-bottom">
+                                每一份热爱，都在这里累积 <span>↗</span>
+                            </div>
                             <div class="orbit orbit-one"></div>
                             <div class="orbit orbit-two"></div>
                         </article>
                         <article class="stat-card">
                             <div class="between">
                                 <span>B30 入选谱面</span
-                                ><span class="stat-icon"><Trophy :size="18" /></span>
+                                ><span class="stat-icon"
+                                    ><Trophy :size="18"
+                                /></span>
                             </div>
-                            <div class="stat-value">{{ b30.length }} <span>/ 30</span></div>
+                            <div class="stat-value">
+                                {{ b30.length }} <span>/ 30</span>
+                            </div>
                             <div class="progress-track">
                                 <i
                                     :style="{
                                         width: `${(b30.length / 30) * 100}%`,
-                                    }"></i>
+                                    }"
+                                ></i>
                             </div>
                             <small>{{
                                 b30.length === 30
@@ -389,7 +467,9 @@ onUnmounted(() => clearTimeout(toastTimer))
                         <article class="stat-card">
                             <div class="between">
                                 <span>B30 Floor</span
-                                ><span class="stat-icon amber"><ArrowDownToLine :size="18" /></span>
+                                ><span class="stat-icon amber"
+                                    ><ArrowDownToLine :size="18"
+                                /></span>
                             </div>
                             <div class="stat-value">
                                 {{ b30.at(-1)?.rating.toFixed(2) ?? '—' }}
@@ -401,9 +481,13 @@ onUnmounted(() => clearTimeout(toastTimer))
                         <article class="stat-card">
                             <div class="between">
                                 <span>已收录成绩</span
-                                ><span class="stat-icon blue"><Disc3 :size="18" /></span>
+                                ><span class="stat-icon blue"
+                                    ><Disc3 :size="18"
+                                /></span>
                             </div>
-                            <div class="stat-value">{{ scores.length }} <span>谱面</span></div>
+                            <div class="stat-value">
+                                {{ scores.length }} <span>谱面</span>
+                            </div>
                             <small>每张谱面，保留一份最佳成绩</small
                             ><a href="#scores" class="text-link"
                                 >查看全部成绩 <ArrowRight :size="13"
@@ -420,44 +504,55 @@ onUnmounted(() => clearTimeout(toastTimer))
                                     <Upload :size="18" />
                                     <h2>录入新成绩</h2>
                                 </div>
-                                <span class="micro-label">SCREENSHOT IMPORT</span>
+                                <span class="micro-label"
+                                    >SCREENSHOT IMPORT</span
+                                >
                             </div>
-                            <div
+                            <label
                                 :class="['drop-zone', { dragging }]"
                                 @dragover.prevent="dragging = true"
                                 @dragleave.prevent="dragging = false"
-                                @drop.prevent="drop">
+                                @drop.prevent="drop"
+                            >
                                 <div class="upload-illustration">
                                     <div class="image-sheet back"></div>
                                     <div class="image-sheet">
-                                        <FileImage :size="33" :stroke-width="1.3" /><span
-                                            class="plus-bubble"
-                                            >+</span
-                                        >
+                                        <FileImage
+                                            :size="33"
+                                            :stroke-width="1.3"
+                                        /><span class="plus-bubble">+</span>
                                     </div>
                                 </div>
-                                <h3>把精彩瞬间，拖到这里</h3>
-                                <p>拖入成绩截图，或选择文件开始录入</p>
-                                <button class="button primary" @click="fileInput?.click()">
-                                    <Plus :size="16" /> 选择成绩截图</button
-                                ><input
+                                <h3>拖入或选择成绩截图</h3>
+                                <input
                                     ref="fileInput"
+                                    class="drop-zone-input"
                                     type="file"
                                     accept="image/png,image/jpeg,image/webp"
                                     multiple
-                                    hidden
+                                    aria-label="选择成绩截图"
                                     @change="
-                                        selectFiles(($event.target as HTMLInputElement).files)
-                                    " /><small>PNG / JPG / WebP · 支持多张选择</small>
-                            </div>
+                                        selectFiles(
+                                            ($event.target as HTMLInputElement)
+                                                .files,
+                                        )
+                                    "
+                                /><small>PNG / JPG / WebP · 支持多张选择</small>
+                            </label>
                             <div class="import-foot between">
                                 <span class="row gap-2"
                                     ><ShieldCheck :size="14" />
-                                    截图仅用于当前预览，不上传、不保存</span
-                                ><button class="text-link" @click="simulate(false)">
+                                    仅在本地识别截图、存储数据</span
+                                ><button
+                                    class="text-link"
+                                    @click="simulate(false)"
+                                >
                                     演示成功 <ArrowRight :size="13" />
                                 </button>
-                                <button class="text-link" @click="simulate(true)">
+                                <button
+                                    class="text-link"
+                                    @click="simulate(true)"
+                                >
                                     演示识别错误
                                 </button>
                             </div>
@@ -484,8 +579,11 @@ onUnmounted(() => clearTimeout(toastTimer))
                                     },
                                 ]"
                                 :key="step.title"
-                                class="guide-step">
-                                <span>{{ String(i + 1).padStart(2, '0') }}</span>
+                                class="guide-step"
+                            >
+                                <span>{{
+                                    String(i + 1).padStart(2, '0')
+                                }}</span>
                                 <div>
                                     <h3>{{ step.title }}</h3>
                                     <p>{{ step.text }}</p>
@@ -504,7 +602,9 @@ onUnmounted(() => clearTimeout(toastTimer))
                         <div class="section-title between">
                             <div class="row gap-2">
                                 <h2>成绩一览</h2>
-                                <span class="count-badge">{{ scores.length }}</span
+                                <span class="count-badge">{{
+                                    scores.length
+                                }}</span
                                 ><span class="muted section-subtitle"
                                     >每一个好成绩，都值得再看一眼</span
                                 >
@@ -528,19 +628,28 @@ onUnmounted(() => clearTimeout(toastTimer))
                             /></label>
                             <div class="row gap-2">
                                 <SlidersHorizontal :size="16" />
-                                <select v-model="category" aria-label="筛选歌曲分类">
+                                <select
+                                    v-model="category"
+                                    aria-label="筛选歌曲分类"
+                                >
                                     <option value="ALL">全部分类</option>
                                     <option
                                         v-for="item in songCategories"
                                         :key="item.id"
-                                        :value="item.id">
+                                        :value="item.id"
+                                    >
                                         {{ item[songLanguage] }}
-                                    </option></select
-                                ><select v-model="mode" aria-label="筛选模式">
+                                    </option>
+                                </select>
+                                <select v-model="mode" aria-label="筛选模式">
                                     <option value="ALL">全部模式</option>
                                     <option>BASIC</option>
-                                    <option>ADVANCED</option></select
-                                ><select v-model="difficulty" aria-label="筛选难度">
+                                    <option>ADVANCED</option>
+                                </select>
+                                <select
+                                    v-model="difficulty"
+                                    aria-label="筛选难度"
+                                >
                                     <option value="ALL">全部难度</option>
                                     <option>MASTER</option>
                                     <option>HARD</option>
@@ -559,7 +668,8 @@ onUnmounted(() => clearTimeout(toastTimer))
                             :items="filtered"
                             editable
                             @edit="openEditor"
-                            @remove="openDelete" />
+                            @remove="openDelete"
+                        />
                     </section>
                 </template>
 
@@ -569,15 +679,20 @@ onUnmounted(() => clearTimeout(toastTimer))
                             <div class="row gap-2">
                                 <Trophy :size="18" />
                                 <h2>Best 30</h2>
-                                <span class="count-badge">{{ b30.length }} 谱面</span>
+                                <span class="count-badge"
+                                    >{{ b30.length }} 谱面</span
+                                >
                             </div>
-                            <span class="muted">点击表头排序 · 排名保留 B30 原名次</span>
+                            <span class="muted"
+                                >点击表头排序 · 排名保留 B30 原名次</span
+                            >
                         </div>
                         <ScoreTable :items="b30" ranked />
                     </section>
                     <p class="rating-explainer">
-                        <CircleHelp :size="15" /> 总 RT 为前 30 张谱面 Rating 之和 ÷ 30；不足 30
-                        张时按 0 补足。相同曲目的不同谱面可分别入选。
+                        <CircleHelp :size="15" /> 总 RT 为前 30 张谱面 Rating
+                        之和 ÷ 30；不足 30 张时按 0
+                        补足。相同曲目的不同谱面可分别入选。
                     </p>
                 </template>
 
@@ -594,7 +709,7 @@ onUnmounted(() => clearTimeout(toastTimer))
                                     v-for="option in [
                                         {
                                             id: 'light',
-                                            label: '亮色',
+                                            label: '浅色',
                                             icon: Sun,
                                         },
                                         {
@@ -610,10 +725,14 @@ onUnmounted(() => clearTimeout(toastTimer))
                                     ] as const"
                                     :key="option.id"
                                     :class="{ selected: theme === option.id }"
-                                    @click="theme = option.id">
+                                    @click="theme = option.id"
+                                >
                                     <component :is="option.icon" :size="21" />
                                     <span>{{ option.label }} </span>
-                                    <Check v-if="theme === option.id" :size="13" />
+                                    <Check
+                                        v-if="theme === option.id"
+                                        :size="13"
+                                    />
                                 </button>
                             </div>
                         </div>
@@ -635,12 +754,14 @@ onUnmounted(() => clearTimeout(toastTimer))
                             <div class="segmented">
                                 <button
                                     :class="{ selected: songLanguage === 'ja' }"
-                                    @click="songLanguage = 'ja'">
+                                    @click="songLanguage = 'ja'"
+                                >
                                     日本語
                                 </button>
                                 <button
                                     :class="{ selected: songLanguage === 'en' }"
-                                    @click="songLanguage = 'en'">
+                                    @click="songLanguage = 'en'"
+                                >
                                     English
                                 </button>
                             </div>
@@ -651,14 +772,17 @@ onUnmounted(() => clearTimeout(toastTimer))
                         <div class="setting-row">
                             <div>
                                 <h3>空数据状态</h3>
-                                <p>查看尚未录入成绩时的首页、成绩列表和 B30。</p>
+                                <p>
+                                    查看尚未录入成绩时的首页、成绩列表和 B30。
+                                </p>
                             </div>
                             <button
                                 role="switch"
                                 :aria-checked="emptyPreview"
                                 aria-label="空数据状态"
                                 :class="['switch', { on: emptyPreview }]"
-                                @click="emptyPreview = !emptyPreview">
+                                @click="emptyPreview = !emptyPreview"
+                            >
                                 <span></span>
                             </button>
                         </div>
@@ -691,7 +815,8 @@ onUnmounted(() => clearTimeout(toastTimer))
         <dialog
             ref="dialog"
             class="editor-dialog"
-            @click="$event.target === dialog && dialog?.close()">
+            @click="$event.target === dialog && dialog?.close()"
+        >
             <form @submit.prevent="previewSave">
                 <div class="between">
                     <div>
@@ -702,7 +827,8 @@ onUnmounted(() => clearTimeout(toastTimer))
                         type="button"
                         class="icon-button"
                         aria-label="关闭弹窗"
-                        @click="dialog?.close()">
+                        @click="dialog?.close()"
+                    >
                         <X :size="20" />
                     </button>
                 </div>
@@ -720,17 +846,26 @@ onUnmounted(() => clearTimeout(toastTimer))
                             type="search"
                             placeholder="输入日文 / 英文曲名或艺术家"
                     /></label>
-                    <div v-if="!editing" class="song-options" aria-label="曲目搜索结果">
+                    <div
+                        v-if="!editing"
+                        class="song-options"
+                        aria-label="曲目搜索结果"
+                    >
                         <button
                             v-for="song in filteredSongs"
                             :key="song.id"
                             type="button"
                             :class="{ selected: selectedSong === song.id }"
                             :aria-pressed="selectedSong === song.id"
-                            @click="selectedSong = song.id">
+                            @click="selectedSong = song.id"
+                        >
                             <span
-                                >{{ song[songLanguage] }}<small>{{ song.artist }}</small></span
-                            ><Check v-if="selectedSong === song.id" :size="16" />
+                                >{{ song[songLanguage]
+                                }}<small>{{ song.artist }}</small></span
+                            ><Check
+                                v-if="selectedSong === song.id"
+                                :size="16"
+                            />
                         </button>
                         <p v-if="!filteredSongs.length" class="form-note">
                             未找到匹配曲目，试试其他关键词。已选曲目保持不变。
@@ -753,7 +888,8 @@ onUnmounted(() => clearTimeout(toastTimer))
                             type="button"
                             :aria-pressed="editorMode === item.id"
                             :class="{ selected: editorMode === item.id }"
-                            @click="editorMode = item.id">
+                            @click="editorMode = item.id"
+                        >
                             {{ item.label }}
                         </button>
                     </div>
@@ -765,9 +901,14 @@ onUnmounted(() => clearTimeout(toastTimer))
                             v-for="chart in chartOptions"
                             :key="chart.id"
                             type="button"
-                            :aria-pressed="editorDifficulty === chart.difficulty"
-                            :class="{ selected: editorDifficulty === chart.difficulty }"
-                            @click="editorDifficulty = chart.difficulty">
+                            :aria-pressed="
+                                editorDifficulty === chart.difficulty
+                            "
+                            :class="{
+                                selected: editorDifficulty === chart.difficulty,
+                            }"
+                            @click="editorDifficulty = chart.difficulty"
+                        >
                             {{ chart.difficulty }} {{ chart.level }}
                         </button>
                     </div>
@@ -787,22 +928,33 @@ onUnmounted(() => clearTimeout(toastTimer))
                     </div>
                     <div>
                         <small>歌曲定数 → 单曲 Rating</small
-                        ><strong>{{ chartBase.toFixed(1) }} <span>→</span> {{ liveRating }}</strong>
+                        ><strong
+                            >{{ chartBase.toFixed(1) }} <span>→</span>
+                            {{ liveRating }}</strong
+                        >
                     </div>
                 </div>
-                <p v-if="!validScore" class="error">请输入 0～1,050,000 范围内的整数。</p>
+                <p v-if="!validScore" class="error">
+                    请输入 0～1,050,000 范围内的整数。
+                </p>
                 <p v-if="lowered" class="warning">
-                    将调低「{{ editing?.[songLanguage] }}」的成绩，正式保存时 Rank 与 Rating
-                    会重新计算。
+                    将调低「{{ editing?.[songLanguage] }}」的成绩，正式保存时
+                    Rank 与 Rating 会重新计算。
                 </p>
                 <div class="form-note">
                     Rank 与 Rating 随 Score
                     实时计算。谱面定数为演示配置；当前仅预览表单，不会保存成绩。
                 </div>
                 <div class="dialog-actions">
-                    <button type="button" class="button secondary" @click="dialog?.close()">
+                    <button
+                        type="button"
+                        class="button secondary"
+                        @click="dialog?.close()"
+                    >
                         取消</button
-                    ><button class="button primary" :disabled="!validScore">预览保存</button>
+                    ><button class="button primary" :disabled="!validScore">
+                        预览保存
+                    </button>
                 </div>
             </form>
         </dialog>
@@ -812,75 +964,89 @@ onUnmounted(() => clearTimeout(toastTimer))
             :class="{ 'import-dialog-leaving': importPhase === 'leaving' }"
             :style="{ '--success-fade': `${motionTiming.successFade}ms` }"
             aria-labelledby="import-title"
-            @cancel.prevent="cancelImport()">
-            <div v-if="importPhase !== 'processing'" class="import-success" role="status">
+            @cancel.prevent="cancelImport()"
+        >
+            <div
+                v-if="importPhase !== 'processing'"
+                class="import-success"
+                role="status"
+            >
                 <AnimatedSuccess />
                 <h2 id="import-title">录入完成</h2>
                 <p>已处理全部 {{ jobs.length }} 张截图</p>
                 <small>本次为流程演示，未写入成绩</small>
             </div>
             <template v-else>
-            <div class="between">
-                <div>
-                    <div class="eyebrow">SCREENSHOT IMPORT</div>
-                    <h2 id="import-title">
-                        {{
-                            importHasErrors ? '部分图片识别失败' : '正在录入成绩'
-                        }}
-                    </h2>
-                </div>
-            </div>
-            <p class="muted">当前为流程演示，不执行真实 OCR，也不会写入成绩。</p>
-            <div class="between import-counter" aria-live="polite">
-                <strong v-if="importHasErrors" class="error">
-                    识别错误：{{ failures.length }} / {{ jobs.length }}
-                </strong>
-                <span v-else>{{ completed }} / {{ jobs.length }} 已处理</span>
-            </div>
-            <AnimatedProgress :value="completed" :max="jobs.length" />
-            <div class="import-results">
-                <article
-                    v-for="job in jobs"
-                    :key="job.index"
-                    class="import-result"
-                    :class="job.status">
-                    <div class="between">
-                        <strong>#{{ job.index }} · {{ job.name }}</strong
-                        ><span class="row gap-2"
-                            ><LoaderCircle
-                                v-if="job.status === 'running'"
-                                class="spin"
-                                :size="15" />{{
-                                job.status === 'queued'
-                                    ? '排队中'
-                                    : job.status === 'running'
-                                      ? '识别中'
-                                      : job.status === 'failed'
-                                        ? '识别错误'
-                                        : '演示成功'
-                            }}</span
-                        >
+                <div class="between">
+                    <div>
+                        <div class="eyebrow">SCREENSHOT IMPORT</div>
+                        <h2 id="import-title">
+                            {{
+                                importHasErrors
+                                    ? '部分图片识别失败'
+                                    : '正在录入成绩'
+                            }}
+                        </h2>
                     </div>
-                    <p v-if="job.status === 'failed'">{{ job.error }}</p>
-                </article>
-            </div>
-            <p class="form-note">
-                {{
-                    importHasErrors
-                        ? `成功 ${jobs.length - failures.length} 张，失败 ${failures.length} 张。失败图片不会生成成绩，可以重新选择图片或手动新增。`
-                        : '关闭弹窗将取消未完成任务。'
-                }}
-            </p>
-            <div class="dialog-actions">
-                <button class="button secondary" @click="cancelImport()">
-                    {{ importHasErrors ? '关闭' : '取消识别' }}</button
-                ><button
-                    v-if="importHasErrors"
-                    class="button primary"
-                    @click="(clearJobs(), openEditor())">
-                    手动新增
-                </button>
-            </div>
+                </div>
+                <p class="muted">
+                    当前为流程演示，不执行真实 OCR，也不会写入成绩。
+                </p>
+                <div class="between import-counter" aria-live="polite">
+                    <strong v-if="importHasErrors" class="error">
+                        识别错误：{{ failures.length }} / {{ jobs.length }}
+                    </strong>
+                    <span v-else
+                        >{{ completed }} / {{ jobs.length }} 已处理</span
+                    >
+                </div>
+                <AnimatedProgress :value="completed" :max="jobs.length" />
+                <div class="import-results">
+                    <article
+                        v-for="job in jobs"
+                        :key="job.index"
+                        class="import-result"
+                        :class="job.status"
+                    >
+                        <div class="between">
+                            <strong>#{{ job.index }} · {{ job.name }}</strong
+                            ><span class="row gap-2"
+                                ><LoaderCircle
+                                    v-if="job.status === 'running'"
+                                    class="spin"
+                                    :size="15"
+                                />{{
+                                    job.status === 'queued'
+                                        ? '排队中'
+                                        : job.status === 'running'
+                                          ? '识别中'
+                                          : job.status === 'failed'
+                                            ? '识别错误'
+                                            : '演示成功'
+                                }}</span
+                            >
+                        </div>
+                        <p v-if="job.status === 'failed'">{{ job.error }}</p>
+                    </article>
+                </div>
+                <p class="form-note">
+                    {{
+                        importHasErrors
+                            ? `成功 ${jobs.length - failures.length} 张，失败 ${failures.length} 张。失败图片不会生成成绩，可以重新选择图片或手动新增。`
+                            : '关闭弹窗将取消未完成任务。'
+                    }}
+                </p>
+                <div class="dialog-actions">
+                    <button class="button secondary" @click="cancelImport()">
+                        {{ importHasErrors ? '关闭' : '取消识别' }}</button
+                    ><button
+                        v-if="importHasErrors"
+                        class="button primary"
+                        @click="(clearJobs(), openEditor())"
+                    >
+                        手动新增
+                    </button>
+                </div>
             </template>
         </dialog>
         <dialog ref="deleteDialog" class="editor-dialog">
@@ -894,24 +1060,37 @@ onUnmounted(() => clearTimeout(toastTimer))
                 会重新计算。当前仅预览确认流程，不会删除演示数据。
             </div>
             <div class="dialog-actions">
-                <button class="button secondary" @click="deleteDialog?.close()">保留成绩</button>
+                <button class="button secondary" @click="deleteDialog?.close()">
+                    保留成绩
+                </button>
                 <button
                     class="button primary"
                     @click="
-                        (deleteDialog?.close(), notify('删除确认流程演示完成，示例成绩保持不变。'))
-                    ">
+                        (deleteDialog?.close(),
+                        notify('删除确认流程演示完成，示例成绩保持不变。'))
+                    "
+                >
                     预览删除
                 </button>
             </div>
         </dialog>
         <CardTransition variant="notice" v-slot="{ motionStyle }">
-            <div v-if="toast" role="status" class="toast row gap-3" :style="motionStyle">
+            <div
+                v-if="toast"
+                role="status"
+                class="toast row gap-3"
+                :style="motionStyle"
+            >
                 <CheckCircle2 :size="19" />
                 <div class="notification-copy">
                     <strong>{{ toastTitle }}</strong
                     ><span>{{ toast }}</span>
                 </div>
-                <button class="icon-button" aria-label="关闭提示" @click="toast = ''">
+                <button
+                    class="icon-button"
+                    aria-label="关闭提示"
+                    @click="toast = ''"
+                >
                     <X :size="16" />
                 </button>
             </div>

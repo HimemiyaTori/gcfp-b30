@@ -95,6 +95,8 @@ const songs = [
         '#6d7ca0',
         'N',
     ],
+
+    ['TEST', 'test', 'ビートまりお', '14', 1036500, 15.82, '#458b80', 'T'],
 ] as const
 export const demoScores: DemoScore[] = Array.from({ length: 32 }, (_, i) => {
     const s = songs[i % songs.length]!
@@ -104,7 +106,18 @@ export const demoScores: DemoScore[] = Array.from({ length: 32 }, (_, i) => {
         ja: s[0],
         en: s[1],
         artist: s[2],
-        category: (['original', 'original', 'original', 'touhou', 'music-game', 'original', 'virtual-singer', 'touhou'] as const)[i % songs.length]!,
+        category: (
+            [
+                'original',
+                'original',
+                'original',
+                'touhou',
+                'music-game',
+                'original',
+                'virtual-singer',
+                'touhou',
+            ] as const
+        )[i % songs.length]!,
         difficulty:
             group === 0
                 ? 'MASTER'

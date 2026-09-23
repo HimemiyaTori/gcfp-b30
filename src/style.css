@@ -17,7 +17,12 @@
         #83b8ef 48%,
         var(--brand-pink) 100%
     );
-    --soft-gradient: linear-gradient(115deg, #ebfaff 0%, #f3f3fd 52%, #fff0f8 100%);
+    --soft-gradient: linear-gradient(
+        115deg,
+        #ebfaff 0%,
+        #f3f3fd 52%,
+        #fff0f8 100%
+    );
     --soft: #eaf5ff;
     --field: #f8f9fd;
     --shadow: 0 3px 14px #2935621f;
@@ -486,20 +491,51 @@ h2 {
 .import-panel .section-title {
     padding-bottom: 17px;
 }
+.import-panel {
+    display: flex;
+    flex-direction: column;
+}
 .drop-zone {
+    position: relative;
+    flex: 1;
+    min-height: 230px;
     margin: 0 22px;
     background: var(--field);
     border: 1px dashed #bdd2eb;
     border-radius: 8px;
     display: flex;
     align-items: center;
+    justify-content: center;
     flex-direction: column;
     padding: 26px 20px 24px;
     transition: background 0.2s;
+    cursor: pointer;
+    text-align: center;
 }
 .drop-zone.dragging {
     background: var(--soft);
     border-color: var(--accent);
+}
+.drop-zone:hover {
+    border-color: var(--accent);
+}
+.drop-zone:focus-within {
+    outline: 3px solid #68bce9;
+    outline-offset: 3px;
+}
+.drop-zone-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
 }
 .upload-illustration {
     height: 63px;
@@ -538,19 +574,17 @@ h2 {
     border-radius: 50%;
     background: var(--brand-gradient);
     color: white;
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border: 3px solid var(--field);
     font-size: 15px;
+    line-height: 1;
 }
 .drop-zone h3 {
     font-size: 17px;
     font-weight: 550;
-}
-.drop-zone p {
-    font-size: 12px;
-    color: var(--muted);
-    margin: 10px 0 20px;
+    margin-bottom: 20px;
 }
 .button {
     display: inline-flex;
@@ -703,7 +737,11 @@ h2 {
     width: 38px;
     height: 38px;
     border-radius: 5px;
-    background: linear-gradient(145deg, color-mix(in srgb, var(--art), white 20%), var(--art));
+    background: linear-gradient(
+        145deg,
+        color-mix(in srgb, var(--art), white 20%),
+        var(--art)
+    );
     color: #ffffffc9;
     display: grid;
     place-items: center;
