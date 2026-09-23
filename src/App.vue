@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {
     Activity,
-    ArrowDownToLine,
     ArrowRight,
     Check,
     CheckCircle2,
@@ -323,7 +322,10 @@ onUnmounted(() => clearTimeout(toastTimer))
                     ><component :is="n.icon" :size="19" /><span>{{
                         t(`nav.${n.id}`)
                     }}</span
-                    ><span v-if="n.id === 'b30'" class="nav-badge">30</span
+                    ><span
+                        v-if="n.id === 'b30' && scores.length > 0 && scores.length < 30"
+                        class="nav-badge"
+                        >{{ scores.length }}</span
                     ><span v-if="page === n.id" class="active-dot"></span
                 ></a>
             </nav>
@@ -430,53 +432,23 @@ onUnmounted(() => clearTimeout(toastTimer))
                         <article class="rating-card">
                             <div class="row gap-2">
                                 <Activity :size="16" /><span>Groove Rating</span
-                                ><span class="metric-tag">B30</span>
+                                ><span class="metric-tag">B{{ Math.min(scores.length, 30) }}</span>
                             </div>
-                            <div class="big-rating">
-                                {{ totalRating }}<span>RT</span>
+                            <div class="rating-values">
+                                <div class="big-rating">
+                                    {{ totalRating }}<span>RT</span>
+                                </div>
+                                <div class="rating-floor">
+                                    <span>Floor</span>
+                                    <strong>{{ b30.at(-1)?.rating.toFixed(2) ?? '—' }}</strong>
+                                    <span>RT</span>
+                                </div>
                             </div>
                             <div class="metric-bottom">
                                 每一份热爱，都在这里累积 <span>↗</span>
                             </div>
                             <div class="orbit orbit-one"></div>
                             <div class="orbit orbit-two"></div>
-                        </article>
-                        <article class="stat-card">
-                            <div class="between">
-                                <span>B30 入选谱面</span
-                                ><span class="stat-icon"
-                                    ><Trophy :size="18"
-                                /></span>
-                            </div>
-                            <div class="stat-value">
-                                {{ b30.length }} <span>/ 30</span>
-                            </div>
-                            <div class="progress-track">
-                                <i
-                                    :style="{
-                                        width: `${(b30.length / 30) * 100}%`,
-                                    }"
-                                ></i>
-                            </div>
-                            <small>{{
-                                b30.length === 30
-                                    ? '你的最佳表现，已全部就位'
-                                    : '不足 30 张谱面时，总 RT 仍除以 30'
-                            }}</small>
-                        </article>
-                        <article class="stat-card">
-                            <div class="between">
-                                <span>B30 Floor</span
-                                ><span class="stat-icon amber"
-                                    ><ArrowDownToLine :size="18"
-                                /></span>
-                            </div>
-                            <div class="stat-value">
-                                {{ b30.at(-1)?.rating.toFixed(2) ?? '—' }}
-                                <span>RT</span>
-                            </div>
-                            <small>B30 最后一张谱面的 Rating</small>
-                            <div class="subtle-note">向着下一个突破点前进</div>
                         </article>
                         <article class="stat-card">
                             <div class="between">

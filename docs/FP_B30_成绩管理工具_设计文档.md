@@ -223,29 +223,11 @@ src/locales/
 
 未手动选择曲目信息语言时，按UI语言独立决定默认值：简体中文、繁体中文、日语UI默认日语，英语UI默认英语。用户手动选择日语 / 英语后，优先使用并持久化该设置。
 
-曲目信息类型（与第 6.2 节保持一致）：
+曲目信息类型见第 6.2 节，统一通过 helper 获取，如：
 
 ```ts
-interface LocalizedText {
-    ja: string
-    en: string
-}
-```
-
-```ts
-interface Song {
-    id: string
-    title: LocalizedText
-    artist: LocalizedText
-    vocal: LocalizedText
-}
-```
-
-统一通过 helper 获取：
-
-```ts
-getSongTitle(song)
-getSongArtist(song)
+getSongTitle(song, lang)
+getSongArtist(song, lang)
 ```
 
 曲库保证 `title`、`artist`、`vocal` 均存在。不作为可选字段，也不以缺失字段的语言回退作为正常展示流程。
@@ -348,16 +330,16 @@ interface Song {
         en: string
     }
 
-    vocal: {
+    vocal?: {
         ja: string
         en: string
     }
 
-    // 部分歌曲有 BPM 范围，此时 bpm 作为最小值。若 bpmMax 为空表示 BPM 固定。
+    // 部分歌曲有 BPM 范围，此时 bpm 作为最小值。若 bpmMax 不存在表示 BPM 固定。
     bpm: number
     bpmMax?: number
 
-    // 歌曲分类，保存固定 ID；显示名称见下表
+    // 歌曲分类，保存固定 ID
     genre:
         | 'anime-pop'
         | 'vtuber'
@@ -366,8 +348,11 @@ interface Song {
         | 'music-game'
         | 'original'
 
-    // 曲包：为空时属于游戏内免费曲包；有值时为 DLC 曲包名称
+    // 曲包：不存在时属于游戏内免费曲包；为"story"则是剧情解锁，其他值为 DLC 曲包名称
     pack?: string
+
+    // 歌曲更新时间，不存在为游戏发售时即有，一般格式为"DLC Update #3: 2025-11-13"或"Free Update #9: 2026-08-06"
+    updateAt?: string
 
     searchAliases?: string[]
 
@@ -412,6 +397,7 @@ level 为谱面定数表示；整数代表普通等级，.5 代表游戏中的 +
 `pack` 表示歌曲所属的曲包，与 `category` 歌曲分类是两个独立属性。
 
 - `pack` 为空（未提供该可选字段或值为空字符串）时，表示歌曲属于游戏内的免费曲包。
+- `pack` 为 "story" 时，表示歌曲为剧情解锁曲目。
 - `pack` 有值时，其值为该歌曲所属的 **DLC 曲包名称**。
 - 当前类型为可选字符串 `pack?: string`；不使用 `null` 表示空值。
 
@@ -424,16 +410,16 @@ level 为谱面定数表示；整数代表普通等级，.5 代表游戏中的 +
 
 ```text
 FREE CONNECTION 2 -G.C.スペシャルエディットVer.-
+归一化（暂定）：free connection 2 gcスペシャルエディットver
 ↓
-FREE CONNECTION 2 GCスペシャルエディットVer、
-FREE CONNECTION 2 GC スペシャルエディット Ver、
-FREE CONNECTION 2 GC スペシャル エディット Ver
+free connection 2 gc スペシャルエディット ver
+free connection 2 gc スペシャル エディット ver
 ```
 
 ```text
 Wire&Ring
 ↓
-wirering、
+wire ring
 wire and ring
 ```
 
@@ -441,6 +427,8 @@ wire and ring
 1nfinite 5tellar Chronicle
 ↓
 infinite stellar chronicle
+1nfinite stellar chronicle
+infinite 5tellar chronicle
 ```
 
 ```text
@@ -449,11 +437,18 @@ III
 3
 ```
 
+```text
+Destr0yer
+↓
+destroyer
+d0
+```
+
 #### （2）归一化
 
 为了提高 OCR 与手动搜索命中率，应在进入 Fuse.js 前统一 normalize。
 
-建议处理：
+需要处理：
 
 - Unicode normalize
 - 英文字母转小写
@@ -465,13 +460,13 @@ III
 例如：
 
 ```text
-ouroboros -twin stroke of the end-
+Ex-Otogibanashi (Anime ver.)
 ```
 
 归一化后：
 
 ```text
-ouroboros twin stroke of the end
+exotogibanashi anime ver
 ```
 
 ---
@@ -712,7 +707,7 @@ OCR 重复录入策略：
 
 ```ts
 interface ScoreRecord {
-    id?: number
+    id: number
 
     songId: string
     chartId: string
