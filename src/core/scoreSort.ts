@@ -1,7 +1,7 @@
 import type { DemoScore } from '../data/demo'
 import { getRankByScore } from './rating/rank'
 
-export type ScoreSortKey = 'title' | 'difficulty' | 'level' | 'score' | 'rank' | 'rating'
+export type ScoreSortKey = 'title' | 'difficulty' | 'level' | 'score' | 'rank' | 'rating' | 'updatedAt'
 
 const difficulties = ['EASY', 'NORMAL', 'HARD', 'MASTER']
 const ranks = ['E', 'D', 'C', 'B', 'A', 'AA', 'AAA', 'S', 'S+', 'SS', 'SS+', 'SSS', 'SSS+']
@@ -34,6 +34,7 @@ export function createScoreComparator(
                 return primaryOnly ? rank : rank || score || rating || level || difficulty || mode || title
             }
             case 'rating': return primaryOnly ? rating : rating || score || level || difficulty || mode || title
+            case 'updatedAt': return a.updatedAt - b.updatedAt
         }
     }
 }

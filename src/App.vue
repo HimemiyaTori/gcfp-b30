@@ -14,10 +14,8 @@ import {
     Moon,
     Music2,
     Plus,
-    Search,
     Settings2,
     ShieldCheck,
-    SlidersHorizontal,
     Sparkles,
     Sun,
     Trophy,
@@ -30,12 +28,13 @@ import AnimatedProgress from './components/common/AnimatedProgress.vue'
 import AnimatedSuccess from './components/common/AnimatedSuccess.vue'
 import CardTransition from './components/common/CardTransition.vue'
 import { motionTiming } from './components/common/motion'
+import ScoreFilters from './components/ScoreFilters.vue'
 import ScoreTable from './components/ScoreTable.vue'
 import { isDark, songLanguage, theme } from './composables/useSettings'
 import { getChartRating } from './core/rating/calculator'
 import { getRankByScore } from './core/rating/rank'
 import { createScoreComparator } from './core/scoreSort'
-import { songCategories, type SongCategory } from './data/categories'
+import type { SongCategory } from './data/categories'
 import { demoScores, type DemoScore } from './data/demo'
 const { t } = useI18n()
 const navigation = [
@@ -63,6 +62,10 @@ const query = ref(''),
     difficulty = ref('ALL'),
     mode = ref('ALL'),
     emptyPreview = ref(false)
+const b30Query = ref(''),
+    b30Difficulty = ref('ALL'),
+    b30Mode = ref('ALL'),
+    b30Category = ref<SongCategory | 'ALL'>('ALL')
 const scores = computed(() => (emptyPreview.value ? [] : demoScores))
 const b30 = computed(() => {
     const compare = createScoreComparator('rating', 'ja')
@@ -76,15 +79,34 @@ const totalRating = computed(() =>
         ) / 100
     ).toFixed(2),
 )
-const filtered = computed(() =>
-    scores.value.filter(
+function filterScores(
+    items: DemoScore[],
+    search: string,
+    selectedCategory: SongCategory | 'ALL',
+    selectedMode: string,
+    selectedDifficulty: string,
+) {
+    const term = search.toLowerCase()
+    return items.filter(
         (s) =>
             `${s.ja} ${s.en} ${s.artist}`
                 .toLowerCase()
-                .includes(query.value.toLowerCase()) &&
-            (difficulty.value === 'ALL' || s.difficulty === difficulty.value) &&
-            (mode.value === 'ALL' || s.mode === mode.value) &&
-            (category.value === 'ALL' || s.category === category.value),
+                .includes(term) &&
+            (selectedDifficulty === 'ALL' || s.difficulty === selectedDifficulty) &&
+            (selectedMode === 'ALL' || s.mode === selectedMode) &&
+            (selectedCategory === 'ALL' || s.category === selectedCategory),
+    )
+}
+const filtered = computed(() =>
+    filterScores(scores.value, query.value, category.value, mode.value, difficulty.value),
+)
+const filteredB30 = computed(() =>
+    filterScores(
+        b30.value,
+        b30Query.value,
+        b30Category.value,
+        b30Mode.value,
+        b30Difficulty.value,
     ),
 )
 const fileInput = ref<HTMLInputElement>(),
@@ -591,51 +613,19 @@ onUnmounted(() => clearTimeout(toastTimer))
 
                 <template v-if="page === 'scores'">
                     <section class="panel">
-                        <div class="filter-bar">
-                            <label class="search-field"
-                                ><Search :size="17" /><input
-                                    v-model="query"
-                                    placeholder="搜索日文 / 英文曲名、艺术家"
-                                    aria-label="搜索成绩"
-                            /></label>
+                        <div class="section-title between">
                             <div class="row gap-2">
-                                <SlidersHorizontal :size="16" />
-                                <select
-                                    v-model="category"
-                                    aria-label="筛选歌曲分类"
-                                >
-                                    <option value="ALL">全部分类</option>
-                                    <option
-                                        v-for="item in songCategories"
-                                        :key="item.id"
-                                        :value="item.id"
-                                    >
-                                        {{ item[songLanguage] }}
-                                    </option>
-                                </select>
-                                <select v-model="mode" aria-label="筛选模式">
-                                    <option value="ALL">全部模式</option>
-                                    <option>BASIC</option>
-                                    <option>ADVANCED</option>
-                                </select>
-                                <select
-                                    v-model="difficulty"
-                                    aria-label="筛选难度"
-                                >
-                                    <option value="ALL">全部难度</option>
-                                    <option>MASTER</option>
-                                    <option>HARD</option>
-                                    <option>NORMAL</option>
-                                    <option>EASY</option>
-                                </select>
+                                <ListMusic :size="18" />
+                                <h2>成绩一览</h2>
                             </div>
+                            <span class="count-badge">共 {{ scores.length }} 张谱面</span>
                         </div>
-                        <div class="list-meta between">
-                            <span
-                                >共 {{ filtered.length }} 张谱面
-                                <span class="muted">· 当前最高成绩</span></span
-                            ><span class="demo-label">演示数据</span>
-                        </div>
+                        <ScoreFilters
+                            v-model:query="query"
+                            v-model:category="category"
+                            v-model:mode="mode"
+                            v-model:difficulty="difficulty"
+                        />
                         <ScoreTable
                             :items="filtered"
                             editable
@@ -651,15 +641,16 @@ onUnmounted(() => clearTimeout(toastTimer))
                             <div class="row gap-2">
                                 <Trophy :size="18" />
                                 <h2>Best 30</h2>
-                                <span class="count-badge"
-                                    >{{ b30.length }} 谱面</span
-                                >
                             </div>
-                            <span class="muted"
-                                >点击表头排序 · 排名保留 B30 原名次</span
-                            >
+                            <span class="count-badge">共 {{ b30.length }} 张谱面</span>
                         </div>
-                        <ScoreTable :items="b30" ranked />
+                        <ScoreFilters
+                            v-model:query="b30Query"
+                            v-model:category="b30Category"
+                            v-model:mode="b30Mode"
+                            v-model:difficulty="b30Difficulty"
+                        />
+                        <ScoreTable :items="filteredB30" :position-items="b30" ranked />
                     </section>
                     <p class="rating-explainer">
                         <CircleHelp :size="15" /> 总 RT 为前 30 张谱面 Rating

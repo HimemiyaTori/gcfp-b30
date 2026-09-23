@@ -1,16 +1,46 @@
 <script setup lang="ts">
 import { ArrowDown, ArrowUp, ArrowUpDown, Music2, Pencil, Trash2 } from 'lucide-vue-next'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { songLanguage } from '../composables/useSettings'
 import { getRankByScore } from '../core/rating/rank'
 import { createScoreComparator, type ScoreSortKey } from '../core/scoreSort'
 import type { DemoScore } from '../data/demo'
-const props = defineProps<{ items: DemoScore[]; ranked?: boolean; editable?: boolean }>()
+const props = defineProps<{
+    items: DemoScore[]
+    positionItems?: DemoScore[]
+    ranked?: boolean
+    editable?: boolean
+}>()
 defineEmits<{ edit: [score: DemoScore]; remove: [score: DemoScore] }>()
 type SortKey = 'position' | ScoreSortKey
-const sortKey = ref<SortKey>(props.ranked ? 'position' : 'score')
+const sortKey = ref<SortKey>(
+    props.ranked ? 'position' : props.editable ? 'updatedAt' : 'score',
+)
 const ascending = ref(props.ranked ?? false)
-const positions = computed(() => new Map(props.items.map((s, i) => [s.id, i + 1])))
+const monthDayFormatter = new Intl.DateTimeFormat('zh-CN', {
+    month: 'numeric',
+    day: 'numeric',
+})
+const fullDateFormatter = new Intl.DateTimeFormat('zh-CN', {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+})
+const timeFormatter = new Intl.DateTimeFormat('zh-CN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+})
+function formatUpdatedDate(timestamp: number) {
+    const date = new Date(timestamp)
+    return (date.getFullYear() === new Date().getFullYear()
+        ? monthDayFormatter
+        : fullDateFormatter
+    ).format(date)
+}
+const positions = computed(() =>
+    new Map((props.positionItems ?? props.items).map((s, i) => [s.id, i + 1])),
+)
 const columns = computed(() => [
     ...(props.ranked ? [{ keys: ['position'], labels: ['排名'], numeric: false }] : []),
     { keys: ['title'], labels: ['曲目'], numeric: false },
@@ -18,6 +48,9 @@ const columns = computed(() => [
     { keys: ['score'], labels: ['Score'], numeric: true },
     { keys: ['rank'], labels: ['Rank'], numeric: true },
     { keys: ['rating'], labels: ['Rating'], numeric: true },
+    ...(props.editable || props.ranked
+        ? [{ keys: ['updatedAt'], labels: ['更新时间'], numeric: false }]
+        : []),
 ])
 function toggleSort(key: string) {
     if (sortKey.value === key) ascending.value = !ascending.value
@@ -39,6 +72,18 @@ const sortedItems = computed(() => {
         .sort((a, b) => compare(a.item, b.item) * direction || a.index - b.index)
         .map(({ item }) => item)
 })
+const pageSize = 30
+const currentPage = ref(1)
+const pageCount = computed(() => Math.ceil(sortedItems.value.length / pageSize))
+const visibleItems = computed(() =>
+    props.editable
+        ? sortedItems.value.slice(
+              (currentPage.value - 1) * pageSize,
+              currentPage.value * pageSize,
+          )
+        : sortedItems.value,
+)
+watch([() => props.items, sortKey, ascending], () => (currentPage.value = 1))
 </script>
 <template>
     <div class="table-scroll">
@@ -59,7 +104,7 @@ const sortedItems = computed(() => {
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="s in sortedItems" :key="s.id">
+                <tr v-for="s in visibleItems" :key="s.id">
                     <td
                         v-if="ranked"
                         class="position"
@@ -94,6 +139,12 @@ const sortedItems = computed(() => {
                         <span class="rank">{{ getRankByScore(s.score) }}</span>
                     </td>
                     <td class="num rating-num">{{ s.rating.toFixed(2) }}</td>
+                    <td v-if="editable || ranked" class="updated-at">
+                        <time :datetime="new Date(s.updatedAt).toISOString()">
+                            <span class="updated-date">{{ formatUpdatedDate(s.updatedAt) }}</span>
+                            <span class="updated-time">{{ timeFormatter.format(s.updatedAt) }}</span>
+                        </time>
+                    </td>
                     <td v-if="editable">
                         <button
                             class="icon-button"
@@ -116,4 +167,24 @@ const sortedItems = computed(() => {
             <p>试试其他筛选条件，或录入你的第一份成绩。</p>
         </div>
     </div>
+    <nav
+        v-if="editable && pageCount > 1"
+        class="table-pagination"
+        aria-label="成绩分页">
+        <span>第 {{ currentPage }} / {{ pageCount }} 页</span>
+        <div class="row gap-2">
+            <button
+                type="button"
+                :disabled="currentPage === 1"
+                @click="currentPage--">
+                上一页
+            </button>
+            <button
+                type="button"
+                :disabled="currentPage === pageCount"
+                @click="currentPage++">
+                下一页
+            </button>
+        </div>
+    </nav>
 </template>

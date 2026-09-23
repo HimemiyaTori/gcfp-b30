@@ -832,6 +832,20 @@ h2 {
     color: var(--accent);
     font-weight: 650;
 }
+.score-table .updated-at {
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+}
+.score-table .updated-date {
+    color: var(--text);
+    font-weight: 600;
+}
+.dark .score-table .updated-date {
+    color: #fff;
+}
+.score-table .updated-time {
+    margin-left: 5px;
+}
 .score-table .position {
     padding-right: 0;
     width: 50px;
@@ -858,7 +872,6 @@ h2 {
     display: flex;
     justify-content: space-between;
     gap: 15px;
-    border-bottom: 1px solid var(--line);
 }
 .search-field {
     display: flex;
@@ -892,9 +905,30 @@ input::placeholder {
 .filter-bar > .row {
     color: var(--muted);
 }
-.list-meta {
-    padding: 15px 24px;
+.table-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
     font-size: 12px;
+}
+.table-pagination button {
+    padding: 7px 12px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--field);
+    color: var(--text);
+}
+.table-pagination button:not(:disabled):hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+.table-pagination button:disabled {
+    cursor: not-allowed;
+    opacity: .45;
 }
 .rating-explainer {
     display: flex;
@@ -1429,7 +1463,7 @@ input::placeholder {
         flex: 1;
         min-width: 0;
     }
-    .list-meta {
+    .table-pagination {
         padding: 15px 17px;
     }
     .setting-row {
