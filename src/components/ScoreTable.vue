@@ -31,11 +31,9 @@ const sortedItems = computed(() => {
         return ascending.value ? [...props.items] : [...props.items].reverse()
     }
     const direction = ascending.value ? 1 : -1
-    if (!props.ranked || sortKey.value === 'title') {
-        const compare = createScoreComparator(sortKey.value, songLanguage.value)
-        return [...props.items].sort((a, b) => compare(a, b) * direction)
-    }
-    const compare = createScoreComparator(sortKey.value, songLanguage.value, { primaryOnly: true })
+    const compare = createScoreComparator(sortKey.value, songLanguage.value, {
+        primaryOnly: props.ranked,
+    })
     return props.items
         .map((item, index) => ({ item, index }))
         .sort((a, b) => compare(a.item, b.item) * direction || a.index - b.index)
