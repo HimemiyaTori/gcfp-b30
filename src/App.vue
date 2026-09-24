@@ -4,6 +4,7 @@ import {
     ArrowRight,
     Check,
     CheckCircle2,
+    ChevronsLeft,
     CircleHelp,
     Disc3,
     FileImage,
@@ -45,6 +46,25 @@ const navigation = [
 ] as const
 type Page = (typeof navigation)[number]['id']
 const page = ref<Page>('home')
+const uiLanguages = [
+    { id: 'zh-CN', label: '简体中文' },
+    { id: 'zh-TW', label: '繁體中文' },
+    { id: 'ja', label: '日本語' },
+    { id: 'en', label: 'English' },
+] as const
+const uiLanguage = ref<(typeof uiLanguages)[number]['id']>('zh-CN')
+const narrowSidebar = window.matchMedia('(max-width: 960px)')
+const sidebarCollapsed = ref(narrowSidebar.matches)
+function setSidebarCollapsed(collapsed: boolean) {
+    // CSS 过渡会从当前位置折返，快速反复切换时也能接上
+    sidebarCollapsed.value = collapsed
+}
+function syncSidebarToViewport(event: MediaQueryListEvent) {
+    setSidebarCollapsed(event.matches)
+}
+function toggleSongLanguage() {
+    songLanguage.value = songLanguage.value === 'ja' ? 'en' : 'ja'
+}
 function readHash() {
     const id = location.hash.slice(1)
     page.value = navigation.some((n) => n.id === id) ? (id as Page) : 'home'
@@ -52,9 +72,11 @@ function readHash() {
 onMounted(() => {
     readHash()
     window.addEventListener('hashchange', readHash)
+    narrowSidebar.addEventListener('change', syncSidebarToViewport)
 })
 onUnmounted(() => {
     window.removeEventListener('hashchange', readHash)
+    narrowSidebar.removeEventListener('change', syncSidebarToViewport)
     clearTimeout(timer)
 })
 const category = ref<SongCategory | 'ALL'>('ALL')
@@ -89,16 +111,21 @@ function filterScores(
     const term = search.toLowerCase()
     return items.filter(
         (s) =>
-            `${s.ja} ${s.en} ${s.artist}`
-                .toLowerCase()
-                .includes(term) &&
-            (selectedDifficulty === 'ALL' || s.difficulty === selectedDifficulty) &&
+            `${s.ja} ${s.en} ${s.artist}`.toLowerCase().includes(term) &&
+            (selectedDifficulty === 'ALL' ||
+                s.difficulty === selectedDifficulty) &&
             (selectedMode === 'ALL' || s.mode === selectedMode) &&
             (selectedCategory === 'ALL' || s.category === selectedCategory),
     )
 }
 const filtered = computed(() =>
-    filterScores(scores.value, query.value, category.value, mode.value, difficulty.value),
+    filterScores(
+        scores.value,
+        query.value,
+        category.value,
+        mode.value,
+        difficulty.value,
+    ),
 )
 const filteredB30 = computed(() =>
     filterScores(
@@ -324,45 +351,96 @@ onUnmounted(() => clearTimeout(toastTimer))
 </script>
 
 <template>
-    <div class="app-shell">
+    <div :class="['app-shell', { 'sidebar-collapsed': sidebarCollapsed }]">
         <aside class="sidebar stack">
-            <a href="#home" class="brand row gap-3"
+            <a
+                href="#home"
+                class="brand row gap-3"
+                aria-label="Groove Archive 首页"
                 ><span class="brand-mark"><Activity :size="24" /></span>
-                <div>
+                <div class="sidebar-copy">
                     <strong>GROOVE<span>ARCHIVE</span></strong
                     ><small>FUTURE PERFORMERS</small>
                 </div></a
             >
-            <div class="sidebar-caption">我的音乐旅程</div>
+            <div class="sidebar-caption sidebar-copy">我的音乐旅程</div>
             <nav class="stack gap-2">
                 <a
                     v-for="n in navigation"
                     :key="n.id"
                     :href="`#${n.id}`"
                     :class="['nav-item row gap-3', { active: page === n.id }]"
+                    :aria-label="t(`nav.${n.id}`)"
+                    :title="sidebarCollapsed ? t(`nav.${n.id}`) : undefined"
                     :aria-current="page === n.id ? 'page' : undefined"
-                    ><component :is="n.icon" :size="19" /><span>{{
-                        t(`nav.${n.id}`)
-                    }}</span
+                    ><component :is="n.icon" :size="19" /><span
+                        class="sidebar-copy"
+                        >{{ t(`nav.${n.id}`) }}</span
                     ><span
-                        v-if="n.id === 'b30' && scores.length > 0 && scores.length < 30"
+                        v-if="
+                            n.id === 'b30' &&
+                            scores.length > 0 &&
+                            scores.length < 30
+                        "
                         class="nav-badge"
                         >{{ scores.length }}</span
                     ><span v-if="page === n.id" class="active-dot"></span
                 ></a>
             </nav>
-            <div class="sidebar-bottom">
-                <div class="local-note">
-                    <ShieldCheck :size="20" /><strong
-                        >留在本地，专注节奏。</strong
+            <div class="sidebar-controls stack gap-2">
+                <div class="ui-language-control sidebar-copy">
+                    <span class="ui-language-icon" aria-hidden="true"></span>
+                    <div
+                        class="ui-language-options"
+                        role="group"
+                        aria-label="界面语言（预览选择）"
                     >
-                    <p>
-                        正式版将在浏览器本地处理截图，<br />只保存你的结构化成绩。
-                    </p>
-                    <span>LOCAL FIRST <span class="tiny-dot"></span></span>
+                        <button
+                            v-for="option in uiLanguages"
+                            :key="option.id"
+                            type="button"
+                            :class="{ selected: uiLanguage === option.id }"
+                            :aria-pressed="uiLanguage === option.id"
+                            @click="uiLanguage = option.id"
+                        >
+                            {{ option.label }}
+                        </button>
+                    </div>
                 </div>
-                <div class="sidebar-footer row between">
-                    <span>FP 成绩管理工具</span><span>v0.1</span>
+                <div class="sidebar-control-row">
+                    <button
+                        class="song-language-compact"
+                        type="button"
+                        :aria-label="`曲目信息语言：${songLanguage === 'ja' ? '日本語' : 'English'}。点击切换为${songLanguage === 'ja' ? 'English' : '日本語'}`"
+                        :title="`曲目信息语言：${songLanguage === 'ja' ? '日本語' : 'English'}`"
+                        @click="toggleSongLanguage"
+                    >
+                        {{ songLanguage === 'ja' ? '日' : 'EN' }}
+                    </button>
+                    <button
+                        class="sidebar-theme-control"
+                        type="button"
+                        :aria-label="
+                            isDark ? '切换到浅色主题' : '切换到深色主题'
+                        "
+                        :title="isDark ? '切换到浅色主题' : '切换到深色主题'"
+                        @click="theme = isDark ? 'light' : 'dark'"
+                    >
+                        <Sun v-if="isDark" :size="19" />
+                        <Moon v-else :size="19" />
+                    </button>
+                    <button
+                        class="sidebar-collapse-control"
+                        type="button"
+                        :aria-label="
+                            sidebarCollapsed ? '展开侧边栏' : '收起侧边栏'
+                        "
+                        :aria-expanded="!sidebarCollapsed"
+                        :title="sidebarCollapsed ? '展开侧边栏' : '收起侧边栏'"
+                        @click="setSidebarCollapsed(!sidebarCollapsed)"
+                    >
+                        <ChevronsLeft :size="23" />
+                    </button>
                 </div>
             </div>
         </aside>
@@ -385,19 +463,32 @@ onUnmounted(() => clearTimeout(toastTimer))
                 <div class="row gap-4">
                     <span class="preview-pill"
                         ><span class="tiny-dot"></span> 界面预览</span
-                    ><button
-                        class="icon-button"
-                        :aria-label="
-                            isDark ? '切换到浅色主题' : '切换到深色主题'
-                        "
-                        :title="isDark ? '切换到浅色主题' : '切换到深色主题'"
-                        @click="theme = isDark ? 'light' : 'dark'"
                     >
-                        <Sun v-if="isDark" :size="19" /><Moon
-                            v-else
-                            :size="19"
-                        />
-                    </button>
+                    <div class="topbar-mobile-controls">
+                        <button
+                            class="song-language-compact"
+                            type="button"
+                            :aria-label="`曲目信息语言：${songLanguage === 'ja' ? '日本語' : 'English'}。点击切换为${songLanguage === 'ja' ? 'English' : '日本語'}`"
+                            :title="`曲目信息语言：${songLanguage === 'ja' ? '日本語' : 'English'}`"
+                            @click="toggleSongLanguage"
+                        >
+                            {{ songLanguage === 'ja' ? '日' : 'EN' }}
+                        </button>
+                        <button
+                            class="sidebar-theme-control"
+                            type="button"
+                            :aria-label="
+                                isDark ? '切换到浅色主题' : '切换到深色主题'
+                            "
+                            :title="
+                                isDark ? '切换到浅色主题' : '切换到深色主题'
+                            "
+                            @click="theme = isDark ? 'light' : 'dark'"
+                        >
+                            <Sun v-if="isDark" :size="19" />
+                            <Moon v-else :size="19" />
+                        </button>
+                    </div>
                     <div class="avatar">FP</div>
                 </div>
             </header>
@@ -454,7 +545,9 @@ onUnmounted(() => clearTimeout(toastTimer))
                         <article class="rating-card">
                             <div class="row gap-2">
                                 <Activity :size="16" /><span>Groove Rating</span
-                                ><span class="metric-tag">B{{ Math.min(scores.length, 30) }}</span>
+                                ><span class="metric-tag"
+                                    >B{{ Math.min(scores.length, 30) }}</span
+                                >
                             </div>
                             <div class="rating-values">
                                 <div class="big-rating">
@@ -462,7 +555,9 @@ onUnmounted(() => clearTimeout(toastTimer))
                                 </div>
                                 <div class="rating-floor">
                                     <span>Floor</span>
-                                    <strong>{{ b30.at(-1)?.rating.toFixed(2) ?? '—' }}</strong>
+                                    <strong>{{
+                                        b30.at(-1)?.rating.toFixed(2) ?? '—'
+                                    }}</strong>
                                     <span>RT</span>
                                 </div>
                             </div>
@@ -618,7 +713,9 @@ onUnmounted(() => clearTimeout(toastTimer))
                                 <ListMusic :size="18" />
                                 <h2>成绩一览</h2>
                             </div>
-                            <span class="count-badge">共 {{ scores.length }} 张谱面</span>
+                            <span class="count-badge"
+                                >共 {{ scores.length }} 张谱面</span
+                            >
                         </div>
                         <ScoreFilters
                             v-model:query="query"
@@ -642,7 +739,9 @@ onUnmounted(() => clearTimeout(toastTimer))
                                 <Trophy :size="18" />
                                 <h2>Best 30</h2>
                             </div>
-                            <span class="count-badge">共 {{ b30.length }} 张谱面</span>
+                            <span class="count-badge"
+                                >共 {{ b30.length }} 张谱面</span
+                            >
                         </div>
                         <ScoreFilters
                             v-model:query="b30Query"
@@ -650,7 +749,11 @@ onUnmounted(() => clearTimeout(toastTimer))
                             v-model:mode="b30Mode"
                             v-model:difficulty="b30Difficulty"
                         />
-                        <ScoreTable :items="filteredB30" :position-items="b30" ranked />
+                        <ScoreTable
+                            :items="filteredB30"
+                            :position-items="b30"
+                            ranked
+                        />
                     </section>
                     <p class="rating-explainer">
                         <CircleHelp :size="15" /> 总 RT 为前 30 张谱面 Rating
@@ -702,12 +805,26 @@ onUnmounted(() => clearTimeout(toastTimer))
                         <div class="setting-row">
                             <div>
                                 <h3>界面语言</h3>
-                                <p>当前版本提供简体中文界面。</p>
+                                <p>当前仅预览选择状态，界面仍为简体中文。</p>
                             </div>
-                            <span class="setting-value">
-                                简体中文
-                                <Check :size="15" />
-                            </span>
+                            <div
+                                class="segmented ui-settings-options"
+                                role="group"
+                                aria-label="界面语言（预览选择）"
+                            >
+                                <button
+                                    v-for="option in uiLanguages"
+                                    :key="option.id"
+                                    type="button"
+                                    :class="{
+                                        selected: uiLanguage === option.id,
+                                    }"
+                                    :aria-pressed="uiLanguage === option.id"
+                                    @click="uiLanguage = option.id"
+                                >
+                                    {{ option.label }}
+                                </button>
+                            </div>
                         </div>
                         <div class="setting-row">
                             <div>
