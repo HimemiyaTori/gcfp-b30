@@ -39,6 +39,7 @@ import { getRankByScore } from './core/rating/rank'
 import { createScoreComparator } from './core/scoreSort'
 import type { SongCategory } from './data/categories'
 import type { ScoreRow } from './db/models'
+import { useOcrImport } from './composables/useOcrImport'
 import { useScoreList } from './composables/useScoreList'
 import { scoreRepository } from './db/scoreRepository'
 import {
@@ -153,121 +154,42 @@ const filteredB30 = computed(() =>
 )
 const fileInput = ref<HTMLInputElement>(),
     dragging = ref(false)
-type ImportJob = {
-    name: string
-    index: number
-    status: 'queued' | 'running' | 'success' | 'failed'
-    error: string
-}
 const importDialog = ref<HTMLDialogElement>()
 const importPhase = ref<'processing' | 'success' | 'leaving'>('processing')
-const jobs = ref<ImportJob[]>([])
-const completed = computed(
-    () =>
-        jobs.value.filter(
-            (j) => j.status === 'success' || j.status === 'failed',
-        ).length,
-)
-const failures = computed(() => jobs.value.filter((j) => j.status === 'failed'))
-const importing = computed(() =>
-    jobs.value.some((j) => j.status === 'running' || j.status === 'queued'),
-)
-const importHasErrors = computed(
-    () => !importing.value && failures.value.length > 0,
-)
-function cancelImport() {
-    // 成功后的进度收尾和动画期间，忽略按钮及 Escape 的取消操作。
-    if (importing.value || importHasErrors.value) clearJobs()
-}
+const { jobs, completed, failures, skipped, importing, start: runImport, cancel: cancelOcr } = useOcrImport()
+const importHasErrors = computed(() => !importing.value && failures.value.length > 0)
 let timer: ReturnType<typeof setTimeout>
+let importGeneration = 0
 function clearJobs() {
+    importGeneration++
     clearTimeout(timer)
+    cancelOcr()
     importDialog.value?.close()
-    jobs.value = []
     importPhase.value = 'processing'
 }
-function startImport(entries: { name: string; error?: string }[]) {
-    clearJobs()
-    jobs.value = entries.map((j, i) => ({
-        name: j.name,
-        index: i + 1,
-        status: 'queued',
-        error: j.error ?? '',
-    }))
-    importDialog.value?.showModal()
-    function process(index: number) {
-        const job = jobs.value[index]
-        if (!job) {
-            if (!failures.value.length) {
-                // 先走满进度，再描绘成功图形、停留、淡出，最后显示通知。
-                const reducedMotion = window.matchMedia(
-                    '(prefers-reduced-motion: reduce)',
-                ).matches
-                const delay = reducedMotion ? 0 : motionTiming.progress + 40
-                timer = setTimeout(() => {
-                    importPhase.value = 'success'
-                    const duration =
-                        motionTiming.successHold +
-                        (reducedMotion
-                            ? 0
-                            : motionTiming.successCircle +
-                              motionTiming.successCheck)
-                    timer = setTimeout(() => {
-                        importPhase.value = 'leaving'
-                        timer = setTimeout(
-                            () => {
-                                const count = jobs.value.length
-                                clearJobs()
-                                notify(
-                                    `已完成 ${count} 张截图的录入流程演示，未写入成绩。`,
-                                    '录入完成',
-                                )
-                            },
-                            reducedMotion ? 0 : motionTiming.successFade,
-                        )
-                    }, duration)
-                }, delay)
-            }
-            return
-        }
-        job.status = 'running'
-        timer = setTimeout(() => {
-            job.status = job.error ? 'failed' : 'success'
-            process(index + 1)
-        }, 650)
-    }
-    process(0)
-}
-function simulate(withErrors = false) {
-    startImport([
-        { name: 'FP_result_001.png' },
-        {
-            name: 'FP_result_002.png',
-            error: withErrors
-                ? '未匹配到曲目。请使用完整、清晰的成绩截图，或手动新增该成绩。'
-                : '',
-        },
-        {
-            name: 'FP_result_003.png',
-            error: withErrors
-                ? '无法解析 Score：分数区域不完整。请重新截取完整成绩画面。'
-                : '',
-        },
-    ])
-}
-function selectFiles(files: FileList | null) {
+function cancelImport() { clearJobs() }
+async function selectFiles(files: FileList | null) {
     if (!files?.length) return
-    startImport(
-        Array.from(files).map((f) => ({
-            name: f.name,
-            error: !['image/png', 'image/jpeg', 'image/webp'].includes(f.type)
-                ? '不支持的图片格式，请选择 PNG、JPG 或 WebP。'
-                : f.size === 0
-                  ? '图片文件为空，请重新选择。'
-                  : '',
-        })),
-    )
+    if (databaseLoading.value || databaseError.value) { notify('本地数据库尚未就绪，请先重试。'); return }
+    const selected = Array.from(files)
+    files = null
     if (fileInput.value) fileInput.value.value = ''
+    if (selected.length > 30) { notify('每批最多选择 30 张截图。'); return }
+    clearJobs()
+    const generation = importGeneration
+    importDialog.value?.showModal()
+    await runImport(selected)
+    if (generation !== importGeneration || !jobs.value.length) return
+    if (!failures.value.length && !skipped.value.length) {
+        timer = setTimeout(() => {
+            importPhase.value = 'success'
+            timer = setTimeout(() => {
+                const count = jobs.value.length
+                clearJobs()
+                notify(`已处理 ${count} 张截图，同一谱面仅保留最高分。`, '录入完成')
+            }, motionTiming.successHold + motionTiming.successCircle + motionTiming.successCheck)
+        }, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : motionTiming.progress)
+    }
 }
 function drop(e: DragEvent) {
     dragging.value = false
@@ -296,6 +218,8 @@ function notify(message: string, title = '提示') {
 const dialog = ref<HTMLDialogElement>(),
     editing = ref<ScoreRow | null>(null)
 const inputScore = ref<number | string>(1040000)
+const inputAchievement = ref('unknown')
+const inputMaxChain = ref<number | string>('')
 const songPickerExpanded = ref(false)
 const songSearchInput = ref<HTMLInputElement>(),
     songPickerButton = ref<HTMLButtonElement>()
@@ -388,6 +312,8 @@ function openEditor(s?: ScoreRow) {
     editorMode.value = s?.mode ?? 'ADVANCED'
     editorDifficulty.value = s?.difficulty ?? 'MASTER'
     inputScore.value = s?.score ?? 1040000
+    inputAchievement.value = s?.ap ? 'ap' : s?.fc ? 'fc' : s?.fc === false ? 'clear' : 'unknown'
+    inputMaxChain.value = s?.maxChain ?? ''
     dialog.value?.showModal()
 }
 async function saveScore() {
@@ -406,17 +332,21 @@ async function saveScore() {
     saving.value = true
     saveError.value = ''
     try {
+        const achievements = { fc: inputAchievement.value === 'unknown' ? undefined : inputAchievement.value !== 'clear', ap: inputAchievement.value === 'unknown' ? undefined : inputAchievement.value === 'ap', maxChain: inputMaxChain.value === '' ? undefined : Number(inputMaxChain.value) }
         if (editing.value)
             await scoreRepository.edit(
                 editing.value.id,
                 Number(inputScore.value),
                 lowerConfirmed.value,
+                achievements,
             )
         else
             await scoreRepository.add(
                 selectedSong.value,
                 currentChart.value.id,
                 Number(inputScore.value),
+                'manual',
+                achievements,
             )
         dialog.value?.close()
         notify('成绩已保存到本机。')
@@ -751,18 +681,7 @@ onUnmounted(() => clearTimeout(toastTimer))
                                 <span class="row gap-2"
                                     ><ShieldCheck :size="14" />
                                     仅在本地识别截图、存储数据</span
-                                ><button
-                                    class="text-link"
-                                    @click="simulate(false)"
-                                >
-                                    演示成功 <ArrowRight :size="13" />
-                                </button>
-                                <button
-                                    class="text-link"
-                                    @click="simulate(true)"
-                                >
-                                    演示识别错误
-                                </button>
+>
                             </div>
                         </article>
                         <article class="guide-panel">
@@ -1004,7 +923,7 @@ onUnmounted(() => clearTimeout(toastTimer))
                     <span>
                         本地成绩管理
                         <span class="footer-dot">/</span>
-                        截图 OCR 尚未接入
+                        截图 OCR 本地识别
                     </span>
                 </footer>
             </main>
@@ -1032,7 +951,7 @@ onUnmounted(() => clearTimeout(toastTimer))
                 <p class="muted">
                     {{
                         editing
-                            ? '编辑仅修改 Score，曲目与谱面保持不变。'
+                            ? '可修改 Score、完成状态与 Max Chain，曲目与谱面保持不变。'
                             : '选择曲目与谱面，记录你的精彩发挥。'
                     }}
                 </p>
@@ -1150,6 +1069,11 @@ onUnmounted(() => clearTimeout(toastTimer))
                         step="1"
                         required
                 /></label>
+                <label>完成状态<select v-model="inputAchievement">
+                    <option value="unknown">未填写</option><option value="clear">无 FC / AP</option>
+                    <option value="fc">FC · Full Chain</option><option value="ap">AP · All Perfect（包含 FC）</option>
+                </select></label>
+                <label>Max Chain（可不填）<input v-model="inputMaxChain" type="number" min="0" step="1" placeholder="未记录" /></label>
                 <div class="live-metrics" aria-live="polite">
                     <div>
                         <small>Rank</small><strong>{{ liveRank }}</strong>
@@ -1222,7 +1146,7 @@ onUnmounted(() => clearTimeout(toastTimer))
                 <AnimatedSuccess />
                 <h2 id="import-title">录入完成</h2>
                 <p>已处理全部 {{ jobs.length }} 张截图</p>
-                <small>本次为流程演示，未写入成绩</small>
+                <small>同一谱面仅保留最高分</small>
             </div>
             <template v-else>
                 <div class="between">
@@ -1232,13 +1156,13 @@ onUnmounted(() => clearTimeout(toastTimer))
                             {{
                                 importHasErrors
                                     ? '部分图片识别失败'
-                                    : '正在录入成绩'
+                                    : importing ? '正在录入成绩' : '处理完成'
                             }}
                         </h2>
                     </div>
                 </div>
                 <p class="muted">
-                    当前为流程演示，不执行真实 OCR，也不会写入成绩。
+                    截图仅在本机处理；首次识别需要下载模型，关闭弹窗或切页可取消。
                 </p>
                 <div class="between import-counter" aria-live="polite">
                     <strong v-if="importHasErrors" class="error">
@@ -1270,23 +1194,23 @@ onUnmounted(() => clearTimeout(toastTimer))
                                           ? '识别中'
                                           : job.status === 'failed'
                                             ? '识别错误'
-                                            : '演示成功'
+                                            : job.status === 'skipped' ? '已跳过' : '已处理'
                                 }}</span
                             >
                         </div>
-                        <p v-if="job.status === 'failed'">{{ job.error }}</p>
+                        <p v-if="job.error">{{ job.error }}</p>
                     </article>
                 </div>
                 <p class="form-note">
                     {{
-                        importHasErrors
-                            ? `成功 ${jobs.length - failures.length} 张，失败 ${failures.length} 张。失败图片不会生成成绩，可以重新选择图片或手动新增。`
+                        !importing
+                            ? `已处理 ${jobs.length - failures.length - skipped.length} 张，跳过 ${skipped.length} 张，失败 ${failures.length} 张。失败图片不会生成成绩，可以重新选择图片或手动新增。`
                             : '关闭弹窗将取消未完成任务。'
                     }}
                 </p>
                 <div class="dialog-actions">
                     <button class="button secondary" @click="cancelImport()">
-                        {{ importHasErrors ? '关闭' : '取消识别' }}</button
+                        {{ importing ? '取消识别' : '关闭' }}</button
                     ><button
                         v-if="importHasErrors"
                         class="button primary"

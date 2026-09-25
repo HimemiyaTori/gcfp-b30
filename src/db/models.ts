@@ -1,5 +1,11 @@
 import type { SongCategory } from '../data/categories'
-export interface ScoreRecord {
+export interface ScoreAchievements {
+    // undefined means unknown (including records created before OCR support).
+    fc?: boolean
+    ap?: boolean
+    maxChain?: number
+}
+export interface ScoreRecord extends ScoreAchievements {
     id?: number
     songId: string
     chartId: string
@@ -14,7 +20,7 @@ export interface RatingCalculationMetadata {
     ratingRuleVersion: string
     songLibraryVersion: string
 }
-export interface ScoreRow {
+export interface ScoreRow extends ScoreAchievements {
     id: number
     songId: string
     chartId: string

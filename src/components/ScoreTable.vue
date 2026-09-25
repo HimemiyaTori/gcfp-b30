@@ -133,6 +133,7 @@ watch([() => props.items, sortKey, ascending], () => (currentPage.value = 1))
                     </td>
                     <td class="num score-num">
                         {{ s.score.toLocaleString('en-US') }}
+                        <small>{{ s.ap ? 'AP' : s.fc ? 'FC' : '' }}{{ s.maxChain !== undefined ? ` · Max Chain ${s.maxChain}` : '' }}</small>
                     </td>
                     <td class="num">
                         <span class="rank">{{ getRankByScore(s.score) }}</span>

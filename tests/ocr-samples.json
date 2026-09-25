@@ -1,0 +1,23 @@
+[
+  { "path": "result/6292.jpg", "chartId": "6-basic-hard", "score": 1031647, "fc": true, "ap": false, "maxChain": 420 },
+  { "path": "result/6293.jpg", "chartId": "1-advanced-hard", "score": 957405, "fc": false, "ap": false, "maxChain": 195 },
+  { "path": "result/6294.jpg", "skip": "MISSION CLEAR" },
+  { "path": "result/6295.jpg", "skip": "MISSION CLEAR" },
+  { "path": "result/6309.jpg", "chartId": "1-advanced-normal", "score": 1048935, "fc": true, "ap": true, "maxChain": 190 },
+  { "path": "result/6310.jpg", "chartId": "7-basic-hard", "score": 1036771, "fc": true, "ap": false, "maxChain": 470 },
+  { "path": "result/6311.jpg", "chartId": "1-advanced-normal", "score": 1046807, "fc": true, "ap": false, "maxChain": 190 },
+  { "path": "result/6389.jpg", "chartId": "5-basic-hard", "score": 1010973, "fc": false, "ap": false, "maxChain": 211 },
+  { "path": "result/6390.jpg", "chartId": "6-advanced-hard", "score": 1021816, "fc": false, "ap": false, "maxChain": 279 },
+  { "path": "result/6392.jpg", "chartId": "9-basic-hard", "score": 1011739, "fc": false, "ap": false, "maxChain": 241 },
+  { "path": "select/6290.jpg", "chartId": "10-basic-hard", "score": 1027499, "fc": true, "ap": false },
+  { "path": "select/6291.jpg", "chartId": "10-advanced-hard", "score": 1032026, "fc": false, "ap": false },
+  { "path": "select/6312.jpg", "chartId": "1-advanced-normal", "score": 1048935, "fc": true, "ap": true },
+  { "path": "select/6393.jpg", "chartId": "8-advanced-hard", "score": 999998, "fc": false, "ap": false },
+  { "path": "select/6394.jpg", "chartId": "6-advanced-hard", "score": 1021816, "fc": false, "ap": false },
+  { "path": "select/6396.jpg", "skip": "尚未游玩" },
+  { "path": "select/6397.jpg", "chartId": "6-advanced-hard", "score": 1021816, "fc": false, "ap": false },
+  { "path": "select/6398.jpg", "chartId": "8-basic-hard", "score": 972802, "fc": false, "ap": false },
+  { "path": "playing/6388.jpg", "skip": "游玩中" },
+  { "path": "playing/6391.jpg", "skip": "游玩中" },
+  { "path": "playing/6395.jpg", "skip": "游玩中" }
+]
