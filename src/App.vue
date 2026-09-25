@@ -156,8 +156,18 @@ const fileInput = ref<HTMLInputElement>(),
     dragging = ref(false)
 const importDialog = ref<HTMLDialogElement>()
 const importPhase = ref<'processing' | 'success' | 'leaving'>('processing')
-const { jobs, completed, failures, skipped, importing, start: runImport, cancel: cancelOcr } = useOcrImport()
-const importHasErrors = computed(() => !importing.value && failures.value.length > 0)
+const {
+    jobs,
+    completed,
+    failures,
+    skipped,
+    importing,
+    start: runImport,
+    cancel: cancelOcr,
+} = useOcrImport()
+const importHasErrors = computed(
+    () => !importing.value && failures.value.length > 0,
+)
 let timer: ReturnType<typeof setTimeout>
 let importGeneration = 0
 function clearJobs() {
@@ -167,28 +177,49 @@ function clearJobs() {
     importDialog.value?.close()
     importPhase.value = 'processing'
 }
-function cancelImport() { clearJobs() }
+function cancelImport() {
+    clearJobs()
+}
 async function selectFiles(files: FileList | null) {
     if (!files?.length) return
-    if (databaseLoading.value || databaseError.value) { notify('本地数据库尚未就绪，请先重试。'); return }
+    if (databaseLoading.value || databaseError.value) {
+        notify('本地数据库尚未就绪，请先重试。')
+        return
+    }
     const selected = Array.from(files)
     files = null
     if (fileInput.value) fileInput.value.value = ''
-    if (selected.length > 30) { notify('每批最多选择 30 张截图。'); return }
+    if (selected.length > 30) {
+        notify('每批最多选择 30 张截图。')
+        return
+    }
     clearJobs()
     const generation = importGeneration
     importDialog.value?.showModal()
     await runImport(selected)
     if (generation !== importGeneration || !jobs.value.length) return
     if (!failures.value.length && !skipped.value.length) {
-        timer = setTimeout(() => {
-            importPhase.value = 'success'
-            timer = setTimeout(() => {
-                const count = jobs.value.length
-                clearJobs()
-                notify(`已处理 ${count} 张截图，同一谱面仅保留最高分。`, '录入完成')
-            }, motionTiming.successHold + motionTiming.successCircle + motionTiming.successCheck)
-        }, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : motionTiming.progress)
+        timer = setTimeout(
+            () => {
+                importPhase.value = 'success'
+                timer = setTimeout(
+                    () => {
+                        const count = jobs.value.length
+                        clearJobs()
+                        notify(
+                            `已处理 ${count} 张截图，同一谱面仅保留最高分。`,
+                            '录入完成',
+                        )
+                    },
+                    motionTiming.successHold +
+                        motionTiming.successCircle +
+                        motionTiming.successCheck,
+                )
+            },
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches
+                ? 0
+                : motionTiming.progress,
+        )
     }
 }
 function drop(e: DragEvent) {
@@ -312,7 +343,13 @@ function openEditor(s?: ScoreRow) {
     editorMode.value = s?.mode ?? 'ADVANCED'
     editorDifficulty.value = s?.difficulty ?? 'MASTER'
     inputScore.value = s?.score ?? 1040000
-    inputAchievement.value = s?.ap ? 'ap' : s?.fc ? 'fc' : s?.fc === false ? 'clear' : 'unknown'
+    inputAchievement.value = s?.ap
+        ? 'ap'
+        : s?.fc
+          ? 'fc'
+          : s?.fc === false
+            ? 'clear'
+            : 'unknown'
     inputMaxChain.value = s?.maxChain ?? ''
     dialog.value?.showModal()
 }
@@ -332,7 +369,20 @@ async function saveScore() {
     saving.value = true
     saveError.value = ''
     try {
-        const achievements = { fc: inputAchievement.value === 'unknown' ? undefined : inputAchievement.value !== 'clear', ap: inputAchievement.value === 'unknown' ? undefined : inputAchievement.value === 'ap', maxChain: inputMaxChain.value === '' ? undefined : Number(inputMaxChain.value) }
+        const achievements = {
+            fc:
+                inputAchievement.value === 'unknown'
+                    ? undefined
+                    : inputAchievement.value !== 'clear',
+            ap:
+                inputAchievement.value === 'unknown'
+                    ? undefined
+                    : inputAchievement.value === 'ap',
+            maxChain:
+                inputMaxChain.value === ''
+                    ? undefined
+                    : Number(inputMaxChain.value),
+        }
         if (editing.value)
             await scoreRepository.edit(
                 editing.value.id,
@@ -426,11 +476,7 @@ onUnmounted(() => clearTimeout(toastTimer))
                         class="sidebar-copy"
                         >{{ t(`nav.${n.id}`) }}</span
                     ><span
-                        v-if="
-                            n.id === 'b30' &&
-                            scores.length > 0 &&
-                            scores.length < 30
-                        "
+                        v-if="n.id === 'scores' && scores.length > 0"
                         class="nav-badge"
                         >{{ scores.length }}</span
                     ><span v-if="page === n.id" class="active-dot"></span
@@ -681,7 +727,7 @@ onUnmounted(() => clearTimeout(toastTimer))
                                 <span class="row gap-2"
                                     ><ShieldCheck :size="14" />
                                     仅在本地识别截图、存储数据</span
->
+                                >
                             </div>
                         </article>
                         <article class="guide-panel">
@@ -1023,24 +1069,51 @@ onUnmounted(() => clearTimeout(toastTimer))
                         </div>
                     </div>
                 </div>
-                <fieldset class="chart-picker" :disabled="!!editing">
-                    <legend>模式</legend>
-                    <div class="chart-buttons">
-                        <button
-                            v-for="item in [
-                                { id: 'BASIC', label: 'BASIC' },
-                                { id: 'ADVANCED', label: 'ADV' },
-                            ]"
-                            :key="item.id"
-                            type="button"
-                            :aria-pressed="editorMode === item.id"
-                            :class="{ selected: editorMode === item.id }"
-                            @click="editorMode = item.id"
-                        >
-                            {{ item.label }}
-                        </button>
-                    </div>
-                </fieldset>
+                <div class="editor-control-row">
+                    <fieldset class="chart-picker" :disabled="!!editing">
+                        <legend>模式</legend>
+                        <div class="chart-buttons">
+                            <button
+                                v-for="item in [
+                                    { id: 'BASIC', label: 'BASIC' },
+                                    { id: 'ADVANCED', label: 'ADV' },
+                                ]"
+                                :key="item.id"
+                                type="button"
+                                :aria-pressed="editorMode === item.id"
+                                :class="{ selected: editorMode === item.id }"
+                                @click="editorMode = item.id"
+                            >
+                                {{ item.label }}
+                            </button>
+                        </div>
+                    </fieldset>
+                    <fieldset class="chart-picker">
+                        <legend>完成状态</legend>
+                        <div class="chart-buttons">
+                            <button
+                                v-for="item in [
+                                    { id: 'fc', label: 'FC' },
+                                    { id: 'ap', label: 'AP' },
+                                ]"
+                                :key="item.id"
+                                type="button"
+                                :aria-pressed="inputAchievement === item.id"
+                                :class="{
+                                    selected: inputAchievement === item.id,
+                                }"
+                                @click="
+                                    inputAchievement =
+                                        inputAchievement === item.id
+                                            ? 'unknown'
+                                            : item.id
+                                "
+                            >
+                                {{ item.label }}
+                            </button>
+                        </div>
+                    </fieldset>
+                </div>
                 <fieldset class="chart-picker" :disabled="!!editing">
                     <legend>难度</legend>
                     <div class="chart-buttons">
@@ -1060,20 +1133,25 @@ onUnmounted(() => clearTimeout(toastTimer))
                         </button>
                     </div>
                 </fieldset>
-                <label
-                    >Score<input
-                        v-model="inputScore"
-                        type="number"
-                        min="0"
-                        max="1050000"
-                        step="1"
-                        required
-                /></label>
-                <label>完成状态<select v-model="inputAchievement">
-                    <option value="unknown">未填写</option><option value="clear">无 FC / AP</option>
-                    <option value="fc">FC · Full Chain</option><option value="ap">AP · All Perfect（包含 FC）</option>
-                </select></label>
-                <label>Max Chain（可不填）<input v-model="inputMaxChain" type="number" min="0" step="1" placeholder="未记录" /></label>
+                <div class="editor-control-row">
+                    <label
+                        >Score<input
+                            v-model="inputScore"
+                            type="number"
+                            min="0"
+                            max="1050000"
+                            step="1"
+                            required
+                    /></label>
+                    <label
+                        >Max Chain（可选）<input
+                            v-model="inputMaxChain"
+                            type="number"
+                            min="0"
+                            step="1"
+                            placeholder="未记录"
+                    /></label>
+                </div>
                 <div class="live-metrics" aria-live="polite">
                     <div>
                         <small>Rank</small><strong>{{ liveRank }}</strong>
@@ -1156,7 +1234,9 @@ onUnmounted(() => clearTimeout(toastTimer))
                             {{
                                 importHasErrors
                                     ? '部分图片识别失败'
-                                    : importing ? '正在录入成绩' : '处理完成'
+                                    : importing
+                                      ? '正在录入成绩'
+                                      : '处理完成'
                             }}
                         </h2>
                     </div>
@@ -1194,7 +1274,9 @@ onUnmounted(() => clearTimeout(toastTimer))
                                           ? '识别中'
                                           : job.status === 'failed'
                                             ? '识别错误'
-                                            : job.status === 'skipped' ? '已跳过' : '已处理'
+                                            : job.status === 'skipped'
+                                              ? '已跳过'
+                                              : '已处理'
                                 }}</span
                             >
                         </div>
@@ -1204,7 +1286,7 @@ onUnmounted(() => clearTimeout(toastTimer))
                 <p class="form-note">
                     {{
                         !importing
-                            ? `已处理 ${jobs.length - failures.length - skipped.length} 张，跳过 ${skipped.length} 张，失败 ${failures.length} 张。失败图片不会生成成绩，可以重新选择图片或手动新增。`
+                            ? `跳过 ${skipped.length} 张，失败 ${failures.length} 张。失败图片不会生成成绩，可以重新选择图片或手动新增。`
                             : '关闭弹窗将取消未完成任务。'
                     }}
                 </p>

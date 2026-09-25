@@ -1214,6 +1214,15 @@ input::placeholder {
     font-size: 22px;
     font-variant-numeric: tabular-nums;
 }
+.editor-dialog input[type='number'] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+.editor-dialog input[type='number']::-webkit-inner-spin-button,
+.editor-dialog input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
 .form-note {
     font-size: 12px;
     line-height: 1.9;
@@ -1902,6 +1911,14 @@ input::placeholder {
     border: 0;
     min-width: 0;
 }
+.editor-control-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+.editor-control-row > label {
+    min-width: 0;
+}
 .chart-picker legend {
     font-size: 12px;
     margin-bottom: 10px;
@@ -2017,6 +2034,7 @@ input::placeholder {
 }
 .import-result .row {
     white-space: nowrap;
+    margin-right: 8px;
 }
 .import-result p {
     font-size: 11px;

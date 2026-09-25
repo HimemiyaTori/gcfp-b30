@@ -93,12 +93,12 @@ export function parseFields(fields: OcrFields): Recognition {
     if (status === 'mission')
         return {
             kind: 'skipped',
-            reason: 'MISSION CLEAR：任务结算不存储成绩。',
+            reason: '故事模式成绩不录入。',
         }
     const score = parseInteger(fields.score, 'Score')
     validateScore(score)
     if (fields.layout === 'select' && status === 'empty' && score === 0)
-        return { kind: 'skipped', reason: '该谱面尚未游玩，跳过 0 分占位。' }
+        return { kind: 'skipped', reason: '该谱面尚未游玩。' }
     if (status === 'empty') throw new Error('缺少成绩状态，未保存成绩。')
     const song = matchSong(fields.title)
     const mode = compact(fields.mode).toLowerCase()
