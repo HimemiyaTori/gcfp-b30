@@ -1360,6 +1360,27 @@ input::placeholder {
         width: 100%;
         min-width: 172px;
     }
+    .sidebar .ui-language-options {
+        position: relative;
+        display: block;
+        height: 75px;
+        transition: height var(--sidebar-duration) var(--sidebar-ease);
+    }
+    .sidebar .ui-language-options button {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: calc((100% - 9px) / 2);
+        transition: left var(--sidebar-duration) var(--sidebar-ease),
+            top var(--sidebar-duration) var(--sidebar-ease),
+            width var(--sidebar-duration) var(--sidebar-ease);
+    }
+    .sidebar .ui-language-options button:nth-child(even) {
+        left: calc(50% + 1.5px);
+    }
+    .sidebar .ui-language-options button:nth-child(n + 3) {
+        top: 38px;
+    }
     .sidebar-control-row {
         position: relative;
         height: 44px;
@@ -1423,6 +1444,28 @@ input::placeholder {
         padding: 0 3px;
         background: var(--panel);
         font-size: 10px;
+    }
+}
+/* 1500px main + 350px sidebar + at least 70px of space on each side. */
+@media (min-width: 1990px) {
+    .app-shell:not(.sidebar-collapsed) {
+        --sidebar-width: 350px;
+    }
+    .app-shell:not(.sidebar-collapsed) .sidebar .ui-language-options {
+        height: 40px;
+    }
+    .app-shell:not(.sidebar-collapsed) .sidebar .ui-language-options button {
+        top: 3px;
+        width: calc((100% - 15px) / 4);
+    }
+    .app-shell:not(.sidebar-collapsed) .sidebar .ui-language-options button:nth-child(2) {
+        left: calc(25% + 2.25px);
+    }
+    .app-shell:not(.sidebar-collapsed) .sidebar .ui-language-options button:nth-child(3) {
+        left: calc(50% + 1.5px);
+    }
+    .app-shell:not(.sidebar-collapsed) .sidebar .ui-language-options button:nth-child(4) {
+        left: calc(75% + 0.75px);
     }
 }
 @media (max-width: 960px) {
