@@ -679,6 +679,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:^22":
+  version: 22.20.4
+  resolution: "@types/node@npm:22.20.4"
+  dependencies:
+    undici-types: "npm:~6.21.0"
+  checksum: 10c0/3a17e19f7b7b7a6d6c695ef8b0a34b70f84829a1539f57d338487bc3b51ddd4ca86ffbcbcc4f1307a41de83d02c1b7dfbb16e8cb6a9c3a8360b4306ccf9ead2d
+  languageName: node
+  linkType: hard
+
 "@unocss/cli@npm:66.10.5":
   version: 66.10.5
   resolution: "@unocss/cli@npm:66.10.5"
@@ -1431,6 +1440,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "gcfp-b30@workspace:."
   dependencies:
+    "@types/node": "npm:^22"
     "@vitejs/plugin-vue": "npm:^5.2.4"
     lucide-vue-next: "npm:^0.468.0"
     typescript: "npm:~5.8.3"
@@ -2043,6 +2053,13 @@ __metadata:
     quansync: "npm:^1.0.0"
     unconfig-core: "npm:7.5.0"
   checksum: 10c0/940cb2b30d802e4edbb36c0469d122ec5d2402b20635aa71c223d24db431e2b83624672d1b42ba0023085111f3dddccc77516d23b79e1f0d6c67798a1351820c
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~6.21.0":
+  version: 6.21.0
+  resolution: "undici-types@npm:6.21.0"
+  checksum: 10c0/c01ed51829b10aa72fc3ce64b747f8e74ae9b60eafa19a7b46ef624403508a54c526ffab06a14a26b3120d055e1104d7abe7c9017e83ced038ea5cf52f8d5e04
   languageName: node
   linkType: hard
 

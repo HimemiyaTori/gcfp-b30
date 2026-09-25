@@ -15,7 +15,11 @@
         "isolatedModules": true,
         "verbatimModuleSyntax": true,
         "noEmit": true,
-        "strict": true
+        "strict": true,
+        "types": [
+            "node",
+            "vite/client"
+        ]
     },
     "include": [
         "src/**/*.ts",
