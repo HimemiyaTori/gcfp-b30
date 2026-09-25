@@ -5,6 +5,7 @@ import {
     Check,
     CheckCircle2,
     ChevronsLeft,
+    ChevronDown,
     CircleHelp,
     Disc3,
     FileImage,
@@ -23,7 +24,7 @@ import {
     Upload,
     X,
 } from 'lucide-vue-next'
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AnimatedProgress from './components/common/AnimatedProgress.vue'
 import AnimatedSuccess from './components/common/AnimatedSuccess.vue'
@@ -31,12 +32,22 @@ import CardTransition from './components/common/CardTransition.vue'
 import { motionTiming } from './components/common/motion'
 import ScoreFilters from './components/ScoreFilters.vue'
 import ScoreTable from './components/ScoreTable.vue'
+import SongCover from './components/SongCover.vue'
 import { isDark, songLanguage, theme } from './composables/useSettings'
 import { getChartRating } from './core/rating/calculator'
 import { getRankByScore } from './core/rating/rank'
 import { createScoreComparator } from './core/scoreSort'
 import type { SongCategory } from './data/categories'
-import { demoScores, type DemoScore } from './data/demo'
+import type { ScoreRow } from './db/models'
+import { useScoreList } from './composables/useScoreList'
+import { scoreRepository } from './db/scoreRepository'
+import {
+    songService,
+    getSongTitle,
+    getSongArtist,
+    formatLevel,
+} from './core/song/songService'
+import { searchSongs } from './core/search/songSearch'
 const { t } = useI18n()
 const navigation = [
     { id: 'home', icon: LayoutGrid },
@@ -82,13 +93,17 @@ onUnmounted(() => {
 const category = ref<SongCategory | 'ALL'>('ALL')
 const query = ref(''),
     difficulty = ref('ALL'),
-    mode = ref('ALL'),
-    emptyPreview = ref(false)
+    mode = ref('ALL')
 const b30Query = ref(''),
     b30Difficulty = ref('ALL'),
     b30Mode = ref('ALL'),
     b30Category = ref<SongCategory | 'ALL'>('ALL')
-const scores = computed(() => (emptyPreview.value ? [] : demoScores))
+const {
+    scores,
+    error: databaseError,
+    loading: databaseLoading,
+    reload: reloadDatabase,
+} = useScoreList()
 const b30 = computed(() => {
     const compare = createScoreComparator('rating', 'ja')
     return [...scores.value].sort((a, b) => compare(b, a)).slice(0, 30)
@@ -102,16 +117,16 @@ const totalRating = computed(() =>
     ).toFixed(2),
 )
 function filterScores(
-    items: DemoScore[],
+    items: ScoreRow[],
     search: string,
     selectedCategory: SongCategory | 'ALL',
     selectedMode: string,
     selectedDifficulty: string,
 ) {
-    const term = search.toLowerCase()
+    const matches = new Set(searchSongs(search).map((song) => song.id))
     return items.filter(
         (s) =>
-            `${s.ja} ${s.en} ${s.artist}`.toLowerCase().includes(term) &&
+            matches.has(s.songId) &&
             (selectedDifficulty === 'ALL' ||
                 s.difficulty === selectedDifficulty) &&
             (selectedMode === 'ALL' || s.mode === selectedMode) &&
@@ -264,8 +279,8 @@ watch(page, () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
 })
 const deleteDialog = ref<HTMLDialogElement>(),
-    deleting = ref<DemoScore | null>(null)
-function openDelete(s: DemoScore) {
+    deleting = ref<ScoreRow | null>(null)
+function openDelete(s: ScoreRow) {
     deleting.value = s
     deleteDialog.value?.showModal()
 }
@@ -279,41 +294,72 @@ function notify(message: string, title = '提示') {
     toastTimer = setTimeout(() => (toast.value = ''), 5000)
 }
 const dialog = ref<HTMLDialogElement>(),
-    editing = ref<DemoScore | null>(null)
+    editing = ref<ScoreRow | null>(null)
 const inputScore = ref<number | string>(1040000)
+const songPickerExpanded = ref(false)
+const songSearchInput = ref<HTMLInputElement>(),
+    songPickerButton = ref<HTMLButtonElement>()
+async function toggleSongPicker() {
+    songPickerExpanded.value = !songPickerExpanded.value
+    if (songPickerExpanded.value) {
+        await nextTick()
+        songSearchInput.value?.focus()
+    }
+}
+function selectSong(id: string) {
+    selectedSong.value = id
+    songPickerExpanded.value = false
+    songPickerButton.value?.focus()
+}
 const songQuery = ref(''),
-    selectedSong = ref(1)
+    selectedSong = ref(songService.songs[0]!.id)
 const editorMode = ref('ADVANCED'),
     editorDifficulty = ref('MASTER')
-const songOptions = demoScores.filter(
-    (s, i, all) => all.findIndex((other) => other.ja === s.ja) === i,
-)
 const filteredSongs = computed(() =>
-    songOptions.filter((s) =>
-        `${s.ja} ${s.en} ${s.artist}`
-            .toLocaleLowerCase()
-            .includes(songQuery.value.trim().toLocaleLowerCase()),
+    searchSongs(songQuery.value).map((song) => ({
+        id: song.id,
+        coverSourceUrl: song.coverSourceUrl,
+        ja: getSongTitle(song, 'ja'),
+        en: getSongTitle(song, 'en'),
+        artist: getSongArtist(song, songLanguage.value),
+    })),
+)
+const currentSong = computed(() => {
+    const song = songService.getSong(selectedSong.value)!
+    return {
+        ja: getSongTitle(song, 'ja'),
+        en: getSongTitle(song, 'en'),
+        coverSourceUrl: song.coverSourceUrl,
+        artist: getSongArtist(song, songLanguage.value),
+    }
+})
+const chartOptions = computed(() =>
+    songService
+        .getSong(selectedSong.value)!
+        .charts.filter((chart) => chart.mode.toUpperCase() === editorMode.value)
+        .map((chart) => ({
+            ...chart,
+            difficulty: chart.difficulty.toUpperCase(),
+            levelLabel: formatLevel(chart.level),
+        })),
+)
+const currentChart = computed(() =>
+    chartOptions.value.find(
+        (chart) => chart.difficulty === editorDifficulty.value,
     ),
 )
-const currentSong = computed(
-    () => songOptions.find((s) => s.id === selectedSong.value)!,
-)
-// 原型曲谱目录：提供两种模式，不代表权威曲谱数据
-const chartOptions = computed(() =>
-    demoScores.filter((s) => s.ja === currentSong.value.ja),
-)
-const currentChart = computed(
-    () =>
-        editing.value ??
-        chartOptions.value.find(
-            (s) => s.difficulty === editorDifficulty.value,
-        )!,
-)
-const chartBase = computed(
-    () =>
-        Number(currentChart.value.level.replace('+', '')) +
-        (currentChart.value.level.includes('+') ? 0.5 : 0),
-)
+watch(chartOptions, (options) => {
+    if (!options.some((chart) => chart.difficulty === editorDifficulty.value))
+        editorDifficulty.value = options[options.length - 1]?.difficulty ?? ''
+})
+const chartBase = computed(() => currentChart.value?.level ?? 0)
+const saving = ref(false),
+    saveError = ref(''),
+    lowerConfirmed = ref(false)
+watch([inputScore, selectedSong, editorMode, editorDifficulty], () => {
+    lowerConfirmed.value = false
+    saveError.value = ''
+})
 const validScore = computed(
     () =>
         inputScore.value !== '' &&
@@ -325,27 +371,100 @@ const liveRank = computed(() =>
     validScore.value ? getRankByScore(Number(inputScore.value)) : '—',
 )
 const liveRating = computed(() =>
-    validScore.value
+    validScore.value && currentChart.value
         ? getChartRating(Number(inputScore.value), chartBase.value).toFixed(2)
         : '—',
 )
 const lowered = computed(
     () => editing.value && Number(inputScore.value) < editing.value.score,
 )
-function openEditor(s?: DemoScore) {
+function openEditor(s?: ScoreRow) {
+    songPickerExpanded.value = false
     editing.value = s ?? null
-    selectedSong.value =
-        songOptions.find((song) => song.ja === s?.ja)?.id ?? songOptions[0]!.id
+    selectedSong.value = s?.songId ?? songService.songs[0]!.id
+    saveError.value = ''
+    lowerConfirmed.value = false
     songQuery.value = ''
     editorMode.value = s?.mode ?? 'ADVANCED'
     editorDifficulty.value = s?.difficulty ?? 'MASTER'
     inputScore.value = s?.score ?? 1040000
     dialog.value?.showModal()
 }
-function previewSave() {
-    if (!validScore.value) return
-    dialog.value?.close()
-    notify('表单交互演示完成。当前为视觉原型，成绩数据未写入。')
+async function saveScore() {
+    if (
+        !validScore.value ||
+        !currentChart.value ||
+        saving.value ||
+        databaseLoading.value ||
+        databaseError.value
+    )
+        return
+    if (lowered.value && !lowerConfirmed.value) {
+        saveError.value = '请勾选确认调低该曲目的成绩。'
+        return
+    }
+    saving.value = true
+    saveError.value = ''
+    try {
+        if (editing.value)
+            await scoreRepository.edit(
+                editing.value.id,
+                Number(inputScore.value),
+                lowerConfirmed.value,
+            )
+        else
+            await scoreRepository.add(
+                selectedSong.value,
+                currentChart.value.id,
+                Number(inputScore.value),
+            )
+        dialog.value?.close()
+        notify('成绩已保存到本机。')
+    } catch (error) {
+        saveError.value =
+            error instanceof Error ? error.message : '保存失败，请重试。'
+    } finally {
+        saving.value = false
+    }
+}
+async function deleteScore() {
+    if (
+        !deleting.value ||
+        saving.value ||
+        databaseError.value ||
+        databaseLoading.value
+    )
+        return
+    saving.value = true
+    try {
+        await scoreRepository.remove(deleting.value.id)
+        deleteDialog.value?.close()
+        notify('成绩已删除。')
+    } catch {
+        notify('删除失败，请检查浏览器存储权限后重试。', '删除失败')
+    } finally {
+        saving.value = false
+    }
+}
+const clearDialog = ref<HTMLDialogElement>(),
+    clearError = ref('')
+function openClearDialog() {
+    clearError.value = ''
+    clearDialog.value?.showModal()
+}
+async function clearScores() {
+    if (saving.value || databaseLoading.value || databaseError.value) return
+    saving.value = true
+    clearError.value = ''
+    try {
+        await scoreRepository.clear()
+        clearDialog.value?.close()
+        notify('本地成绩已全部清空。')
+    } catch {
+        clearError.value = '清空失败，请检查浏览器存储权限后重试。'
+    } finally {
+        saving.value = false
+    }
 }
 onUnmounted(() => clearTimeout(toastTimer))
 </script>
@@ -536,7 +655,7 @@ onUnmounted(() => clearTimeout(toastTimer))
                         v-if="page === 'home' || page === 'b30'"
                         class="demo-label"
                     >
-                        DEMO DATA <span>演示数据</span>
+                        LOCAL DATA <span>本机成绩</span>
                     </div>
                 </div>
 
@@ -848,36 +967,34 @@ onUnmounted(() => clearTimeout(toastTimer))
                         </div>
                     </section>
                     <section class="panel settings-panel">
-                        <div class="section-title"><h2>原型预览</h2></div>
+                        <div class="section-title"><h2>本地数据</h2></div>
                         <div class="setting-row">
                             <div>
-                                <h3>空数据状态</h3>
-                                <p>
-                                    查看尚未录入成绩时的首页、成绩列表和 B30。
-                                </p>
+                                <h3>清空成绩数据</h3>
+                                <p>删除本机存储的全部成绩。</p>
                             </div>
                             <button
-                                role="switch"
-                                :aria-checked="emptyPreview"
-                                aria-label="空数据状态"
-                                :class="['switch', { on: emptyPreview }]"
-                                @click="emptyPreview = !emptyPreview"
+                                class="button secondary danger-button"
+                                :disabled="
+                                    !scores.length ||
+                                    saving ||
+                                    databaseLoading ||
+                                    !!databaseError
+                                "
+                                @click="openClearDialog"
                             >
-                                <span></span>
+                                清空数据
                             </button>
-                        </div>
-                        <div class="prototype-note">
-                            <Music2 :size="22" />
-                            <div>
-                                <strong>先确定形式，再让功能发生。</strong>
-                                <p>
-                                    当前曲目、分数和 Rating
-                                    均为视觉演示数据，非正式曲库。截图识别、成绩写入及编辑保存尚未接入；仅外观偏好保存在本机。
-                                </p>
-                            </div>
                         </div>
                     </section>
                 </template>
+                <p v-if="databaseLoading" role="status">正在加载本地成绩…</p>
+                <div v-if="databaseError" class="panel error" role="alert">
+                    {{ databaseError }}
+                    <button class="button secondary" @click="reloadDatabase">
+                        重试
+                    </button>
+                </div>
                 <footer class="page-footer between">
                     <span>
                         GROOVE ARCHIVE
@@ -885,9 +1002,9 @@ onUnmounted(() => clearTimeout(toastTimer))
                         为每一次热爱留个记录
                     </span>
                     <span>
-                        前端视觉原型
+                        本地成绩管理
                         <span class="footer-dot">/</span>
-                        示例成绩仅供预览
+                        截图 OCR 尚未接入
                     </span>
                 </footer>
             </main>
@@ -897,7 +1014,7 @@ onUnmounted(() => clearTimeout(toastTimer))
             class="editor-dialog"
             @click="$event.target === dialog && dialog?.close()"
         >
-            <form @submit.prevent="previewSave">
+            <form @submit.prevent="saveScore">
                 <div class="between">
                     <div>
                         <div class="eyebrow">SCORE PREVIEW</div>
@@ -920,40 +1037,71 @@ onUnmounted(() => clearTimeout(toastTimer))
                     }}
                 </p>
                 <div class="song-picker">
-                    <label v-if="!editing"
-                        >搜索曲目<input
-                            v-model="songQuery"
-                            type="search"
-                            placeholder="输入日文 / 英文曲名或艺术家"
-                    /></label>
-                    <div
+                    <button
                         v-if="!editing"
-                        class="song-options"
-                        aria-label="曲目搜索结果"
+                        ref="songPickerButton"
+                        type="button"
+                        class="selected-song song-picker-toggle"
+                        :aria-expanded="songPickerExpanded"
+                        aria-controls="song-search-panel"
+                        @click="toggleSongPicker"
                     >
-                        <button
-                            v-for="song in filteredSongs"
-                            :key="song.id"
-                            type="button"
-                            :class="{ selected: selectedSong === song.id }"
-                            :aria-pressed="selectedSong === song.id"
-                            @click="selectedSong = song.id"
+                        <SongCover :src="currentSong.coverSourceUrl" />
+                        <span class="song-picker-copy"
+                            ><small>已选曲目</small
+                            ><strong>{{ currentSong[songLanguage] }}</strong
+                            ><small>{{ currentSong.artist }}</small></span
                         >
-                            <span
-                                >{{ song[songLanguage]
-                                }}<small>{{ song.artist }}</small></span
-                            ><Check
-                                v-if="selectedSong === song.id"
-                                :size="16"
-                            />
-                        </button>
-                        <p v-if="!filteredSongs.length" class="form-note">
-                            未找到匹配曲目，试试其他关键词。已选曲目保持不变。
-                        </p>
+                        <ChevronDown
+                            :size="18"
+                            :class="{
+                                'picker-chevron-open': songPickerExpanded,
+                            }"
+                        />
+                    </button>
+                    <div v-else class="selected-song song-picker-toggle">
+                        <SongCover :src="currentSong.coverSourceUrl" />
+                        <span class="song-picker-copy"
+                            ><small>当前曲目</small
+                            ><strong>{{ currentSong[songLanguage] }}</strong
+                            ><small>{{ currentSong.artist }}</small></span
+                        >
                     </div>
-                    <div class="selected-song">
-                        <small>{{ editing ? '当前曲目' : '已选曲目' }}</small
-                        ><strong>{{ currentSong[songLanguage] }}</strong>
+                    <div
+                        v-if="!editing && songPickerExpanded"
+                        id="song-search-panel"
+                        class="song-search-panel"
+                    >
+                        <label
+                            >搜索曲目<input
+                                ref="songSearchInput"
+                                v-model="songQuery"
+                                type="search"
+                                placeholder="输入日文 / 英文曲名或艺术家"
+                        /></label>
+                        <div class="song-options" aria-label="曲目搜索结果">
+                            <button
+                                v-for="song in filteredSongs"
+                                :key="song.id"
+                                type="button"
+                                :class="{ selected: selectedSong === song.id }"
+                                :aria-pressed="selectedSong === song.id"
+                                @click="selectSong(song.id)"
+                            >
+                                <SongCover :src="song.coverSourceUrl" />
+                                <span class="song-picker-copy"
+                                    >{{ song[songLanguage]
+                                    }}<small>{{ song.artist }}</small></span
+                                >
+                                <Check
+                                    v-if="selectedSong === song.id"
+                                    :size="16"
+                                />
+                            </button>
+                            <p v-if="!filteredSongs.length" class="form-note">
+                                未找到匹配曲目，试试其他关键词。已选曲目保持不变。
+                            </p>
+                        </div>
                     </div>
                 </div>
                 <fieldset class="chart-picker" :disabled="!!editing">
@@ -989,7 +1137,7 @@ onUnmounted(() => clearTimeout(toastTimer))
                             }"
                             @click="editorDifficulty = chart.difficulty"
                         >
-                            {{ chart.difficulty }} {{ chart.level }}
+                            {{ chart.difficulty }} {{ chart.levelLabel }}
                         </button>
                     </div>
                 </fieldset>
@@ -1018,13 +1166,23 @@ onUnmounted(() => clearTimeout(toastTimer))
                     请输入 0～1,050,000 范围内的整数。
                 </p>
                 <p v-if="lowered" class="warning">
-                    将调低「{{ editing?.[songLanguage] }}」的成绩，正式保存时
-                    Rank 与 Rating 会重新计算。
+                    将调低「{{ editing?.[songLanguage] }}」的成绩，保存后 Rank
+                    与 Rating 会重新计算。
                 </p>
                 <div class="form-note">
                     Rank 与 Rating 随 Score
-                    实时计算。谱面定数为演示配置；当前仅预览表单，不会保存成绩。
+                    实时计算，保存后刷新页面仍可查看成绩。
                 </div>
+                <label v-if="lowered"
+                    ><input
+                        v-model="lowerConfirmed"
+                        type="checkbox"
+                    />确认调低「{{ editing?.[songLanguage] }}」的成绩</label
+                >
+                <p v-if="saveError" class="error" role="alert">
+                    {{ saveError }}
+                </p>
+                <p v-if="!currentChart" class="error">该模式没有可选谱面。</p>
                 <div class="dialog-actions">
                     <button
                         type="button"
@@ -1032,8 +1190,18 @@ onUnmounted(() => clearTimeout(toastTimer))
                         @click="dialog?.close()"
                     >
                         取消</button
-                    ><button class="button primary" :disabled="!validScore">
-                        预览保存
+                    ><button
+                        class="button primary"
+                        :disabled="
+                            !validScore ||
+                            !currentChart ||
+                            saving ||
+                            databaseLoading ||
+                            !!databaseError ||
+                            (!!lowered && !lowerConfirmed)
+                        "
+                    >
+                        {{ saving ? '保存中…' : '保存成绩' }}
                     </button>
                 </div>
             </form>
@@ -1136,8 +1304,7 @@ onUnmounted(() => clearTimeout(toastTimer))
                 {{ deleting?.level }}
             </p>
             <div class="form-note">
-                正式版删除后，该谱面将从成绩库移除，B30 与总 RT
-                会重新计算。当前仅预览确认流程，不会删除演示数据。
+                删除后，该谱面将从成绩库移除，B30 与总 RT 会重新计算。
             </div>
             <div class="dialog-actions">
                 <button class="button secondary" @click="deleteDialog?.close()">
@@ -1145,12 +1312,40 @@ onUnmounted(() => clearTimeout(toastTimer))
                 </button>
                 <button
                     class="button primary"
-                    @click="
-                        (deleteDialog?.close(),
-                        notify('删除确认流程演示完成，示例成绩保持不变。'))
-                    "
+                    @click="deleteScore"
+                    :disabled="saving || databaseLoading || !!databaseError"
                 >
-                    预览删除
+                    确认删除
+                </button>
+            </div>
+        </dialog>
+        <dialog
+            ref="clearDialog"
+            class="editor-dialog"
+            aria-labelledby="clear-data-title"
+            @cancel="saving && $event.preventDefault()"
+        >
+            <h2 id="clear-data-title">清空全部成绩？</h2>
+            <p class="muted">
+                将永久删除此浏览器中的
+                {{ scores.length }} 条成绩，无法撤销。B30 和总 RT
+                会随之清空，曲库与外观偏好将保留。
+            </p>
+            <p v-if="clearError" class="error" role="alert">{{ clearError }}</p>
+            <div class="dialog-actions">
+                <button
+                    class="button secondary"
+                    :disabled="saving"
+                    @click="clearDialog?.close()"
+                >
+                    取消
+                </button>
+                <button
+                    class="button primary danger-button"
+                    :disabled="saving || databaseLoading || !!databaseError"
+                    @click="clearScores"
+                >
+                    {{ saving ? '清空中…' : '确认清空全部成绩' }}
                 </button>
             </div>
         </dialog>

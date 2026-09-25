@@ -2083,3 +2083,14 @@ input::placeholder {
         display: none;
     }
 }
+
+.song-picker-toggle {
+    width: 100%; display: flex; align-items: center; gap: 12px; text-align: left; color: inherit;
+}
+.song-picker-copy { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.song-picker-copy small, .song-picker-copy strong { display: block; }
+.song-picker-toggle > svg { flex-shrink: 0; transition: transform 180ms ease; }
+.picker-chevron-open { transform: rotate(180deg); }
+.song-search-panel { padding: 12px; border: 1px solid var(--line); border-radius: 7px; margin-top: 8px; }
+.danger-button { color: #c53950; }
+@media (prefers-reduced-motion: reduce) { .song-picker-toggle > svg { transition: none; } }

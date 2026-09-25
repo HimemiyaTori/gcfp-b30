@@ -6,9 +6,12 @@
     "scripts": {
         "dev": "vite --host 127.0.0.1",
         "build": "vue-tsc --noEmit && vite build",
-        "preview": "vite preview --host 127.0.0.1"
+        "preview": "vite preview --host 127.0.0.1",
+        "test": "tsx --test tests/*.test.mjs"
     },
     "dependencies": {
+        "dexie": "^4.4.6",
+        "fuse.js": "^7.5.0",
         "lucide-vue-next": "^0.468.0",
         "vue": "^3.5.22",
         "vue-i18n": "^11.1.12"
@@ -16,6 +19,8 @@
     "devDependencies": {
         "@types/node": "^22",
         "@vitejs/plugin-vue": "^5.2.4",
+        "fake-indexeddb": "^6.2.5",
+        "tsx": "4.20.6",
         "typescript": "~5.8.3",
         "unocss": "^66.5.2",
         "vite": "^6.3.6",

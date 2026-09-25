@@ -1,4 +1,4 @@
-import type { DemoScore } from '../data/demo'
+import type { ScoreRow } from '../db/models'
 import { getRankByScore } from './rating/rank'
 
 export type ScoreSortKey = 'title' | 'difficulty' | 'level' | 'score' | 'rank' | 'rating' | 'updatedAt'
@@ -6,7 +6,7 @@ export type ScoreSortKey = 'title' | 'difficulty' | 'level' | 'score' | 'rank' |
 const difficulties = ['EASY', 'NORMAL', 'HARD', 'MASTER']
 const ranks = ['E', 'D', 'C', 'B', 'A', 'AA', 'AAA', 'S', 'S+', 'SS', 'SS+', 'SSS', 'SSS+']
 
-function levelValue(score: DemoScore): number {
+function levelValue(score: ScoreRow): number {
     return Number(score.level.replace('+', '')) + (score.level.includes('+') ? .5 : 0)
 }
 
@@ -16,7 +16,7 @@ export function createScoreComparator(
     { primaryOnly = false }: { primaryOnly?: boolean } = {},
 ) {
     const collator = new Intl.Collator(language, { numeric: true, sensitivity: 'base' })
-    return (a: DemoScore, b: DemoScore): number => {
+    return (a: ScoreRow, b: ScoreRow): number => {
         const title = collator.compare(a[language], b[language])
         const level = levelValue(a) - levelValue(b)
         const difficulty = difficulties.indexOf(a.difficulty) - difficulties.indexOf(b.difficulty)

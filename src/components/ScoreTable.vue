@@ -4,14 +4,15 @@ import { computed, ref, watch } from 'vue'
 import { songLanguage } from '../composables/useSettings'
 import { getRankByScore } from '../core/rating/rank'
 import { createScoreComparator, type ScoreSortKey } from '../core/scoreSort'
-import type { DemoScore } from '../data/demo'
+import SongCover from './SongCover.vue'
+import type { ScoreRow } from '../db/models'
 const props = defineProps<{
-    items: DemoScore[]
-    positionItems?: DemoScore[]
+    items: ScoreRow[]
+    positionItems?: ScoreRow[]
     ranked?: boolean
     editable?: boolean
 }>()
-defineEmits<{ edit: [score: DemoScore]; remove: [score: DemoScore] }>()
+defineEmits<{ edit: [score: ScoreRow]; remove: [score: ScoreRow] }>()
 type SortKey = 'position' | ScoreSortKey
 const sortKey = ref<SortKey>(
     props.ranked ? 'position' : props.editable ? 'updatedAt' : 'score',
@@ -113,9 +114,7 @@ watch([() => props.items, sortKey, ascending], () => (currentPage.value = 1))
                     </td>
                     <td>
                         <div class="row gap-3">
-                            <div class="song-art" :style="{ '--art': s.color }">
-                                {{ s.symbol }}
-                            </div>
+                            <SongCover :src="s.coverSourceUrl" />
                             <div class="song-copy">
                                 <strong>{{ s[songLanguage] }}</strong
                                 ><small>{{ s.artist }}</small>
