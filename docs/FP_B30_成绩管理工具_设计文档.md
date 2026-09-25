@@ -322,18 +322,25 @@ interface Song {
 
     title: {
         ja: string
-        en: string
+        en?: string
     }
 
     artist: {
         ja: string
-        en: string
+        en?: string
     }
 
+    // 没有演唱者信息时省略此字段，不保留空对象
     vocal?: {
         ja: string
-        en: string
+        en?: string
     }
+
+    // 封面原始来源 URL，来源规则见 Song.coverSourceUrl
+    coverSourceUrl: string
+
+    // 项目本地封面路径，文件名使用歌曲 ID，暂定测试用
+    coverUrl: string
 
     // 部分歌曲有 BPM 范围，此时 bpm 作为最小值。若 bpmMax 不存在表示 BPM 固定。
     bpm: number
@@ -365,6 +372,7 @@ interface Chart {
     mode: 'basic' | 'advanced'
     level: number
     target?: number
+    special?: number
     combo?: number
     note?: number
     goldNote?: number
@@ -374,6 +382,15 @@ interface Chart {
     goldArrow?: number
     square?: number
     goldSquare?: number
+
+    // adv 专用
+    advNote?: number
+    blueNote?: number
+    redNote?: number
+    advHold?: number
+    advArrow?: number
+    blueArrow?: number
+    redArrow?: number
 }
 ```
 
@@ -400,6 +417,12 @@ level 为谱面定数表示；整数代表普通等级，.5 代表游戏中的 +
 - `pack` 为 "story" 时，表示歌曲为剧情解锁曲目。
 - `pack` 有值时，其值为该歌曲所属的 **DLC 曲包名称**。
 - 当前类型为可选字符串 `pack?: string`；不使用 `null` 表示空值。
+
+#### Song.coverSourceUrl：封面来源
+
+- coverSourceUrl 保存封面原图的来源 URL；coverUrl 保存项目本地图片路径，格式为 /images/song-covers/{id}.{ext}，图片文件按歌曲 ID 命名。
+- 本体歌曲封面取自 TAITO 官方 Groove Coaster Future Performers 音乐页（https://groovecoaster.com/fp/music.html）对应的歌曲图片。
+- DLC 歌曲封面取自 GrooveCoaster Wiki（https://groovecoaster.link）对应歌曲的 jacket 图片。
 
 ### 6.3 曲名搜索
 
@@ -820,7 +843,7 @@ interface RatingCalculationMetadata {
 | Score    | Score → Rating → 等级 → 难度 → 模式 → 当前显示语言的曲名        |
 | Rank     | Rank → Score → Rating → 等级 → 难度 → 模式 → 当前显示语言的曲名 |
 | Rating   | Rating → Score → 等级 → 难度 → 模式 → 当前显示语言的曲名        |
-| 更新时间 | `updatedAt`                                                    |
+| 更新时间 | `updatedAt`                                                     |
 
 每级相同才比较下一级，升降序应用于整条比较链。所有比较项都相同时保留原有顺序，ID 不参与排序。默认按更新时间降序，最近更新的成绩优先显示；切换到曲目排序时默认升序，切换到其他表头时默认降序，再次点击同一表头切换方向。
 
@@ -837,7 +860,7 @@ interface RatingCalculationMetadata {
 | Score    | Score → 原名次                      |
 | Rank     | Rank → 原名次                       |
 | Rating   | Rating → 原名次                     |
-| 更新时间 | `updatedAt` → 原名次               |
+| 更新时间 | `updatedAt` → 原名次                |
 
 除曲目与原名次外，升降序只作用于选中的字段；字段值相同时始终按原名次升序排列，不使用 ID。B30 默认原名次升序；切换到曲目或原名次排序时默认升序，切换到其他表头时默认降序，再次点击同一表头切换方向。表头排序仅调整已入选记录的展示顺序，不重新选取 B30，不改变原名次、Floor 和总 RT。
 

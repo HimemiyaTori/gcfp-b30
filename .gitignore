@@ -10,3 +10,6 @@ dist/
 !.yarn/sdks
 !.yarn/versions
 .pnp.*
+
+src/data/test/
+public/images/song-covers/
