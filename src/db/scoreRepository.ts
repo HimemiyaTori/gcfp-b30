@@ -4,13 +4,24 @@ import { getChartRating } from '../core/rating/calculator'
 import { database, type ScoreDatabase } from './database'
 import type { ScoreAchievements } from './models'
 import Dexie from 'dexie'
-export function validateAchievements(value: ScoreAchievements): ScoreAchievements {
+export function validateAchievements(
+    value: ScoreAchievements,
+): ScoreAchievements {
     for (const flag of [value.fc, value.ap])
-        if (flag !== undefined && typeof flag !== 'boolean') throw new Error('FC / AP 必须为布尔值。')
-    if (value.maxChain !== undefined && (!Number.isSafeInteger(value.maxChain) || value.maxChain < 0))
+        if (flag !== undefined && typeof flag !== 'boolean')
+            throw new Error('FC / AP 必须为布尔值。')
+    if (
+        value.maxChain !== undefined &&
+        (!Number.isSafeInteger(value.maxChain) || value.maxChain < 0)
+    )
         throw new Error('Max Chain 必须为非负整数，或留空。')
-    if (value.ap && value.fc === false) throw new Error('AP 成绩必须同时为 FC。')
-    return { fc: value.ap ? true : value.fc, ap: value.ap, maxChain: value.maxChain }
+    if (value.ap && value.fc === false)
+        throw new Error('AP 成绩必须同时为 FC。')
+    return {
+        fc: value.ap ? true : value.fc,
+        ap: value.ap,
+        maxChain: value.maxChain,
+    }
 }
 export function validateScore(score: number) {
     if (!Number.isInteger(score) || score < 0 || score > 1050000)
@@ -66,7 +77,8 @@ export function createScoreRepository(
                 signal?.throwIfAborted()
                 const transaction = Dexie.currentTransaction!
                 const abort = () => transaction.abort()
-                const cleanup = () => signal?.removeEventListener('abort', abort)
+                const cleanup = () =>
+                    signal?.removeEventListener('abort', abort)
                 signal?.addEventListener('abort', abort, { once: true })
                 transaction.on('complete', cleanup)
                 transaction.on('abort', cleanup)
@@ -85,10 +97,21 @@ export function createScoreRepository(
                             ap: existing.ap ?? details.ap,
                             maxChain: existing.maxChain ?? details.maxChain,
                         }
-                        // Equal scores can fill unknown values, but cannot contradict known flags.
-                        if (merged.ap && merged.fc === false) { merged.fc = existing.fc; merged.ap = existing.ap }
-                        if (merged.fc !== existing.fc || merged.ap !== existing.ap || merged.maxChain !== existing.maxChain)
-                            await db.scores.update(existing.id!, { ...merged, source, updatedAt: Date.now() })
+                        // 分数相同时可以补全未知字段，但不能覆盖已知标记
+                        if (merged.ap && merged.fc === false) {
+                            merged.fc = existing.fc
+                            merged.ap = existing.ap
+                        }
+                        if (
+                            merged.fc !== existing.fc ||
+                            merged.ap !== existing.ap ||
+                            merged.maxChain !== existing.maxChain
+                        )
+                            await db.scores.update(existing.id!, {
+                                ...merged,
+                                source,
+                                updatedAt: Date.now(),
+                            })
                         return existing.id!
                     }
                     await db.scores.update(existing.id!, {
@@ -113,15 +136,30 @@ export function createScoreRepository(
                 })
             })
         },
-        async edit(id: number, score: number, allowLower = false, achievements?: ScoreAchievements) {
+        async edit(
+            id: number,
+            score: number,
+            allowLower = false,
+            achievements?: ScoreAchievements,
+        ) {
             validateScore(score)
-            const details = achievements === undefined ? undefined : validateAchievements(achievements)
+            const details =
+                achievements === undefined
+                    ? undefined
+                    : validateAchievements(achievements)
             await db.transaction('rw', db.scores, async () => {
                 const record = await db.scores.get(id)
                 if (!record) throw new Error('成绩已不存在，请刷新列表。')
                 if (score < record.score && !allowLower)
                     throw new Error('调低成绩需要确认。')
-                if (score === record.score && (!details || (details.fc === record.fc && details.ap === record.ap && details.maxChain === record.maxChain))) return
+                if (
+                    score === record.score &&
+                    (!details ||
+                        (details.fc === record.fc &&
+                            details.ap === record.ap &&
+                            details.maxChain === record.maxChain))
+                )
+                    return
                 await db.scores.update(id, {
                     ...details,
                     score,

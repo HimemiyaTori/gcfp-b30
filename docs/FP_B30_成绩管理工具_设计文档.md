@@ -336,13 +336,13 @@ interface Song {
         en?: string
     }
 
-    // 封面原始来源 URL，来源规则见 Song.coverSourceUrl
+    // 原始封面来源网址，规则见 Song.coverSourceUrl
     coverSourceUrl: string
 
-    // 项目本地封面路径，文件名使用歌曲 ID，暂定测试用
+    // 项目本地封面路径，文件名使用歌曲 ID，暂用于测试
     coverUrl?: string
 
-    // 部分歌曲有 BPM 范围，此时 bpm 作为最小值。若 bpmMax 不存在表示 BPM 固定。
+    // 部分歌曲有 BPM 范围，此时 bpm 为最小值；若 bpmMax 不存在则表示 BPM 固定
     bpm: number
     bpmMax?: number
 
@@ -383,7 +383,7 @@ interface Chart {
     square?: number
     goldSquare?: number
 
-    // adv 专用
+    // ADV 难度专用
     advNote?: number
     blueNote?: number
     redNote?: number
@@ -1574,7 +1574,7 @@ ROI 位于 `src/core/ocr/recognizer.ts` 的 `regions`，表中为 1280×720 基�
 - 单图模型加载／识别超时为 120 秒；模型或运行时异常显示失败，可重新选择图片重试。数据库未就绪禁止导入，写入失败不得显示成功。
 - 关闭弹窗、切换页面、组件卸载时终止 Worker、取消排队并释放 File、ImageBitmap、Canvas 引用。异步结果和仓储事务均检查取消信号；取消后的结果不能入库，已提交记录保留。新批次使用独立代次，旧批次回调不得关闭或推进新批次。
 - 使用官方 `@paddleocr/paddleocr-js` 0.4.2、PP-OCRv5 日文兼容模型、WASM 单线程 Worker。首次需联网下载官方模型，图片不上传。SDK 内部依赖 OpenCV.js，与应用自身 Canvas 预处理区分。
-- SDK 预构建 Worker 内含 ORT 1.24.3，因此显式固定配套 `onnxruntime-web` 1.24.3。`scripts/prepare-ocr.mjs` 在 dev/build 前复制 Worker 和 WASM 到忽略提交的 `public/ocr`，支持 Vite 子目录 base；不依赖未固定版本的 CDN WASM。更换 SDK 时须同步核验内置 ORT 版本。
+- SDK 使用 `onnxruntime-web` 范围依赖；通过 Yarn `resolutions` 将其锁定到应用使用的 1.24.3，避免 SDK 与本地 WASM 版本错配。`scripts/prepare-ocr.mjs` 在 dev/build 前清理并复制 Worker 和所需的 JSEP WASM 文件到忽略提交的 `public/ocr`，支持 Vite 子目录 base，并检查 WASM 不超过 Cloudflare Workers 的 25 MiB 单文件限制。更换 SDK 时须重新核验 ORT 版本、所需变体及文件体积。
 - 已验证本机 Edge；运行时要求 Worker、WASM、Canvas、createImageBitmap、AbortSignal.any/timeout、IndexedDB。其他浏览器和移动设备性能尚未实机验收。
 
 SDK API 依据：[官方 PaddleOCR.js 文档](https://github.com/PaddlePaddle/PaddleOCR/blob/main/paddleocr-js/packages/core/README.md)。

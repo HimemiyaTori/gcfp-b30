@@ -131,7 +131,7 @@ export const demoScores: DemoScore[] = Array.from({ length: 32 }, (_, i) => {
         level: group ? String(12 - group) : s[3],
         score: group ? 1020000 - (i % 8) * 2000 : s[4],
         rating: group ? 13 - group - (i % 8) * 0.1 : s[5],
-        // 固定的演示时间，避免每次打开页面都看起来像刚更新。
+        // 固定演示时间，避免每次打开页面都像刚更新
         updatedAt: Date.UTC(2026, 8, 22, 14, 36) -
             ((i * 7) % 32) * 267 * 60_000 - (i % 5) * 13 * 60_000,
         color: s[6],

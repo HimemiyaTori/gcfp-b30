@@ -1,6 +1,6 @@
 import type { SongCategory } from '../data/categories'
 export interface ScoreAchievements {
-    // undefined means unknown (including records created before OCR support).
+    // undefined 表示未知，也包括 OCR 功能加入前创建的记录
     fc?: boolean
     ap?: boolean
     maxChain?: number

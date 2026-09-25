@@ -1,6 +1,6 @@
 import { parseFields, parseStatus, type Layout, type OcrFields, type Recognition } from './parser'
 type Rect = readonly [number, number, number, number]
-// Coordinates measured against the full 1280 × 720 UI; normalized for other 16:9 sizes.
+// 坐标以 1280 × 720 的完整界面为基准，并归一化以适配其他 16:9 尺寸
 const rect = (x: number, y: number, w: number, h: number): Rect => [x / 1280, y / 720, w / 1280, h / 720]
 export const regions = {
     header: rect(45, 8, 205, 38),
@@ -41,13 +41,13 @@ export function createRecognizer(trace?: (area: Rect, text: string) => void) {
         dispose() {
             disposed = true
             void engine?.dispose().catch(() => {})
-            // Reject SDK transport promises before terminating, including a pending initialization.
+            // 终止工作线程前先拒绝 SDK 传输请求，包括尚未完成的初始化
             worker?.dispatchEvent(new ErrorEvent('error', { message: '取消识别' }))
             worker?.terminate()
         },
         async recognize(file: Blob, signal: AbortSignal): Promise<Recognition> {
             signal.throwIfAborted()
-            // Bound model/network/inference waits, and terminate the worker on cancellation.
+            // 为模型下载和推理设置时限，取消时终止工作线程
             const deadline = AbortSignal.timeout(120000)
             signal = AbortSignal.any([signal, deadline])
             const abort = () => this.dispose()
@@ -90,7 +90,7 @@ export function createRecognizer(trace?: (area: Rect, text: string) => void) {
                 let difficulty: string
                 if (layout === 'result') difficulty = await read(regions.result.difficulty)
                 else {
-                    // The selected difficulty has a bright magenta top border; inactive cards do not.
+                    // 已选难度卡顶部为亮洋红色边框，未选卡没有此标记
                     canvas.width = 1280; canvas.height = 720
                     const context = canvas.getContext('2d', { willReadFrequently: true })!
                     context.drawImage(bitmap, 0, 0, 1280, 720)

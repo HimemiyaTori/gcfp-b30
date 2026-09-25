@@ -1446,7 +1446,7 @@ input::placeholder {
         font-size: 10px;
     }
 }
-/* 1500px main + 350px sidebar + at least 70px of space on each side. */
+/* 主区域宽 1500px、侧栏宽 350px，左右至少保留 70px 间距 */
 @media (min-width: 1990px) {
     .app-shell:not(.sidebar-collapsed) {
         --sidebar-width: 350px;

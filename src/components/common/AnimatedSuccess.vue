@@ -12,7 +12,7 @@ import { motionTiming } from './motion'
             '--success-circle': `${motionTiming.successCircle}ms`,
             '--success-check': `${motionTiming.successCheck}ms`,
         }">
-        <!-- 从顶部逆时针绘制，右上角保留缺口。pathLength 使时长不受尺寸影响。 -->
+        <!-- 从顶部逆时针绘制，右上角保留缺口；pathLength 使时长不受尺寸影响 -->
         <path class="success-circle" d="M 50 12 A 38 38 0 1 0 88 50" pathLength="1" />
         <path class="success-check" d="m 32 49 13 13 33 -34" pathLength="1" />
     </svg>
