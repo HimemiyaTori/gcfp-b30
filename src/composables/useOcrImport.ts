@@ -28,20 +28,23 @@ export function useOcrImport() {
     let recognizer: ReturnType<typeof createRecognizer> | undefined
     let pending: (File | undefined)[] = []
     function cancel() {
-        controller?.abort()
-        recognizer?.dispose()
-        recognizer = undefined
+        // 仅中断进行中的批次，关闭已完成的弹窗时保留模型会话
+        if (controller) {
+            controller.abort()
+            recognizer?.dispose()
+            recognizer = undefined
+            controller = undefined
+        }
         pending.fill(undefined)
         pending = []
         jobs.value = []
     }
     async function start(files: File[]) {
-        cancel()
         if (files.length > 30) throw new Error('每批最多选择 30 张截图。')
+        cancel()
+        if (!files.length) return
         const current = new AbortController()
         controller = current
-        const engine = createRecognizer()
-        recognizer = engine
         const queue: (File | undefined)[] = [...files]
         files.length = 0
         pending = queue
@@ -68,7 +71,13 @@ export function useOcrImport() {
                         throw new Error('仅支持 PNG、JPG 或 WebP 图片。')
                     if (!file.size || file.size > 20 * 1024 * 1024)
                         throw new Error('图片不能为空，且不得超过 20 MB。')
-                    const result = await engine.recognize(file, current.signal)
+                    // 正常批次复用工作线程，超时或初始化失败后按需重建
+                    if (!recognizer || recognizer.disposed)
+                        recognizer = createRecognizer()
+                    const result = await recognizer.recognize(
+                        file,
+                        current.signal,
+                    )
                     file = undefined
                     current.signal.throwIfAborted()
                     if (result.kind === 'skipped') {
@@ -101,13 +110,16 @@ export function useOcrImport() {
             }
         } finally {
             queue.fill(undefined)
-            engine.dispose()
             if (controller === current) {
                 pending = []
-                recognizer = undefined
+                controller = undefined
             }
         }
     }
-    onUnmounted(cancel)
+    onUnmounted(() => {
+        cancel()
+        recognizer?.dispose()
+        recognizer = undefined
+    })
     return { jobs, completed, failures, skipped, importing, start, cancel }
 }

@@ -1,8 +1,8 @@
 [
   { "path": "result/6292.jpg", "chartId": "6-basic-hard", "score": 1031647, "fc": true, "ap": false, "maxChain": 420 },
   { "path": "result/6293.jpg", "chartId": "1-advanced-hard", "score": 957405, "fc": false, "ap": false, "maxChain": 195 },
-  { "path": "result/6294.jpg", "skip": "MISSION CLEAR" },
-  { "path": "result/6295.jpg", "skip": "MISSION CLEAR" },
+  { "path": "result/6294.jpg", "skip": "故事模式" },
+  { "path": "result/6295.jpg", "skip": "故事模式" },
   { "path": "result/6309.jpg", "chartId": "1-advanced-normal", "score": 1048935, "fc": true, "ap": true, "maxChain": 190 },
   { "path": "result/6310.jpg", "chartId": "7-basic-hard", "score": 1036771, "fc": true, "ap": false, "maxChain": 470 },
   { "path": "result/6311.jpg", "chartId": "1-advanced-normal", "score": 1046807, "fc": true, "ap": false, "maxChain": 190 },
@@ -17,7 +17,7 @@
   { "path": "select/6396.jpg", "skip": "尚未游玩" },
   { "path": "select/6397.jpg", "chartId": "6-advanced-hard", "score": 1021816, "fc": false, "ap": false },
   { "path": "select/6398.jpg", "chartId": "8-basic-hard", "score": 972802, "fc": false, "ap": false },
-  { "path": "playing/6388.jpg", "skip": "游玩中" },
-  { "path": "playing/6391.jpg", "skip": "游玩中" },
-  { "path": "playing/6395.jpg", "skip": "游玩中" }
+  { "path": "playing/6388.jpg", "skip": "不是支持的结算页或选曲页" },
+  { "path": "playing/6391.jpg", "skip": "不是支持的结算页或选曲页" },
+  { "path": "playing/6395.jpg", "skip": "不是支持的结算页或选曲页" }
 ]

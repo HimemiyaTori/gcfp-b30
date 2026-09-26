@@ -43,6 +43,7 @@ export function createRecognizer(trace?: (area: Rect, text: string) => void) {
     let disposed = false
     let initialization: Promise<Engine> | undefined
     async function initialize() {
+        if (disposed) throw new DOMException('取消识别', 'AbortError')
         if (!initialization)
             initialization = (async () => {
                 const { PaddleOCR } = await import('@paddleocr/paddleocr-js')
@@ -75,25 +76,34 @@ export function createRecognizer(trace?: (area: Rect, text: string) => void) {
                 }
                 await engine.initialize()
                 return engine
-            })()
+            })().catch((error) => {
+                dispose()
+                throw error
+            })
         return initialization
     }
+    function dispose() {
+        if (disposed) return
+        disposed = true
+        void engine?.dispose().catch(() => {})
+        // 终止工作线程前先拒绝 SDK 传输请求，包括尚未完成的初始化
+        worker?.dispatchEvent(
+            new ErrorEvent('error', { message: '取消识别' }),
+        )
+        worker?.terminate()
+    }
     return {
-        dispose() {
-            disposed = true
-            void engine?.dispose().catch(() => {})
-            // 终止工作线程前先拒绝 SDK 传输请求，包括尚未完成的初始化
-            worker?.dispatchEvent(
-                new ErrorEvent('error', { message: '取消识别' }),
-            )
-            worker?.terminate()
+        get disposed() {
+            return disposed
         },
+        dispose,
         async recognize(file: Blob, signal: AbortSignal): Promise<Recognition> {
             signal.throwIfAborted()
+            if (disposed) throw new DOMException('取消识别', 'AbortError')
             // 为模型下载和推理设置时限，取消时终止工作线程
             const deadline = AbortSignal.timeout(120000)
             signal = AbortSignal.any([signal, deadline])
-            const abort = () => this.dispose()
+            const abort = () => dispose()
             signal.addEventListener('abort', abort, { once: true })
             let bitmap: ImageBitmap | undefined
             const canvas = document.createElement('canvas')
@@ -127,9 +137,12 @@ export function createRecognizer(trace?: (area: Rect, text: string) => void) {
                         canvas.width,
                         canvas.height,
                     )
-                    const [result] = await ocr.predict(canvas, {
-                        textRecScoreThresh: 0.65,
-                    })
+                    const [result] = await ocr
+                        .predict(canvas, { textRecScoreThresh: 0.65 })
+                        .catch((error) => {
+                            dispose()
+                            throw error
+                        })
                     signal.throwIfAborted()
                     const text =
                         result?.items
