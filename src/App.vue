@@ -162,6 +162,8 @@ const {
     failures,
     skipped,
     importing,
+    edgeSecurityHint,
+    dismissEdgeSecurityHint,
     start: runImport,
     cancel: cancelOcr,
 } = useOcrImport()
@@ -198,7 +200,11 @@ async function selectFiles(files: FileList | null) {
     importDialog.value?.showModal()
     await runImport(selected)
     if (generation !== importGeneration || !jobs.value.length) return
-    if (!failures.value.length && !skipped.value.length) {
+    if (
+        !failures.value.length &&
+        !skipped.value.length &&
+        !edgeSecurityHint.value
+    ) {
         timer = setTimeout(
             () => {
                 importPhase.value = 'success'
@@ -1253,6 +1259,40 @@ onUnmounted(() => clearTimeout(toastTimer))
                     >
                 </div>
                 <AnimatedProgress :value="completed" :max="jobs.length" />
+                <aside
+                    v-if="edgeSecurityHint"
+                    class="ocr-performance-hint"
+                    role="status"
+                >
+                    <div class="between">
+                        <strong class="row gap-2"
+                            ><CircleHelp :size="16" />Edge 识别速度提示</strong
+                        >
+                        <button
+                            class="icon-button"
+                            aria-label="关闭识别速度提示"
+                            @click="dismissEdgeSecurityHint"
+                        >
+                            <X :size="16" />
+                        </button>
+                    </div>
+                    <p>
+                        当前图片识别耗时较长，可能与 Edge 的“增强安全”设置有关。
+                    </p>
+                    <details>
+                        <summary>查看处理方法</summary>
+                        <p>
+                            点击地址栏左侧的站点信息图标，检查当前站点是否启用了增强安全。
+                            对于你信任的站点，可以将当前站点设为例外，刷新页面后重新选择图片；也可以换用其他浏览器。
+                        </p>
+                        <a
+                            href="https://learn.microsoft.com/zh-cn/deployedge/microsoft-edge-security-browse-safer"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            >查看 Microsoft 设置说明</a
+                        >
+                    </details>
+                </aside>
                 <div class="import-results">
                     <article
                         v-for="job in jobs"

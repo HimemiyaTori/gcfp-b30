@@ -5,6 +5,35 @@ import {
     type OcrFields,
     type Recognition,
 } from './parser'
+// 单次区域推理触发慢速提示的时间，单位为毫秒
+const SLOW_INFERENCE_MS = 8000
+// 每张图片的识别时限，包含模型下载和初始化，单位为毫秒
+const RECOGNITION_TIMEOUT_MS = 120000
+
+// 只观察前台推理耗时，无法据此直接确认浏览器的增强安全开关
+function watchSlowInference(signal: AbortSignal, onSlow: () => void) {
+    if (signal.aborted || document.visibilityState !== 'visible')
+        return () => {}
+    let stopped = false
+    const stop = () => {
+        if (stopped) return
+        stopped = true
+        clearTimeout(timer)
+        signal.removeEventListener('abort', stop)
+        document.removeEventListener('visibilitychange', onVisibilityChange)
+    }
+    const onVisibilityChange = () => {
+        if (document.visibilityState !== 'visible') stop()
+    }
+    const timer = setTimeout(() => {
+        stop()
+        if (!signal.aborted && document.visibilityState === 'visible') onSlow()
+    }, SLOW_INFERENCE_MS)
+    signal.addEventListener('abort', stop, { once: true })
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    return stop
+}
+
 type Rect = readonly [number, number, number, number]
 // 坐标以 1280 × 720 的完整界面为基准，并归一化以适配其他 16:9 尺寸
 const rect = (x: number, y: number, w: number, h: number): Rect => [
@@ -37,11 +66,15 @@ type Engine = Awaited<
         (typeof import('@paddleocr/paddleocr-js'))['PaddleOCR']['create']
     >
 >
-export function createRecognizer(trace?: (area: Rect, text: string) => void) {
+export function createRecognizer(
+    trace?: (area: Rect, text: string) => void,
+    options: { onSlowInference?: () => void } = {},
+) {
     let engine: Engine | undefined
     let worker: Worker | undefined
     let disposed = false
     let initialization: Promise<Engine> | undefined
+    let slowInferenceReported = false
     async function initialize() {
         if (disposed) throw new DOMException('取消识别', 'AbortError')
         if (!initialization)
@@ -87,9 +120,7 @@ export function createRecognizer(trace?: (area: Rect, text: string) => void) {
         disposed = true
         void engine?.dispose().catch(() => {})
         // 终止工作线程前先拒绝 SDK 传输请求，包括尚未完成的初始化
-        worker?.dispatchEvent(
-            new ErrorEvent('error', { message: '取消识别' }),
-        )
+        worker?.dispatchEvent(new ErrorEvent('error', { message: '取消识别' }))
         worker?.terminate()
     }
     return {
@@ -101,7 +132,7 @@ export function createRecognizer(trace?: (area: Rect, text: string) => void) {
             signal.throwIfAborted()
             if (disposed) throw new DOMException('取消识别', 'AbortError')
             // 为模型下载和推理设置时限，取消时终止工作线程
-            const deadline = AbortSignal.timeout(120000)
+            const deadline = AbortSignal.timeout(RECOGNITION_TIMEOUT_MS)
             signal = AbortSignal.any([signal, deadline])
             const abort = () => dispose()
             signal.addEventListener('abort', abort, { once: true })
@@ -137,12 +168,25 @@ export function createRecognizer(trace?: (area: Rect, text: string) => void) {
                         canvas.width,
                         canvas.height,
                     )
-                    const [result] = await ocr
-                        .predict(canvas, { textRecScoreThresh: 0.65 })
+                    // 模型就绪后才观察推理，避免把首次下载误判为浏览器设置问题
+                    const prediction = ocr.predict(canvas, {
+                        textRecScoreThresh: 0.65,
+                    })
+                    const stopWatching =
+                        !slowInferenceReported &&
+                        options.onSlowInference &&
+                        /\bEdg\/\d/.test(navigator.userAgent)
+                            ? watchSlowInference(signal, () => {
+                                  slowInferenceReported = true
+                                  options.onSlowInference?.()
+                              })
+                            : undefined
+                    const [result] = await prediction
                         .catch((error) => {
                             dispose()
                             throw error
                         })
+                        .finally(stopWatching)
                     signal.throwIfAborted()
                     const text =
                         result?.items

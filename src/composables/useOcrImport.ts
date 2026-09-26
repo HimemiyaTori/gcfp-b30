@@ -10,6 +10,12 @@ export interface ImportJob {
 }
 export function useOcrImport() {
     const jobs = ref<ImportJob[]>([])
+    const edgeSecurityHint = ref(false)
+    let edgeSecurityHintDismissed = false
+    function dismissEdgeSecurityHint() {
+        edgeSecurityHint.value = false
+        edgeSecurityHintDismissed = true
+    }
     const completed = computed(
         () =>
             jobs.value.filter((j) => !['queued', 'running'].includes(j.status))
@@ -73,7 +79,12 @@ export function useOcrImport() {
                         throw new Error('图片不能为空，且不得超过 20 MB。')
                     // 正常批次复用工作线程，超时或初始化失败后按需重建
                     if (!recognizer || recognizer.disposed)
-                        recognizer = createRecognizer()
+                        recognizer = createRecognizer(undefined, {
+                            onSlowInference: () => {
+                                if (!edgeSecurityHintDismissed)
+                                    edgeSecurityHint.value = true
+                            },
+                        })
                     const result = await recognizer.recognize(
                         file,
                         current.signal,
@@ -121,5 +132,15 @@ export function useOcrImport() {
         recognizer?.dispose()
         recognizer = undefined
     })
-    return { jobs, completed, failures, skipped, importing, start, cancel }
+    return {
+        jobs,
+        completed,
+        failures,
+        skipped,
+        importing,
+        edgeSecurityHint,
+        dismissEdgeSecurityHint,
+        start,
+        cancel,
+    }
 }
