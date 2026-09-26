@@ -1,3 +1,6 @@
+import type { ScoreRow } from '../../db/models'
+import { createScoreComparator } from '../scoreSort'
+
 // 按第 12 节规定进行精确整数插值，并返回截断到百分位的结果
 export function getChartRating(score: number, level: number): number {
     if (!Number.isInteger(score) || score < 0 || score > 1050000 || !Number.isFinite(level) || level < 0 || !Number.isInteger(level * 2)) {
@@ -18,4 +21,29 @@ export function getChartRating(score: number, level: number): number {
         }
     }
     return 0
+}
+
+export const ratingModes = ['BASIC', 'ADVANCED'] as const
+export type RatingMode = (typeof ratingModes)[number]
+
+export function getModeB30(scores: readonly ScoreRow[], mode: RatingMode) {
+    const candidates = scores.filter((score) => score.mode === mode)
+    const compare = createScoreComparator('rating', 'ja')
+    const items = candidates.sort((a, b) => compare(b, a)).slice(0, 30)
+    // 先按模式选取谱面，再以整数百分位计算该模式的总 RT
+    const rating =
+        Math.floor(
+            items.reduce(
+                (sum, score) => sum + Math.round(score.rating * 100),
+                0,
+            ) / 30,
+        ) / 100
+    return {
+        mode,
+        label: mode === 'BASIC' ? 'BASIC' : 'ADVANCED',
+        items,
+        rating,
+        floor: items.at(-1)?.rating ?? null,
+        count: candidates.length,
+    }
 }

@@ -9,6 +9,7 @@ import type { ScoreRow } from '../db/models'
 const props = defineProps<{
     items: ScoreRow[]
     positionItems?: ScoreRow[]
+    hideMode?: boolean
     ranked?: boolean
     editable?: boolean
 }>()
@@ -129,7 +130,7 @@ watch([() => props.items, sortKey, ascending], () => (currentPage.value = 1))
                                 >{{ s.difficulty }}</span
                             ><b class="level">{{ s.level }}</b>
                         </div>
-                        <small class="mode">{{ s.mode }}</small>
+                        <small v-if="!hideMode" class="mode">{{ s.mode }}</small>
                     </td>
                     <td class="num score-num">
                         {{ s.score.toLocaleString('en-US') }}

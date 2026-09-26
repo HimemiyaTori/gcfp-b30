@@ -2186,3 +2186,55 @@ input::placeholder {
         transition: none;
     }
 }
+
+.mode-rating-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 27px;
+}
+.mode-rating-card {
+    width: 100%;
+    text-align: left;
+    border: 2px solid transparent;
+    cursor: pointer;
+    font: inherit;
+    background: linear-gradient(120deg, #b9dfff, #d6e7ff);
+}
+.mode-rating-card.advanced { background: linear-gradient(120deg, #e0d5ff, #ffd6e8); }
+.mode-rating-card.selected { border-color: #5864aa; box-shadow: 0 0 0 3px #858cce26; }
+.mode-rating-card:focus-visible { outline: 3px solid #5864aa; outline-offset: 4px; }
+.mode-rating-card .metric-bottom { gap: 12px; flex-wrap: wrap; }
+.mode-progress { height: 4px; margin: 18px 0 12px; border-radius: 4px; background: #26315316; overflow: hidden; }
+.mode-progress span { display: block; height: 100%; background: #5864aa; border-radius: inherit; }
+@media (max-width: 760px) {
+    .mode-rating-grid { grid-template-columns: minmax(0, 1fr); }
+    .mode-rating-card .big-rating { font-size: 38px; }
+}
+
+.rating-mode-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 7px;
+    width: 68px;
+    flex: 0 0 68px;
+    justify-content: center;
+    color: #176b3b;
+    background: #21804b18;
+    border-color: #21804b;
+    transition: color 240ms ease, background-color 240ms ease, border-color 240ms ease;
+    font-weight: 650;
+    cursor: pointer;
+}
+.rating-mode-toggle.advanced { color: #a52238; border-color: #bc3547; background: #bc354718; }
+.rating-mode-toggle svg { flex-shrink: 0; transition: transform 300ms var(--motion-ease-out); }
+.rating-mode-toggle.advanced svg { transform: rotate(180deg); }
+.mode-label-enter-active, .mode-label-leave-active { transition: opacity 100ms ease, transform 100ms ease; }
+.mode-label-enter-from { opacity: 0; transform: translateY(5px); }
+.mode-label-leave-to { opacity: 0; transform: translateY(-5px); }
+@media (prefers-reduced-motion: reduce) {
+    .rating-mode-toggle, .rating-mode-toggle svg,
+    .mode-label-enter-active, .mode-label-leave-active { transition: none; }
+}
+.rating-mode-toggle:focus-visible { outline: 2px solid #263153; outline-offset: 3px; }

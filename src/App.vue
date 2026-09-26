@@ -2,6 +2,7 @@
 import {
     Activity,
     ArrowRight,
+    ArrowLeftRight,
     Check,
     CheckCircle2,
     ChevronsLeft,
@@ -26,6 +27,7 @@ import {
 } from 'lucide-vue-next'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import RollingNumber from './components/common/RollingNumber.vue'
 import AnimatedProgress from './components/common/AnimatedProgress.vue'
 import AnimatedSuccess from './components/common/AnimatedSuccess.vue'
 import CardTransition from './components/common/CardTransition.vue'
@@ -34,9 +36,8 @@ import ScoreFilters from './components/ScoreFilters.vue'
 import ScoreTable from './components/ScoreTable.vue'
 import SongCover from './components/SongCover.vue'
 import { isDark, songLanguage, theme } from './composables/useSettings'
-import { getChartRating } from './core/rating/calculator'
+import { getChartRating, getModeB30, ratingModes, type RatingMode } from './core/rating/calculator'
 import { getRankByScore } from './core/rating/rank'
-import { createScoreComparator } from './core/scoreSort'
 import type { SongCategory } from './data/categories'
 import type { ScoreRow } from './db/models'
 import { useOcrImport } from './composables/useOcrImport'
@@ -97,7 +98,7 @@ const query = ref(''),
     mode = ref('ALL')
 const b30Query = ref(''),
     b30Difficulty = ref('ALL'),
-    b30Mode = ref('ALL'),
+    b30Mode = ref<RatingMode>('BASIC'),
     b30Category = ref<SongCategory | 'ALL'>('ALL')
 const {
     scores,
@@ -105,18 +106,29 @@ const {
     loading: databaseLoading,
     reload: reloadDatabase,
 } = useScoreList()
-const b30 = computed(() => {
-    const compare = createScoreComparator('rating', 'ja')
-    return [...scores.value].sort((a, b) => compare(b, a)).slice(0, 30)
-})
-const totalRating = computed(() =>
-    (
-        Math.floor(
-            b30.value.reduce((sum, s) => sum + Math.round(s.rating * 100), 0) /
-                30,
-        ) / 100
-    ).toFixed(2),
+const modeRatings = computed(() =>
+    ratingModes.map((mode) => getModeB30(scores.value, mode)),
 )
+const selectedRating = computed(
+    () => modeRatings.value.find((summary) => summary.mode === b30Mode.value)!,
+)
+const b30 = computed(() => selectedRating.value.items)
+const hasScoreFilters = computed(
+    () =>
+        Boolean(query.value.trim()) ||
+        category.value !== 'ALL' ||
+        mode.value !== 'ALL' ||
+        difficulty.value !== 'ALL',
+)
+const hasB30Filters = computed(
+    () =>
+        Boolean(b30Query.value.trim()) ||
+        b30Category.value !== 'ALL' ||
+        b30Difficulty.value !== 'ALL',
+)
+function selectB30Mode(mode: RatingMode) {
+    b30Mode.value = mode
+}
 function filterScores(
     items: ScoreRow[],
     search: string,
@@ -619,7 +631,7 @@ onUnmounted(() => clearTimeout(toastTimer))
                                 page === 'home'
                                     ? '记录热爱，收集进步。下一次，向更高的 Rating 出发。'
                                     : page === 'b30'
-                                      ? '最好的 30 张谱面，记录属于你的节奏。'
+                                      ? 'BASIC 与 ADVANCED 各自记录最好的 30 张谱面，独立计算 Groove Rating。'
                                       : page === 'scores'
                                         ? '回顾每一次发挥，整理你的个人最佳成绩。'
                                         : '调整外观与曲目信息，让这里更像你的空间。'
@@ -641,25 +653,43 @@ onUnmounted(() => clearTimeout(toastTimer))
                     </div>
                 </div>
 
-                <template v-if="page === 'home' || page === 'b30'">
-                    <section v-if="scores.length" class="stats-grid">
+                <template v-if="page === 'home'">
+                    <section class="stats-grid">
                         <article class="rating-card">
                             <div class="row gap-2">
-                                <Activity :size="16" /><span>Groove Rating</span
-                                ><span class="metric-tag"
-                                    >B{{ Math.min(scores.length, 30) }}</span
+                                <Activity :size="16" /><span
+                                    >Groove Rating</span
                                 >
+                                <button
+                                    type="button"
+                                    :class="[
+                                        'metric-tag',
+                                        'rating-mode-toggle',
+                                        { advanced: b30Mode === 'ADVANCED' },
+                                    ]"
+                                    :aria-label="`当前 ${selectedRating.label}，切换到 ${b30Mode === 'BASIC' ? 'ADV' : 'BAS'}`"
+                                    @click="
+                                        selectB30Mode(
+                                            b30Mode === 'BASIC'
+                                                ? 'ADVANCED'
+                                                : 'BASIC',
+                                        )
+                                    "
+                                >
+                                    <Transition name="mode-label" mode="out-in"><span :key="b30Mode">{{ b30Mode === 'BASIC' ? 'BAS' : 'ADV' }}</span></Transition>
+                                    <ArrowLeftRight :size="12" />
+                                </button>
                             </div>
                             <div class="rating-values">
                                 <div class="big-rating">
-                                    {{ totalRating }}<span>RT</span>
+                                    <RollingNumber :value="selectedRating.rating" :decimals="2" :motion-key="b30Mode" /><span>RT</span>
                                 </div>
                                 <div class="rating-floor">
                                     <span>Floor</span>
                                     <strong>{{
-                                        b30.at(-1)?.rating.toFixed(2) ?? '—'
-                                    }}</strong>
-                                    <span>RT</span>
+                                        selectedRating.floor?.toFixed(2) ?? '—'
+                                    }}</strong
+                                    ><span>RT</span>
                                 </div>
                             </div>
                             <div class="metric-bottom">
@@ -676,13 +706,82 @@ onUnmounted(() => clearTimeout(toastTimer))
                                 /></span>
                             </div>
                             <div class="stat-value">
-                                {{ scores.length }} <span>谱面</span>
+                                <RollingNumber :value="scores.length" /> <span>谱面</span>
                             </div>
-                            <small>每张谱面，保留一份最佳成绩</small
-                            ><a href="#scores" class="text-link"
+                            <small>每张谱面，保留一份最佳成绩</small>
+                            <a href="#scores" class="text-link"
                                 >查看全部成绩 <ArrowRight :size="13"
                             /></a>
                         </article>
+                    </section>
+                </template>
+
+                <template v-if="page === 'b30'">
+                    <section
+                        class="mode-rating-grid"
+                        aria-label="各模式 Groove Rating"
+                    >
+                        <button
+                            v-for="summary in modeRatings"
+                            :key="summary.mode"
+                            type="button"
+                            :class="[
+                                'rating-card',
+                                'mode-rating-card',
+                                {
+                                    selected:
+                                        page === 'b30' &&
+                                        b30Mode === summary.mode,
+                                    advanced: summary.mode === 'ADVANCED',
+                                },
+                            ]"
+                            :aria-pressed="
+                                page === 'b30'
+                                    ? b30Mode === summary.mode
+                                    : undefined
+                            "
+                            :aria-label="`查看 ${summary.label} Best 30`"
+                            @click="selectB30Mode(summary.mode)"
+                        >
+                            <div class="row gap-2">
+                                <Activity :size="16" /><strong>{{
+                                    summary.label
+                                }}</strong>
+                                <span>Groove Rating</span>
+                            </div>
+                            <div class="rating-values">
+                                <div class="big-rating">
+                                    {{ summary.rating.toFixed(2)
+                                    }}<span>RT</span>
+                                </div>
+                                <div class="rating-floor">
+                                    <span>B30 Floor</span>
+                                    <strong>{{
+                                        summary.floor?.toFixed(2) ?? '—'
+                                    }}</strong
+                                    ><span>RT</span>
+                                </div>
+                            </div>
+                            <div class="mode-progress" aria-hidden="true">
+                                <span
+                                    :style="{
+                                        width: `${(summary.items.length / 30) * 100}%`,
+                                    }"
+                                ></span>
+                            </div>
+                            <div class="metric-bottom">
+                                <span>{{
+                                    summary.count
+                                        ? `已收录 ${summary.count} 张谱面 · ${summary.items.length < 30 ? `还差 ${30 - summary.items.length} 张填满 B30` : '已填满 B30'}`
+                                        : '暂无成绩 · 录入此模式成绩后自动计算'
+                                }}</span>
+                                <span>{{
+                                    page === 'b30' && b30Mode === summary.mode
+                                        ? '当前榜单'
+                                        : '查看榜单 →'
+                                }}</span>
+                            </div>
+                        </button>
                     </section>
                 </template>
 
@@ -803,9 +902,11 @@ onUnmounted(() => clearTimeout(toastTimer))
                                 <ListMusic :size="18" />
                                 <h2>成绩一览</h2>
                             </div>
-                            <span class="count-badge"
-                                >共 {{ scores.length }} 张谱面</span
-                            >
+                            <span class="count-badge">{{
+                                hasScoreFilters
+                                    ? `显示 ${filtered.length} / ${scores.length} 张谱面`
+                                    : `共 ${scores.length} 张谱面`
+                            }}</span>
                         </div>
                         <ScoreFilters
                             v-model:query="query"
@@ -827,28 +928,35 @@ onUnmounted(() => clearTimeout(toastTimer))
                         <div class="section-title between">
                             <div class="row gap-2">
                                 <Trophy :size="18" />
-                                <h2>Best 30</h2>
+                                <h2>{{ selectedRating.label }} · Best 30</h2>
                             </div>
-                            <span class="count-badge"
-                                >共 {{ b30.length }} 张谱面</span
-                            >
+                            <span class="count-badge">{{
+                                hasB30Filters
+                                    ? `显示 ${filteredB30.length} / ${b30.length} 张谱面`
+                                    : `共 ${b30.length} 张谱面`
+                            }}</span>
                         </div>
                         <ScoreFilters
                             v-model:query="b30Query"
                             v-model:category="b30Category"
-                            v-model:mode="b30Mode"
+                            :mode="b30Mode"
+                            hide-mode
                             v-model:difficulty="b30Difficulty"
                         />
                         <ScoreTable
+                            :key="b30Mode"
                             :items="filteredB30"
                             :position-items="b30"
+                            hide-mode
                             ranked
                         />
                     </section>
                     <p class="rating-explainer">
-                        <CircleHelp :size="15" /> 总 RT 为前 30 张谱面 Rating
-                        之和 ÷ 30；不足 30 张时按 0
-                        补足。相同曲目的不同谱面可分别入选。
+                        <CircleHelp :size="15" /> 每个模式独立取前 30
+                        张谱面，Groove Rating = 该模式 B30 Rating 之和 ÷
+                        30，不足 30 张按 0 补足。Floor
+                        为该模式最后一张入选谱面的
+                        Rating；搜索和筛选不改变入选结果。
                     </p>
                 </template>
 
@@ -1266,7 +1374,7 @@ onUnmounted(() => clearTimeout(toastTimer))
                 >
                     <div class="between">
                         <strong class="row gap-2"
-                            ><CircleHelp :size="16" />Edge 识别速度提示</strong
+                            ><CircleHelp :size="16" />浏览器设置提示</strong
                         >
                         <button
                             class="icon-button"
@@ -1283,14 +1391,14 @@ onUnmounted(() => clearTimeout(toastTimer))
                         <summary>查看处理方法</summary>
                         <p>
                             点击地址栏左侧的站点信息图标，检查当前站点是否启用了增强安全。
-                            对于你信任的站点，可以将当前站点设为例外，刷新页面后重新选择图片；也可以换用其他浏览器。
+                            您可以将当前站点设为例外，刷新页面后重新录入成绩；也可以尝试换用其他浏览器。
                         </p>
                         <a
                             href="https://learn.microsoft.com/zh-cn/deployedge/microsoft-edge-security-browse-safer"
                             target="_blank"
                             rel="noopener noreferrer"
-                            >查看 Microsoft 设置说明</a
-                        >
+                            >查看 Microsoft 设置说明
+                        </a>
                     </details>
                 </aside>
                 <div class="import-results">

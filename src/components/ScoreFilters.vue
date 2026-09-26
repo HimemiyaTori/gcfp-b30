@@ -3,6 +3,8 @@ import { Search, SlidersHorizontal } from 'lucide-vue-next'
 import { songLanguage } from '../composables/useSettings'
 import { songCategories, type SongCategory } from '../data/categories'
 
+defineProps<{ hideMode?: boolean }>()
+
 const query = defineModel<string>('query', { required: true })
 const category = defineModel<SongCategory | 'ALL'>('category', { required: true })
 const mode = defineModel<string>('mode', { required: true })
@@ -28,7 +30,7 @@ const difficulty = defineModel<string>('difficulty', { required: true })
                     {{ item[songLanguage] }}
                 </option>
             </select>
-            <select v-model="mode" aria-label="筛选模式">
+            <select v-if="!hideMode" v-model="mode" aria-label="筛选模式">
                 <option value="ALL">全部模式</option>
                 <option>BASIC</option>
                 <option>ADVANCED</option>
