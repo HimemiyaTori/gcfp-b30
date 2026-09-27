@@ -149,6 +149,17 @@ try {
     await page.getByRole('button', { name: '关闭', exact: true }).click()
     assert.deepEqual(await page.evaluate(() => window.ocrLifecycle), lifecycle)
     console.log('Import queue and cross-batch Worker/session reuse passed')
+    // 完成批次后切页再返回，仍复用空闲工作线程与模型
+    await page.evaluate(() => { location.hash = '#scores' })
+    await page.getByRole('heading', { name: '成绩一览' }).waitFor()
+    await page.evaluate(() => { location.hash = '#home' })
+    await page.getByRole('heading', { name: '录入新成绩' }).waitFor()
+    await page.locator('input[type=file]').setInputFiles(resolve('src/data/test/result/6292.jpg'))
+    await page.waitForFunction(() => document.querySelector('.import-result.skipped'), {}, { timeout: 30000 })
+    await page.getByRole('button', { name: '关闭', exact: true }).click()
+    assert.deepEqual(await page.evaluate(() => window.ocrLifecycle), lifecycle)
+    console.log('Cross-page idle Worker/session reuse passed')
+
     // 提高待上传成绩，避免延迟写入因重复记录而被误判为无操作
     await page.evaluate(async () => {
         const { scoreRepository } = await import('/src/db/scoreRepository.ts')
@@ -228,6 +239,50 @@ try {
     )
     assert.ok((await page.locator('.import-result.failed').textContent()).includes('模拟工作线程初始化失败'))
     assert.equal(await page.locator('.import-result.success').count(), 1)
+    await page.getByRole('button', { name: '关闭', exact: true }).click()
+    // 仅让下一张图片立即超时，后续图片应重建会话并继续处理
+    const beforeTimeout = await page.evaluate(() => window.ocrLifecycle.terminated)
+    await page.evaluate(() => {
+        const timeout = AbortSignal.timeout
+        AbortSignal.timeout = function () {
+            AbortSignal.timeout = timeout
+            return timeout.call(AbortSignal, 0)
+        }
+    })
+    await page.locator('input[type=file]').setInputFiles([
+        resolve('src/data/test/result/6292.jpg'),
+        resolve('src/data/test/result/6292.jpg'),
+    ])
+    await page.waitForFunction(() => document.querySelectorAll('.import-result').length === 2 &&
+        !document.querySelector('.import-result.queued, .import-result.running'), {}, { timeout: 120000 })
+    assert.equal(await page.locator('.import-result.failed').count(), 1, JSON.stringify(await page.locator('.import-result').allTextContents()))
+    assert.match(await page.locator('.import-result.failed').textContent(), /超时/)
+    assert.equal(await page.locator('.import-result.skipped').count(), 1)
+    assert.ok((await page.evaluate(() => window.ocrLifecycle.terminated)) > beforeTimeout)
+    await page.getByRole('button', { name: '关闭', exact: true }).click()
+
+    // 新批次必须取消旧批次的成功动画计时器，不能被旧回调关闭
+    await page.evaluate(async () => {
+        const { scoreRepository } = await import('/src/db/scoreRepository.ts')
+        const record = (await scoreRepository.list()).find(item => item.chartId === '6-basic-hard')
+        await scoreRepository.edit(record.id, 0, true)
+    })
+    await page.locator('input[type=file]').setInputFiles(resolve('src/data/test/result/6292.jpg'))
+    await page.waitForFunction(() => document.querySelector('.import-result.success'), {}, { timeout: 30000 })
+    await page.locator('input[type=file]').setInputFiles(resolve('src/data/test/result/6292.jpg'))
+    await page.waitForFunction(() => document.querySelector('.import-result.skipped'), {}, { timeout: 30000 })
+    const completionDelay = await page.evaluate(async () => {
+        const { motionTiming } = await import('/src/components/common/motion.ts')
+        return motionTiming.progress + motionTiming.successHold + motionTiming.successCircle + motionTiming.successCheck
+    })
+    await page.waitForTimeout(completionDelay + 100)
+    assert.equal(await page.locator('.import-dialog[open]').count(), 1)
+    assert.equal(await page.locator('.import-result.skipped').count(), 1)
+    console.log('Timeout recovery and stale completion callback protection passed')
+    // 卸载应用必须释放完成后保留的模型会话
+    const beforeUnmount = await page.evaluate(() => window.ocrLifecycle.terminated)
+    await page.evaluate(() => document.querySelector('#app').__vue_app__.unmount())
+    await page.waitForFunction(before => window.ocrLifecycle.terminated > before, beforeUnmount)
     assert.deepEqual(errors, [])
     console.log(
         `Browser OCR passed: ${samples.length} samples, ${records.length} distinct charts; cross-batch Worker/session reuse, initialization failure recovery, cancellation, manual AP/optional chain and reload passed.`,

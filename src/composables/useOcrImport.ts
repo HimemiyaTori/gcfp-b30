@@ -2,6 +2,8 @@ import { computed, onUnmounted, ref } from 'vue'
 import { createRecognizer } from '../core/ocr/recognizer'
 import { scoreRepository } from '../db/scoreRepository'
 
+export const MAX_IMPORT_FILES = 60
+
 export interface ImportJob {
     name: string
     index: number
@@ -46,7 +48,7 @@ export function useOcrImport() {
         jobs.value = []
     }
     async function start(files: File[]) {
-        if (files.length > 30) throw new Error('每批最多选择 30 张截图。')
+        if (files.length > MAX_IMPORT_FILES) throw new Error(`每批最多选择 ${MAX_IMPORT_FILES} 张截图。`)
         cancel()
         if (!files.length) return
         const current = new AbortController()

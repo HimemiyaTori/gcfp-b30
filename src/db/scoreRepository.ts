@@ -4,29 +4,7 @@ import { getChartRating } from '../core/rating/calculator'
 import { database, type ScoreDatabase } from './database'
 import type { ScoreAchievements } from './models'
 import Dexie from 'dexie'
-export function validateAchievements(
-    value: ScoreAchievements,
-): ScoreAchievements {
-    for (const flag of [value.fc, value.ap])
-        if (flag !== undefined && typeof flag !== 'boolean')
-            throw new Error('FC / AP 必须为布尔值。')
-    if (
-        value.maxChain !== undefined &&
-        (!Number.isSafeInteger(value.maxChain) || value.maxChain < 0)
-    )
-        throw new Error('Max Chain 必须为非负整数，或留空。')
-    if (value.ap && value.fc === false)
-        throw new Error('AP 成绩必须同时为 FC。')
-    return {
-        fc: value.ap ? true : value.fc,
-        ap: value.ap,
-        maxChain: value.maxChain,
-    }
-}
-export function validateScore(score: number) {
-    if (!Number.isInteger(score) || score < 0 || score > 1050000)
-        throw new Error('Score 必须为 0～1,050,000 范围内的整数。')
-}
+import { validateScore, validateAchievements } from '../core/score/validation'
 export function createScoreRepository(
     db: ScoreDatabase,
     library = songService,
@@ -49,8 +27,6 @@ export function createScoreRepository(
     ) {
         const details = validateAchievements(achievements)
         const value = rating(songId, chartId, score)
-        if (source !== 'manual' && source !== 'ocr')
-            throw new Error('无效的成绩来源。')
         return db.transaction('rw', db.scores, async () => {
             signal?.throwIfAborted()
             const transaction = Dexie.currentTransaction!
@@ -146,24 +122,13 @@ export function createScoreRepository(
             })
         },
         list: () => db.scores.orderBy('updatedAt').reverse().toArray(),
-        async add(
+        async addManual(
             songId: string,
             chartId: string,
             score: number,
-            source: 'manual' | 'ocr' = 'manual',
             achievements: ScoreAchievements = {},
-            signal?: AbortSignal,
         ) {
-            return (
-                await addScore(
-                    songId,
-                    chartId,
-                    score,
-                    source,
-                    achievements,
-                    signal,
-                )
-            ).id
+            return (await addScore(songId, chartId, score, 'manual', achievements)).id
         },
         addOcr(
             songId: string,

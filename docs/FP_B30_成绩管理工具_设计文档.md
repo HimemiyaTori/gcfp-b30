@@ -1,8 +1,8 @@
 # Groove Coaster: Future Performers 成绩管理工具设计文档
 
-> 版本：v1.6
+> 版本：v1.7
 > 状态：一期设计基线已确定，实施规格开发时补齐
-> 最后更新：2026-09-25
+> 最后更新：2026-09-27
 
 ---
 
@@ -205,7 +205,7 @@ Pinia Scores[]
 
 使用 `vue-i18n`，一期仅交付简体中文翻译，预留国际化结构。日文、英文、繁体中文 UI 在二期交付。
 
-未手动选择 UI 语言时，根据浏览器 / 系统提供的用户语言动态匹配当前已交付的语言：简体中文对应 `zh-CN`，繁体中文对应 `zh-TW`，日语对应 `ja-JP`，英语对应 `en-US`；未支持的语言回退英语。一期仅显示简体中文，二期随用户语言匹配上述四种 UI。用户手动设置后优先使用并持久化该设置。
+一期实际文案固定简体中文，保留简／繁／日／英按钮的预览选择，启动选中简体中文，不新增 UI 语言持久化。二期再实现系统语言匹配、实际翻译与 UI 语言偏好持久化。
 
 目录：
 
@@ -221,7 +221,7 @@ src/locales/
 
 曲名与歌手信息不使用 vue-i18n 翻译文件，而来自曲库数据。
 
-未手动选择曲目信息语言时，按UI语言独立决定默认值：简体中文、繁体中文、日语UI默认日语，英语UI默认英语。用户手动选择日语 / 英语后，优先使用并持久化该设置。
+元数据语言按 UI 语言选项联动：英语选择自动设为英语，简体中文、繁体中文和日语选择自动设为日语。保留独立的日／英元数据按钮与现有 localStorage 写入；再次切换 UI 语言时重新应用联动。启动仍按默认简体中文选择设为日语，不增加新的持久化优先级。
 
 曲目信息类型见第 6.2 节，统一通过 helper 获取，如：
 
@@ -279,7 +279,7 @@ Logo 使用用户提供的原始 `GCFP_logo.png`，资源统一存放于 `public
 
 顶部栏左侧以 Logo + `B30` 标识替代“我的空间”及原面包屑，明确本站对应 Groove Coaster: Future Performers。点击标识返回首页，图片提供完整游戏名的替代文本，链接提供首页用途说明。桌面 Logo 宽 166 px，手机宽 136 px，极窄屏宽 118 px，高度按比例自适应；顶部操作区不得遮挡 Logo。
 
-## 颜色变量集中在 `src/style.css`，Logo 与顶部结构位于 `src/App.vue`。
+## 颜色变量集中在 `src/style.css`，Logo 与顶部结构位于 `src/components/app/AppHeader.vue`。
 
 ### 5.5 动画规范
 
@@ -938,7 +938,7 @@ B30 默认选中 BASIC，点击模式卡片切换该模式榜单，并以边框�
 
 设置：
 
-- UI Language（默认按用户语言匹配，一期均回退简体中文）
+- UI Language（一期为预览选择，启动选中简体中文，实际文案保持简体中文）
     - 简体中文
     - 繁体中文（二期引入）
     - 日本語（二期引入）
@@ -947,7 +947,7 @@ B30 默认选中 BASIC，点击模式卡片切换该模式榜单，并以边框�
     - Light
     - Dark
     - System
-- Song metadata language（简 / 繁 / 日用户默认日语，英语用户默认英语）
+- Song metadata language（按 UI 语言选项联动：非英语选择日语，英语选择英语）
     - 日本語
     - English
 
@@ -1031,7 +1031,7 @@ Rank 只根据 Score 推导，不从 OCR 结果或用户输入获取。
 
 原网页在 SS 起的高分段注明仅在启用 PERFECT+ 判定时可达到；理论满分仍为 SSS+。本工具按最终 Score 推导 Rank，不额外增加 PERFECT+ 设置字段。
 
-前端统一调用 `src/core/rating/rank.ts` 的 `getRankByScore(score)`；包括演示列表在内，Rank 均由 Score 实时推导，不在演示数据或成绩记录中维护独立 Rank 值。非法 Score 应先拒绝，不能默认为 E 或截断到合法边界。
+前端统一调用 `src/core/rating/rank.ts` 的 `getRankByScore(score)`；Rank 均由 Score 实时推导，不在成绩记录中维护独立 Rank 值。非法 Score 应先拒绝，不能默认为 E 或截断到合法边界。
 
 ### 12.5 Score Offset
 
@@ -1178,67 +1178,34 @@ FP 判定窗口资料当前不参与本工具核心计算。
 
 ---
 
-## 13. 目录结构建议
+## 13. 当前模块结构
 
 ```text
 src/
+├─ App.vue                     # 组装、唯一成绩订阅、共享模式与筛选状态
+├─ navigation.ts               # hash 页面标识与导航配置
+├─ pages/                      # HomePage、ScoresPage、B30Page、SettingsPage
 ├─ components/
-│  ├─ common/
-│  ├─ score/
-│  └─ ocr/
-│
-├─ composables/
-│  ├─ useScoreList.ts
-│  └─ useOcrImport.ts
-│
+│  ├─ app/                     # 导航、顶部栏、通知、共用外观按钮
+│  ├─ dialogs/                 # 编辑、OCR、删除、清空弹窗
+│  ├─ common/                  # 共用动画组件
+│  ├─ ScoreTable.vue
+│  ├─ ScoreFilters.vue
+│  └─ SongCover.vue
+├─ composables/                # useScoreList、useOcrImport、useSettings
 ├─ core/
-│  ├─ ocr/
-│  │  ├─ crop.ts
-│  │  ├─ recognizer.ts
-│  │  ├─ parser.ts
-│  │  └─ validator.ts
-│  │
-│  ├─ search/
-│  │  └─ songSearch.ts
-│  │
-│  ├─ song/
-│  │  └─ songService.ts
-│  │
-│  └─ rating/
-│     ├─ calculator.ts（单谱 Rating 与按模式计算 B30）
-│     └─ rank.ts
-│
-├─ data/
-│  ├─ songs.json
-│  └─ metadata.json
-│
-├─ db/
-│  ├─ database.ts
-│  ├─ models.ts
-│  └─ scoreRepository.ts
-│
-├─ locales/
-│  └─ zh-CN.json  # 一期；二期新增 zh-TW / ja-JP / en-US
-│
-├─ views/
-│  ├─ Home.vue
-│  ├─ Scores.vue
-│  ├─ B30.vue
-│  └─ Settings.vue
-│
-└─ App.vue
+│  ├─ score/                   # 校验与列表筛选
+│  ├─ search/                  # 共用曲名归一化、手动搜索
+│  ├─ song/                    # 曲库、类型与展示字段转换
+│  ├─ rating/                  # Rating、Rank、按模式计算 B30
+│  ├─ ocr/                     # recognizer、parser
+│  └─ scoreSort.ts
+├─ data/                       # 曲库、计算版本、分类
+├─ db/                         # schema、记录类型、仓储
+└─ locales/                    # 一期简体中文
 ```
 
-`rating/` 属于一期功能模块，需要实现单谱 Rating、Rank 推导与 B30 计算。
-
-一期无独立曲库查询页。仅在二期确认需要跨页面 OCR 后台队列后，再新增：
-
-```text
-stores/
-└─ ocr.ts
-```
-
-并引入 Pinia。
+页面通过 props、emits 和少量 defineExpose 连接，仍使用 hash 导航。暂不引入 Pinia、后台队列、路由库或 KeepAlive。完整职责与生命周期见第 22 节。
 
 ---
 
@@ -1336,7 +1303,7 @@ stores/
 - 可搜索成绩
 - 一期仅简体中文 UI，预留国际化结构；按用户语言匹配时，未交付的语言回退简体中文
 - 可切换亮 / 暗主题，默认跟随系统
-- 可切换日 / 英曲目元数据；简 / 繁 / 日用户默认日语，英语用户默认英语
+- 可切换日 / 英曲目元数据；按 UI 语言选项联动：非英语选择日语，英语选择英语
 - 自动根据 Score 推导 E / D / C / B / A / AA / AAA / S / S+ / SS / SS+ / SSS / SSS+；验证每个分段的上下边界，理论满分仍为 SSS+
 - 自动计算单谱 Rating
 - 同时显示 Groove Rating 与 B30 Floor；Floor 取 B30 最后一条已有记录的 Rating，无记录时显示 —
@@ -1491,7 +1458,7 @@ PWA 仅作为二期之后的未来设计选项，不属于一期或二期交付�
 | T06  | 6.2、10、12.2、14 | Song / Chart ID 生成规则、chartId 唯一范围、曲库更新及下架处理                  | 曲库与数据库开发阶段           | 稳定 ID 规范、唯一性约束及曲库更新规则；同一谱面仅一条成绩，保留已有成绩的关联 | 已实现，见第 20 节 |
 | T07  | 6.3、7            | Unicode 归一化形式、空格 / 标点 / 特殊符号处理清单、别名匹配细节                | 搜索模块开发阶段               | 统一归一化规则及代表曲名的匹配示例；原始展示文本保持独立                       | 已实现，见第 20 节 |
 | T08  | 10.1、11.3        | OCR 更新 / 手动编辑后的 source 语义、createdAt / updatedAt 更新时机             | 成绩写入与编辑开发阶段         | 各类写入操作的字段更新规则，包括成绩未变化时的处理                             | 已实现，见第 20 节 |
-| T09  | 3、8、15          | 浏览器 / 移动端支持范围、模型加载失败、数据库不可用或写入失败时的行为           | 环境验证及异常处理开发阶段     | 支持环境清单、错误提示和恢复方式；写入失败不得显示保存成功                     | 开发时确定         |
+| T09  | 3、8、15          | 浏览器 / 移动端支持范围、模型加载失败、数据库不可用或写入失败时的行为           | 环境验证及异常处理开发阶段     | 支持环境清单、错误提示和恢复方式；写入失败不得显示保存成功                     | 用户确认既有浏览器验收完成；重构回归见第 22 节 |
 | T10  | 10.3、12.2        | Rating 规则 / 曲库版本号格式、全量重算触发时机、失败提示及恢复行为              | 版本管理与 Rating 重算开发阶段 | 版本规范与重算流程；任一版本变更必须重算存量 Rating，完成后才更新计算版本标记  | 已实现，见第 20 节 |
 
 T01～T04 的数值、坐标和性能限制通过真实样本及运行结果确定，不将未经验证的建议直接视为验收结论。正文中的目录拆分、组件选择等实现建议，也允许在开发时确定并回填；二期及未来功能仍按第 16 节另行设计。
@@ -1513,7 +1480,7 @@ T01～T04 的数值、坐标和性能限制通过真实样本及运行结果确�
 - NFKC 统一 Unicode／全角形式，英文字母转小写，`&` 替换为 `and`，移除 Unicode 标点与符号，连续空白合并为单空格并去除首尾空白。
 - 日英标题、searchAliases 和特殊曲名别名共同进入索引，另建无空格标题索引；艺术家日英名参与手动搜索。精确标题／别名优先，其余按 Fuse 匹配排序。空查询返回全部歌曲。
 - Wire&Ring → wire ring / wire and ring；1nfinite 5tellar Chronicle → infinite stellar chronicle 等；III → 3；Destr0yer → destroyer / d0；FREE CONNECTION 2 支持文档列出的分词形式。
-- Fuse 手动搜索 threshold=0.35、ignoreLocation=true。此阈值不用于 OCR 自动入库验收，T02 仍需 PoC 确定。展示始终保留原文。
+- Fuse 手动搜索 threshold=0.35、ignoreLocation=true。此阈值不用于 OCR 自动入库验收，OCR 阈值见第 21 节。展示始终保留原文。
 
 ### 20.3 写入语义（T08）
 
@@ -1521,7 +1488,7 @@ T01～T04 的数值、坐标和性能限制通过真实样本及运行结果确�
 - 新增、编辑、OCR 统一仅接受 0～1,050,000 的整数。Rating 使用已有精确计算模块自动计算；Rank 实时推导。
 - 手动新增重复谱面报错，提示编辑已有成绩，不静默覆盖。编辑接口只接受记录 ID、Score、FC / AP、可选 Max Chain 和降分确认，不接受歌曲或谱面变更。
 - 降分显示曲名和警告，须勾选确认；仓储再次检查确认参数。OCR 使用事务比较分数，只更新更高分，支持并发写入且不会产生重复记录。
-- source 表示最近一次实际修改成绩字段的方式。createdAt 首次写入后不变；Score 或 FC / AP 实际变化时更新 updatedAt/source；相同分数只补齐未知字段，不覆盖已知值。仅补录 Max Chain 时更新字段和 source，不更新 updatedAt。较低 OCR 分数及完全相同输入不更新记录。
+- source 表示最近一次实际修改成绩字段的方式。createdAt 首次写入后不变；Score 或 FC / AP 实际变化时更新 updatedAt/source；相同分数只补齐未知字段，不覆盖已知值。仅修改、补录或清空 Max Chain 时更新字段和 source，不更新 updatedAt。较低 OCR 分数及完全相同输入不更新记录。
 - IndexedDB 为唯一事实来源，Vue 使用 liveQuery 订阅读取结果，新增／编辑／删除后首页、列表和已有 B30 展示同步刷新。无演示成绩自动入库。
 
 ### 20.4 版本重算和异常（T10、T09 部分）
@@ -1530,7 +1497,7 @@ T01～T04 的数值、坐标和性能限制通过真实样本及运行结果确�
 - 数据库 schema 版本独立管理，当前为 1。启动时先检查计算版本；任一版本不同，在同一读写事务内重算全部 Rating，再更新 metadata 的 calculation 标记。
 - 缺失关联或任何写入失败会回滚整次重算，保留原记录及旧标记；页面显示错误并提供重试，初始化完成前禁止保存／删除。
 - 写入异常保留编辑表单并提示错误；只有事务成功才关闭表单并显示成功。IndexedDB 不可用时提示检查浏览器存储权限，不自动退回内存假保存。
-- 运行时需要支持 IndexedDB、dialog、BigInt 的现代浏览器。移动端及各浏览器实机矩阵仍属 T09 后续验收，不在本阶段宣称全部验证。
+- 运行时需要支持 IndexedDB、dialog、BigInt 的现代浏览器。既有浏览器验收由用户确认完成；本次重构只执行针对性回归，不新增设备实测声明。
 
 ### 20.5 验证
 
@@ -1548,7 +1515,7 @@ T01～T04 的数值、坐标和性能限制通过真实样本及运行结果确�
 
 成绩新增可选字段 `fc?: boolean`、`ap?: boolean`、`maxChain?: number`。缺省表示未记录，不把旧成绩的未知状态推断为 false。AP 必须同时为 FC；Max Chain 为非负安全整数，手动新增／编辑允许留空。选曲页没有 Max Chain，保持缺省，不从谱面总物量推算。列表在分数下展示 AP／FC 和已有 Max Chain。
 
-这些字段不参与索引，Dexie schema 仍为 1，无需破坏性迁移，旧记录可直接打开。成绩更高时附带字段随本次成绩替换；相同分数只补充未知值，不覆盖已知值、不接受矛盾 FC／AP。补充 FC／AP 会更新时间；仅补录 Max Chain 不更新时间。较低成绩不修改记录。手动纠错允许修改以上字段，曲目／谱面仍不可更换。
+这些字段不参与索引，Dexie schema 仍为 1，无需破坏性迁移，旧记录可直接打开。成绩更高时附带字段随本次成绩替换；相同分数只补充未知值，不覆盖已知值、不接受矛盾 FC／AP。补充 FC／AP 会更新时间；仅修改、补录或清空 Max Chain 不更新时间。较低成绩不修改记录。手动纠错允许修改以上字段，曲目／谱面仍不可更换。
 
 ### 21.2 布局、ROI 和判定（T01、T02）
 
@@ -1579,10 +1546,10 @@ ROI 位于 `src/core/ocr/recognizer.ts` 的 `regions`，表中为 1280×720 基�
 - 串行处理，显示排队、识别中、已处理、失败、跳过。分数不高于已有最高分且记录未变化的重复谱面标记为跳过；新增、提分或补充未知字段标记为已处理。
 - 完成统计分别显示已处理／失败／跳过。失败或跳过时保留结果，用户可关闭后重新选择图片；不保存截图以实现一键重试。全成功显示完成动画和通知。
 - 单图模型加载／识别超时为 120 秒；模型或运行时异常显示失败，可重新选择图片重试。数据库未就绪禁止导入，写入失败不得显示成功。
-- 关闭弹窗、切换页面、组件卸载时终止 Worker、取消排队并释放 File、ImageBitmap、Canvas 引用。异步结果和仓储事务均检查取消信号；取消后的结果不能入库，已提交记录保留。新批次使用独立代次，旧批次回调不得关闭或推进新批次。
+- 进行中关闭弹窗或切换页面时终止 Worker、取消排队并释放 File、ImageBitmap、Canvas 引用；完成批次后只保留空闲 Worker／模型，支持关闭再导入和切页返回后复用，不保留截图；应用卸载时释放全部会话。异步结果和仓储事务均检查取消信号；取消后的结果不能入库，已提交记录保留。新批次使用独立代次，旧批次回调不得关闭或推进新批次。
 - 使用官方 `@paddleocr/paddleocr-js` 0.4.2、PP-OCRv5 日文兼容模型、WASM 单线程 Worker。首次需联网下载官方模型，图片不上传。SDK 内部依赖 OpenCV.js，与应用自身 Canvas 预处理区分。
 - SDK 使用 `onnxruntime-web` 范围依赖；通过 Yarn `resolutions` 将其锁定到应用使用的 1.24.3，避免 SDK 与本地 WASM 版本错配。`scripts/prepare-ocr.mjs` 在 dev/build 前清理并复制 Worker 和所需的 JSEP WASM 文件到忽略提交的 `public/ocr`，支持 Vite 子目录 base，并检查 WASM 不超过 Cloudflare Workers 的 25 MiB 单文件限制。更换 SDK 时须重新核验 ORT 版本、所需变体及文件体积。
-- 已验证本机 Edge；运行时要求 Worker、WASM、Canvas、createImageBitmap、AbortSignal.any/timeout、IndexedDB。其他浏览器和移动设备性能尚未实机验收。
+- 已验证本机 Edge；运行时要求 Worker、WASM、Canvas、createImageBitmap、AbortSignal.any/timeout、IndexedDB。既有浏览器验收由用户确认完成，本次回归仅记录实际执行的环境。
 
 SDK API 依据：[官方 PaddleOCR.js 文档](https://github.com/PaddlePaddle/PaddleOCR/blob/main/paddleocr-js/packages/core/README.md)。
 
@@ -1594,4 +1561,31 @@ SDK API 依据：[官方 PaddleOCR.js 文档](https://github.com/PaddlePaddle/Pa
 
 `yarn test`：解析、状态跳过、数字缺位、非法输入、字段可选性、AP/FC 约束、同分补齐、取消写入与既有回归。`yarn build`：类型检查与生产构建。先运行 `yarn dev`，再 `yarn test:ocr`：逐图真实识别、真实上传入库、切页／关闭取消、手动 AP 与空 Max Chain、刷新持久化；默认使用系统 Edge，可通过 OCR_BROWSER 指定 Playwright 浏览器通道。首次需要访问官方模型下载地址。已检查 390px 表单布局。
 
-T01～T04 按本节实现；T09 仍保留跨浏览器／移动端兼容性验收，不宣称全部环境已验证。
+T01～T04 按本节实现；T09 的既有浏览器验收由用户确认完成，不将这一确认扩大为新增设备的实测声明。
+
+## 22. 一期结构重构（2026-09-27）
+
+### 22.1 状态与界面
+
+App 只调用一次 useScoreList，向页面提供只读成绩与汇总；手动写入、删除及 OCR 提交后均由 liveQuery 刷新。根部保留成绩页与 B30 页各自的筛选条件，切页不清空；首页和 B30 共用当前模式。表格排序／分页仍属于 ScoreTable，重新进入页面或切换 B30 模式时保持原有初始化行为。
+
+四个页面只负责各自展示与交互。编辑、OCR、删除、清空弹窗常驻根部，各自维护 pending、错误及生命周期，通过 open／start 方法接收请求，通过 notify 事件报告结果。统一 canWrite 来自数据库加载与错误状态，仓储继续执行数据约束。
+
+首页总成绩数为 0 时隐藏 RT 与收录谱面数卡片。手机底栏无论折叠标记为何值都隐藏成绩数量，图标与文字垂直居中。界面语言保留预览选择及第 5 节的元数据联动。
+
+### 22.2 业务边界
+
+- addManual(songId, chartId, score, achievements?) 返回记录 ID，重复谱面提示编辑；addOcr(songId, chartId, score, achievements?, signal?) 返回 { id, skipped }，负责最高分与同分补齐
+- edit、list、remove、clear 和可注入数据库／曲库／版本的仓储工厂保留；公开 add(..., source) 已移除，内部固定来源不再重复判断
+- isValidScore、validateScore、validateAchievements 集中为纯业务校验，OCR 解析器不再导入数据库仓储；计算错误类型与公式保持不变
+- 日英标题与 searchAliases 共用归一化和收集规则；特殊别名只维护在曲库。手动搜索保留艺术家与 0.35 阈值，OCR 保留标题／别名和原置信判定，候选按歌曲保留最佳项
+- 共用歌曲展示转换与列表筛选；B30 先选取再筛选，稳定排序只改变展示，不修改输入、原名次、RT 或 Floor
+- 仅 Max Chain 变化不更新时间，Score 或 FC／AP 变化才更新时间；数据库 schema、存储字段、曲库 ID 与计算版本不变，无迁移
+
+### 22.3 OCR 生命周期与验证
+
+OcrImportDialog 常驻并持有 useOcrImport，active 为 false 时取消进行中任务及其展示回调；空闲模型允许保留至下一次导入，应用卸载释放。取消信号、仓储事务中止和 UI 批次代次检查分别保护任务、写入与展示。截图引用按原规则释放，不建立后台队列。
+
+本次回归使用 yarn test、yarn build、yarn test:ocr；新增 yarn test:ui 覆盖真实表单、Max Chain 更新时间、筛选跨页保留、B30 稳定排序、语言联动、首页空状态与 390/680/681px 导航布局。OCR 保留 21 张样本的既有断言，并覆盖完成后切页返回的模型复用及应用卸载。既有浏览器验收按用户确认完成记录，不重新扩大兼容性范围。
+
+本次实际验证：33 项单元测试、生产构建、Edge 页面回归及 21 张 OCR 样本回归均通过。新增超时后下一张恢复、旧完成回调不得关闭新批次、跨页面模型复用与应用卸载释放断言均通过。Windows 上构建与浏览器回归串行执行，避免准备 public/ocr 时与开发服务文件监听竞争。

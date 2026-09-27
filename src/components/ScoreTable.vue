@@ -69,10 +69,7 @@ const sortedItems = computed(() => {
     const compare = createScoreComparator(sortKey.value, songLanguage.value, {
         primaryOnly: props.ranked,
     })
-    return props.items
-        .map((item, index) => ({ item, index }))
-        .sort((a, b) => compare(a.item, b.item) * direction || a.index - b.index)
-        .map(({ item }) => item)
+    return [...props.items].sort((a, b) => compare(a, b) * direction)
 })
 const pageSize = 30
 const currentPage = ref(1)

@@ -1,7 +1,7 @@
 import Fuse from 'fuse.js'
 import { songService } from '../song/songService'
-import { normalizeSongText } from '../search/songSearch'
-import { validateScore } from '../../db/scoreRepository'
+import { normalizeSongText, getSongSearchTitles } from '../search/songText'
+import { validateScore } from '../score/validation'
 import type { ScoreAchievements } from '../../db/models'
 
 export type Layout = 'result' | 'select'
@@ -53,11 +53,10 @@ export function parseStatus(text: string) {
     throw new Error('无法确认结算状态，未保存成绩。')
 }
 const entries = songService.songs.flatMap((song) =>
-    [song.title.ja, song.title.en, ...(song.searchAliases ?? [])]
-        .filter((title): title is string => !!title)
+    getSongSearchTitles(song)
         .map((title) => ({
             song,
-            title: normalizeSongText(title).replace(/\s/g, ''),
+            title: title.replace(/\s/g, ''),
         })),
 )
 const fuse = new Fuse(entries, {
@@ -73,12 +72,13 @@ export function matchSong(title: string) {
     if (new Set(exact.map((e) => e.song.id)).size === 1) return exact[0]!.song
     const matches = fuse.search(term)
     // Fuse 按匹配度从高到低排序，每首歌曲保留最佳语言或别名匹配，而非最后一项
-    const candidates = matches.filter(
-        (result, index) =>
-            matches.findIndex(
-                (other) => other.item.song.id === result.item.song.id,
-            ) === index,
-    )
+    const seen = new Set<string>()
+    const candidates = matches.filter((result) => {
+        const id = result.item.song.id
+        if (seen.has(id)) return false
+        seen.add(id)
+        return true
+    })
     const best = candidates[0]
     if (
         !best ||

@@ -1,4 +1,4 @@
-import { computed, ref, watchEffect } from 'vue'
+import { computed, ref, watch, watchEffect } from 'vue'
 type Theme = 'system' | 'light' | 'dark'
 function read(key: string) {
     try {
@@ -13,6 +13,20 @@ export const theme = ref<Theme>(
 )
 export const songLanguage = ref<'ja' | 'en'>(
     read('ga-language') === 'en' ? 'en' : 'ja',
+)
+export const uiLanguages = [
+    { id: 'zh-CN', label: '简体中文' },
+    { id: 'zh-TW', label: '繁體中文' },
+    { id: 'ja', label: '日本語' },
+    { id: 'en', label: 'English' },
+] as const
+export const uiLanguage = ref<(typeof uiLanguages)[number]['id']>('zh-CN')
+watch(
+    uiLanguage,
+    (language) => {
+        songLanguage.value = language === 'en' ? 'en' : 'ja'
+    },
+    { immediate: true },
 )
 const media = window.matchMedia('(prefers-color-scheme: dark)')
 const systemDark = ref(media.matches)

@@ -1508,7 +1508,7 @@ input::placeholder {
     }
 }
 @media (max-width: 680px) {
-    .sidebar-collapsed .nav-item .nav-badge {
+    .nav-item .nav-badge {
         display: none;
     }
     .sidebar {

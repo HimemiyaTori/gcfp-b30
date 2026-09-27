@@ -1,9 +1,10 @@
+import { isValidScore } from '../score/validation'
 import type { ScoreRow } from '../../db/models'
 import { createScoreComparator } from '../scoreSort'
 
 // 按第 12 节规定进行精确整数插值，并返回截断到百分位的结果
 export function getChartRating(score: number, level: number): number {
-    if (!Number.isInteger(score) || score < 0 || score > 1050000 || !Number.isFinite(level) || level < 0 || !Number.isInteger(level * 2)) {
+    if (!isValidScore(score) || !Number.isFinite(level) || level < 0 || !Number.isInteger(level * 2)) {
         throw new RangeError('Invalid score or chart level')
     }
     const base = BigInt(level * 100)

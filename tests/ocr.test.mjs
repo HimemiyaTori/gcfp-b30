@@ -37,10 +37,10 @@ test('persist optional chain/flags, equal-score enrichment, highest score, cance
     const db = new ScoreDatabase(`ocr-${crypto.randomUUID()}`)
     const repo = createScoreRepository(db)
     try {
-        const id = await repo.add('1', '1-advanced-normal', 1048935, 'ocr', { fc: true, ap: true })
-        await repo.add('1', '1-advanced-normal', 1048935, 'ocr', { fc: true, ap: true, maxChain: 190 })
+        const { id } = await repo.addOcr('1', '1-advanced-normal', 1048935, { fc: true, ap: true })
+        await repo.addOcr('1', '1-advanced-normal', 1048935, { fc: true, ap: true, maxChain: 190 })
         assert.equal((await db.scores.get(id)).maxChain, 190)
-        await repo.add('1', '1-advanced-normal', 1046807, 'ocr', { fc: true, ap: false, maxChain: 190 })
+        await repo.addOcr('1', '1-advanced-normal', 1046807, { fc: true, ap: false, maxChain: 190 })
         assert.equal((await db.scores.get(id)).ap, true)
         await repo.edit(id, 1048935, false, { fc: false, ap: false })
         assert.equal((await db.scores.get(id)).maxChain, undefined)
@@ -48,9 +48,13 @@ test('persist optional chain/flags, equal-score enrichment, highest score, cance
         for (const maxChain of [-1, 1.5, NaN, '190']) await assert.rejects(repo.edit(id, 1048935, false, { maxChain }))
         await assert.rejects(repo.edit(id, 1048935, false, { fc: false, ap: true }))
         const controller = new AbortController(); controller.abort()
-        await assert.rejects(repo.add('1', '1-advanced-normal', 1050000, 'ocr', {}, controller.signal))
+        await assert.rejects(repo.addOcr('1', '1-advanced-normal', 1050000, {}, controller.signal))
         assert.equal((await db.scores.get(id)).score, 1048935)
         db.close(); await db.open()
         assert.equal((await db.scores.get(id)).fc, false)
     } finally { await db.delete() }
+})
+
+test('OCR title matching does not accept an artist-only match', () => {
+    assert.throws(() => matchSong('YOASOBI'))
 })

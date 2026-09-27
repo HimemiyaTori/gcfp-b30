@@ -33,3 +33,13 @@ export const songService = createSongService(rawSongs as Song[])
 export const getSongTitle = (song: Song, lang: 'ja' | 'en') => song.title[lang] || song.title.ja
 export const getSongArtist = (song: Song, lang: 'ja' | 'en') => song.artist[lang] || song.artist.ja
 export const formatLevel = (level: number) => Number.isInteger(level) ? String(level) : `${Math.floor(level)}+`
+
+export function getSongDisplay(song: Song, language: 'ja' | 'en') {
+    return {
+        id: song.id,
+        ja: getSongTitle(song, 'ja'),
+        en: getSongTitle(song, 'en'),
+        artist: getSongArtist(song, language),
+        coverSourceUrl: song.coverSourceUrl,
+    }
+}

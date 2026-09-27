@@ -5,5 +5,4 @@ export const motionTiming = {
     successCircle: 560,
     successCheck: 360,
     successHold: 900,
-    successFade: 300,
 } as const
