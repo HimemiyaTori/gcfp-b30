@@ -197,20 +197,21 @@ export function createScoreRepository(
                 if (!record) throw new Error('成绩已不存在，请刷新列表。')
                 if (score < record.score && !allowLower)
                     throw new Error('调低成绩需要确认。')
-                if (
-                    score === record.score &&
-                    (!details ||
-                        (details.fc === record.fc &&
-                            details.ap === record.ap &&
-                            details.maxChain === record.maxChain))
-                )
-                    return
+                const scoreChanged = score !== record.score
+                const achievementChanged =
+                    details !== undefined &&
+                    (details.fc !== record.fc || details.ap !== record.ap)
+                const maxChainChanged =
+                    details !== undefined && details.maxChain !== record.maxChain
+                if (!scoreChanged && !achievementChanged && !maxChainChanged) return
                 await db.scores.update(id, {
                     ...details,
                     score,
                     rating: rating(record.songId, record.chartId, score),
                     source: 'manual',
-                    updatedAt: Date.now(),
+                    ...(scoreChanged || achievementChanged
+                        ? { updatedAt: Date.now() }
+                        : {}),
                 })
             })
         },

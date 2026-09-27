@@ -66,6 +66,13 @@ const uiLanguages = [
     { id: 'en', label: 'English' },
 ] as const
 const uiLanguage = ref<(typeof uiLanguages)[number]['id']>('zh-CN')
+watch(
+    uiLanguage,
+    (language) => {
+        songLanguage.value = language === 'en' ? 'en' : 'ja'
+    },
+    { immediate: true },
+)
 const narrowSidebar = window.matchMedia('(max-width: 960px)')
 const sidebarCollapsed = ref(narrowSidebar.matches)
 function setSidebarCollapsed(collapsed: boolean) {
@@ -654,7 +661,7 @@ onUnmounted(() => clearTimeout(toastTimer))
                 </div>
 
                 <template v-if="page === 'home'">
-                    <section class="stats-grid">
+                    <section v-if="scores.length" class="stats-grid">
                         <article class="rating-card">
                             <div class="row gap-2">
                                 <Activity :size="16" /><span
