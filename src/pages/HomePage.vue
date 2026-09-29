@@ -88,7 +88,7 @@ function drop(event: DragEvent) {
                     <h2>录入新成绩</h2>
                 </div>
                 <span class="micro-label"
-                    >SCREENSHOT IMPORT</span
+                    >SCORE IMPORT</span
                 >
             </div>
             <label
@@ -106,21 +106,21 @@ function drop(event: DragEvent) {
                         /><span class="plus-bubble">+</span>
                     </div>
                 </div>
-                <h3>拖入或选择成绩截图</h3>
+                <h3>拖入或选择成绩截图 / Excel</h3>
                 <input
                     ref="fileInput"
                     class="drop-zone-input"
                     type="file"
-                    accept="image/png,image/jpeg,image/webp"
+                    accept="image/png,image/jpeg,image/webp,.xlsx"
                     multiple
-                    aria-label="选择成绩截图"
+                    aria-label="选择成绩截图或 Excel"
                     @change="
                         selectFiles(
                             ($event.target as HTMLInputElement)
                                 .files,
                         )
                     "
-                /><small>PNG / JPG / WebP · 支持多张选择</small>
+                /><small>PNG / JPG / WebP 可批量上传 · Excel 每次一个 .xlsx 文件</small>
             </label>
             <div class="import-foot between">
                 <span class="row gap-2"
@@ -132,18 +132,18 @@ function drop(event: DragEvent) {
         <article class="guide-panel">
             <div class="row gap-2">
                 <Sparkles :size="17" />
-                <h2>从截图，到你的成绩库</h2>
+                <h2>从文件，到你的成绩库</h2>
             </div>
             <p class="guide-intro">少一点整理，多一点游戏。</p>
             <div
                 v-for="(step, i) in [
                     {
-                        title: '放入成绩截图',
-                        text: '支持单张或批量添加完整的游戏成绩截图。',
+                        title: '放入截图或 Excel',
+                        text: '截图支持批量上传，Excel 可使用本站模板填写。',
                     },
                     {
                         title: '自动识别与整理',
-                        text: '识别曲目、谱面和分数，成功后直接录入。',
+                        text: '截图识别成功后录入，Excel 检查并预览后确认导入。',
                     },
                     {
                         title: '见证每一次突破',

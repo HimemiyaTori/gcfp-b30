@@ -44,6 +44,24 @@ const notification = ref<InstanceType<typeof AppNotification>>()
 function notify(message: string, title?: string) {
     notification.value?.show(message, title)
 }
+function uploadFiles(files: File[]) {
+    if (!canWrite.value) {
+        notify('本地数据库尚未就绪，请先重试。')
+        return
+    }
+    const workbooks = files.filter(file => /\.xlsx$/i.test(file.name))
+    if (workbooks.length) {
+        if (files.length !== 1) {
+            notify('Excel 请一次上传一个文件，成绩截图请单独上传。', '请选择文件')
+            return
+        }
+        if (excel.value?.pending) {
+            notify('Excel 正在处理，请完成后再上传。', '请稍候')
+            return
+        }
+        void excel.value?.importFile(workbooks[0]!)
+    } else ocr.value?.start(files)
+}
 function readHash() {
     const id = location.hash.slice(1)
     page.value = navigation.some(item => item.id === id) ? id as Page : 'home'
@@ -113,7 +131,7 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
                     :scores="scores"
                     :selected-rating="selectedRating"
                     v-model:mode="b30Mode"
-                    @upload="ocr?.start($event)"
+                    @upload="uploadFiles"
                 />
                 <ScoresPage
                     v-if="page === 'scores'"

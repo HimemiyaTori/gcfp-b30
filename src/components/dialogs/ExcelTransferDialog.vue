@@ -22,7 +22,10 @@ async function selectFile(event: Event) {
     const input = event.target as HTMLInputElement
     const file = input.files?.[0]
     input.value = ''
-    if (!file || pending.value || !props.canWrite) return
+    if (file) await importFile(file)
+}
+async function importFile(file: File) {
+    if (pending.value || !props.canWrite) return
     preview.value = undefined
     summary.value = undefined
     error.value = ''
@@ -71,7 +74,7 @@ function close() {
     preview.value = undefined
     summary.value = undefined
 }
-defineExpose({ start, download, pending })
+defineExpose({ start, importFile, download, pending })
 </script>
 
 <template>
