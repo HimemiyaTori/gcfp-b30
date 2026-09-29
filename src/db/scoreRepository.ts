@@ -5,6 +5,7 @@ import { database, type ScoreDatabase } from './database'
 import type { ScoreAchievements } from './models'
 import Dexie from 'dexie'
 import { validateScore, validateAchievements } from '../core/score/validation'
+import { planScoreImport, type ImportedScore } from '../core/score/import'
 export function createScoreRepository(
     db: ScoreDatabase,
     library = songService,
@@ -122,6 +123,17 @@ export function createScoreRepository(
             })
         },
         list: () => db.scores.orderBy('updatedAt').reverse().toArray(),
+        async previewImport(rows: ImportedScore[]) {
+            return planScoreImport(rows, await db.scores.toArray()).summary
+        },
+        async importScores(rows: ImportedScore[]) {
+            return db.transaction('rw', db.scores, async () => {
+                // 在同一事务中重新比较当前成绩，预览后发生的写入也不会被低分覆盖
+                const plan = planScoreImport(rows, await db.scores.toArray())
+                if (plan.writes.length) await db.scores.bulkPut(plan.writes)
+                return plan.summary
+            })
+        },
         async addManual(
             songId: string,
             chartId: string,

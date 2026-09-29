@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { coverThumbUrl } from '../core/song/cover'
 const props = defineProps<{ src: string }>()
-const failed = ref(false)
-watch(() => props.src, () => { failed.value = false })
+// 优先同源缩略图，缺失时回退来源原图，再失败显示占位
+const attempt = ref(0)
+watch(() => props.src, () => { attempt.value = 0 })
+const current = computed(() => (props.src ? [coverThumbUrl(props.src), props.src][attempt.value] : undefined))
 </script>
 <template>
     <span class="song-cover">
-        <img v-if="src && !failed" :src="src" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" @error="failed = true" />
+        <img v-if="current" :src="current" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" @error="attempt++" />
         <span v-else aria-hidden="true">♪</span>
     </span>
 </template>

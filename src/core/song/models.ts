@@ -18,7 +18,6 @@ export interface Song {
     vocal?: LocalizedText
     genre: SongCategory
     coverSourceUrl: string
-    coverUrl?: string
     bpm: number
     bpmMax?: number
     pack?: string

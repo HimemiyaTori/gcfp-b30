@@ -11,7 +11,7 @@ export interface ScoreRecord extends ScoreAchievements {
     chartId: string
     score: number
     rating: number
-    source: 'ocr' | 'manual'
+    source: 'ocr' | 'manual' | 'excel'
     createdAt: number
     updatedAt: number
 }

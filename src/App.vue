@@ -17,6 +17,7 @@ import ScoreEditorDialog from './components/dialogs/ScoreEditorDialog.vue'
 import OcrImportDialog from './components/dialogs/OcrImportDialog.vue'
 import ScoreDeleteDialog from './components/dialogs/ScoreDeleteDialog.vue'
 import ClearScoresDialog from './components/dialogs/ClearScoresDialog.vue'
+import ExcelTransferDialog from './components/dialogs/ExcelTransferDialog.vue'
 const { t } = useI18n()
 const page = ref<Page>('home')
 const sidebarCollapsed = ref(false)
@@ -38,6 +39,7 @@ const editor = ref<InstanceType<typeof ScoreEditorDialog>>()
 const ocr = ref<InstanceType<typeof OcrImportDialog>>()
 const deletion = ref<InstanceType<typeof ScoreDeleteDialog>>()
 const clearDialog = ref<InstanceType<typeof ClearScoresDialog>>()
+const excel = ref<InstanceType<typeof ExcelTransferDialog>>()
 const notification = ref<InstanceType<typeof AppNotification>>()
 function notify(message: string, title?: string) {
     notification.value?.show(message, title)
@@ -131,7 +133,11 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
                     v-if="page === 'settings'"
                     :count="scores.length"
                     :can-write="canWrite"
+                    :excel-busy="excel?.pending ?? false"
                     @clear="clearDialog?.open()"
+                    @import="excel?.start()"
+                    @export="excel?.download(false)"
+                    @template="excel?.download(true)"
                 />
                 <p v-if="databaseLoading" role="status">正在加载本地成绩…</p>
                 <div v-if="databaseError" class="panel error" role="alert">
@@ -165,5 +171,6 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
         <ScoreDeleteDialog ref="deletion" :can-write="canWrite" @notify="notify" />
         <ClearScoresDialog ref="clearDialog" :can-write="canWrite" :count="scores.length" @notify="notify" />
         <AppNotification ref="notification" />
+        <ExcelTransferDialog ref="excel" :can-write="canWrite" @notify="notify" />
     </div>
 </template>

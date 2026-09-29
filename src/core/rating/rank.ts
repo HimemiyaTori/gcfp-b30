@@ -1,6 +1,6 @@
 import { isValidScore } from '../score/validation'
 // 来源：Groove Coaster Wiki，SwitchFP / ゲーム概要, スコアランク
-// 核验日期：2026-09-22，完整来源链接记录在设计文档第 12.4 节
+// 核验日期：2026-09-22，完整来源链接记录在一期设计文档第 12.4 节
 export type ScoreRank =
     | 'E'
     | 'D'
@@ -16,7 +16,7 @@ export type ScoreRank =
     | 'SSS'
     | 'SSS+'
 
-const thresholds: readonly (readonly [number, ScoreRank])[] = [
+export const rankThresholds: readonly (readonly [number, ScoreRank])[] = [
     [1040000, 'SSS+'],
     [1030000, 'SSS'],
     [1020000, 'SS+'],
@@ -36,5 +36,5 @@ export function getRankByScore(score: number): ScoreRank {
     if (!isValidScore(score)) {
         throw new RangeError('Score 必须是 0～1,050,000 范围内的整数')
     }
-    return thresholds.find(([minimum]) => score >= minimum)![1]
+    return rankThresholds.find(([minimum]) => score >= minimum)![1]
 }

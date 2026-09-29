@@ -2,6 +2,8 @@ import { isValidScore } from '../score/validation'
 import type { ScoreRow } from '../../db/models'
 import { createScoreComparator } from '../scoreSort'
 
+export const ratingNodes = [[700000, -350], [800000, -200], [850000, -150], [900000, -100], [950000, -50], [1000000, 0], [1010000, 50], [1020000, 100], [1030000, 150], [1040000, 200], [1045000, 250]] as const
+
 // 按第 12 节规定进行精确整数插值，并返回截断到百分位的结果
 export function getChartRating(score: number, level: number): number {
     if (!isValidScore(score) || !Number.isFinite(level) || level < 0 || !Number.isInteger(level * 2)) {
@@ -10,7 +12,7 @@ export function getChartRating(score: number, level: number): number {
     const base = BigInt(level * 100)
     if (score <= 500000) return 0
     if (score < 700000) return Number(BigInt(score - 500000) * (base > 350n ? base - 350n : 0n) / 200000n) / 100
-    const nodes = [[700000, -350], [800000, -200], [850000, -150], [900000, -100], [950000, -50], [1000000, 0], [1010000, 50], [1020000, 100], [1030000, 150], [1040000, 200], [1045000, 250]] as const
+    const nodes = ratingNodes
     if (score >= 1045000) return Number(base + 250n) / 100
     for (let i = 1; i < nodes.length; i++) {
         const [end, endOffset] = nodes[i]!

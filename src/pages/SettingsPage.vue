@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Check, Monitor, Moon, Sun } from 'lucide-vue-next'
 import { songLanguage, theme, uiLanguages, uiLanguage } from '../composables/useSettings'
-defineProps<{ count: number; canWrite: boolean }>()
-const emit = defineEmits<{ clear: [] }>()
+defineProps<{ count: number; canWrite: boolean; excelBusy: boolean }>()
+const emit = defineEmits<{ clear: []; import: []; export: []; template: [] }>()
 </script>
 
 <template>
@@ -94,13 +94,26 @@ const emit = defineEmits<{ clear: [] }>()
         <div class="section-title"><h2>本地数据</h2></div>
         <div class="setting-row">
             <div>
+                <h3>Excel 导入与导出</h3>
+                <p>导出全部 {{ count }} 条成绩，或按模板批量导入。导入前会检查数据并显示合并预览。</p>
+                <p>支持 .xlsx，最大 5 MiB。模板按 BASIC / ADVANCED 预填全部谱面，填写 Score 后自动计算 Rank / RT。</p>
+                <p v-if="excelBusy" role="status">正在处理文件，曲绘加载最多等待 20 秒…</p>
+            </div>
+            <div class="excel-actions">
+                <button class="button secondary" :disabled="excelBusy" @click="emit('template')">下载导入模板</button>
+                <button class="button secondary" :disabled="excelBusy || !canWrite || !count" @click="emit('export')">导出全部成绩</button>
+                <button class="button primary" :disabled="excelBusy || !canWrite" @click="emit('import')">导入 Excel</button>
+            </div>
+        </div>
+        <div class="setting-row">
+            <div>
                 <h3>清空成绩数据</h3>
                 <p>删除本机存储的全部成绩。</p>
             </div>
             <button
                 class="button secondary danger-button"
                 :disabled="
-                    !count || !canWrite
+                    !count || !canWrite || excelBusy
                 "
                 @click="emit('clear')"
             >
@@ -109,3 +122,8 @@ const emit = defineEmits<{ clear: [] }>()
         </div>
     </section>
 </template>
+
+<style scoped>
+.excel-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; flex-shrink: 0; max-width: 360px; }
+@media (max-width: 680px) { .excel-actions { justify-content: flex-start; max-width: 100%; } }
+</style>
