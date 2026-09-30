@@ -12,6 +12,7 @@ import AppNotification from './components/app/AppNotification.vue'
 import HomePage from './pages/HomePage.vue'
 import ScoresPage from './pages/ScoresPage.vue'
 import B30Page from './pages/B30Page.vue'
+import B30ExportButton from './components/B30ExportButton.vue'
 import SettingsPage from './pages/SettingsPage.vue'
 import ScoreEditorDialog from './components/dialogs/ScoreEditorDialog.vue'
 import OcrImportDialog from './components/dialogs/OcrImportDialog.vue'
@@ -119,8 +120,9 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
                     >
                         <Plus :size="17" /> 手动新增
                     </button>
+                    <B30ExportButton v-show="page === 'b30'" :summary="selectedRating" :ready="canWrite" @notify="notify" />
                     <div
-                        v-if="page === 'home' || page === 'b30'"
+                        v-if="page === 'home'"
                         class="demo-label"
                     >
                         LOCAL DATA <span>本机成绩</span>
