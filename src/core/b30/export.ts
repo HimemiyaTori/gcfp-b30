@@ -2,6 +2,7 @@ import { createApp, nextTick } from 'vue'
 import { toBlob } from 'html-to-image'
 import B30Poster from '../../components/B30Poster.vue'
 import type { getModeB30 } from '../rating/calculator'
+import { loadPosterFonts } from './fonts'
 
 // 导出前把同源素材固化为数据 URL，缺图保留组件中的文字或音符占位
 async function embedImages(root: HTMLElement) {
@@ -53,12 +54,17 @@ export async function exportB30(summary: ReturnType<typeof getModeB30>, language
     const now = new Date()
     const app = createApp(B30Poster, { summary, language, generatedAt: now.toLocaleString('zh-CN', { hour12: false }) })
     try {
+        const fontEmbedCSS = await loadPosterFonts()
         app.mount(host)
         await nextTick()
         await document.fonts.ready
         const root = host.firstElementChild as HTMLElement
+        // 用原字体加载后的实际排版判定溢出，仅长曲名的末尾应用透明渐变
+        for (const title of root.querySelectorAll<HTMLElement>('.poster-title')) {
+            title.classList.toggle('is-overflowing', title.scrollWidth > title.clientWidth)
+        }
         const missing = await embedImages(root)
-        const blob = await toBlob(root, { pixelRatio: 1, fontEmbedCSS: '', backgroundColor: '#354c70' })
+        const blob = await toBlob(root, { pixelRatio: 1, fontEmbedCSS, backgroundColor: '#354c70' })
         if (!blob) throw new Error('图片生成失败，请重试')
         const url = URL.createObjectURL(blob)
         const link = document.createElement('a')
