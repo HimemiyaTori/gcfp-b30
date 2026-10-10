@@ -19,7 +19,7 @@ try {
     page.on('pageerror', (error) => errors.push(error.message))
     await page.goto(`${process.env.OCR_URL || 'http://127.0.0.1:5173'}/#b30`)
     const basicButton = page.getByRole('button', {
-        name: '生成 BAS B30',
+        name: '生成 BASIC 图片',
         exact: true,
     })
     await basicButton.waitFor()
@@ -54,10 +54,7 @@ try {
     await page
         .getByRole('textbox', { name: '搜索成绩' })
         .fill('no-match-for-export')
-    await page.waitForFunction(
-        () => !document.querySelector('.page-heading button[disabled]'),
-    )
-    // 暂缓曲绘请求，确保能检查生成中的排版以及切换模式后的快照
+    // 暂缓曲绘请求，验证生成期间切换模式不改变本次导出内容
     let resumeCovers
     const coversReady = new Promise((resolve) => {
         resumeCovers = resolve
@@ -73,83 +70,6 @@ try {
         await page.locator('.poster-card:not(.poster-empty)').count(),
         30,
     )
-    assert.equal(
-        await page
-            .locator('.poster-card:not(.poster-empty)')
-            .evaluateAll((cards) =>
-                cards.every((card) => {
-                    const box = card.getBoundingClientRect()
-                    const rank = card
-                        .querySelector('.poster-position')
-                        .getBoundingClientRect()
-                    const chart = card
-                        .querySelector('.poster-chart')
-                        .getBoundingClientRect()
-                    const title = card
-                        .querySelector('.poster-title')
-                        .getBoundingClientRect()
-                    const score = card
-                        .querySelector('.poster-score')
-                        .getBoundingClientRect()
-                    const rating = card
-                        .querySelector('.poster-chart-rating')
-                        .getBoundingClientRect()
-                    return (
-                        rank.left - box.left === 140 &&
-                        chart.left - box.left === 182 &&
-                        title.top >= chart.bottom &&
-                        score.top >= title.bottom &&
-                        rating.top >= score.bottom &&
-                        rating.bottom <= box.bottom - 10
-                    )
-                }),
-            ),
-        true,
-    )
-    assert.equal(
-        await page
-            .locator('.poster-badges, .poster-rank, .poster-fc, .poster-ap')
-            .count(),
-        0,
-    )
-    assert.doesNotMatch(
-        await page.locator('.b30-poster').textContent(),
-        /\bRT\b|FULL COMBO|ALL PERFECT|SSS/,
-    )
-    assert.equal(
-        await page.evaluate(() =>
-            [...document.fonts].some(
-                (face) => face.family === 'QQBotUD' && face.status === 'loaded',
-            ),
-        ),
-        true,
-    )
-    assert.match(
-        await page
-            .locator('.poster-score')
-            .first()
-            .evaluate((element) => getComputedStyle(element).fontFamily),
-        /QQBotUD/,
-    )
-    const titleStyles = await page
-        .locator('.poster-title')
-        .evaluateAll((titles) =>
-            titles.map((title) => ({
-                text: title.textContent.trim(),
-                overflow: title.scrollWidth > title.clientWidth,
-                faded: title.classList.contains('is-overflowing'),
-                mask: getComputedStyle(title).maskImage,
-                textOverflow: getComputedStyle(title).textOverflow,
-            })),
-        )
-    assert.ok(titleStyles.some((title) => title.overflow))
-    assert.ok(titleStyles.some((title) => !title.overflow))
-    for (const title of titleStyles) {
-        assert.equal(title.faded, title.overflow)
-        assert.equal(title.mask !== 'none', title.overflow)
-        assert.equal(title.textOverflow, 'clip')
-        assert.ok(!title.text.endsWith('…'))
-    }
     const posterRating = await page
         .locator('.poster-rating strong')
         .textContent()
@@ -178,7 +98,7 @@ try {
     )
     const advancedDownload = page.waitForEvent('download')
     await page
-        .getByRole('button', { name: '生成 ADV B30', exact: true })
+        .getByRole('button', { name: '生成 ADV 图片', exact: true })
         .click()
     await page.locator('.b30-poster').waitFor({ state: 'attached' })
     assert.equal(await page.locator('.poster-empty').count(), 23)

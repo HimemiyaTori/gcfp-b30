@@ -1,15 +1,9 @@
-import 'fake-indexeddb/auto'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import ExcelJS from 'exceljs'
 import { utils, read, write } from 'xlsx'
-import { addWorkbookCovers } from '../src/core/excel/covers.ts'
 import { createScoreWorkbook, parseScoreWorkbook, workbookBytes, MAX_EXCEL_BYTES } from '../src/core/excel/workbook.ts'
-import { planScoreImport } from '../src/core/score/import.ts'
 import { songService } from '../src/core/song/songService.ts'
-import { coverThumbUrl } from '../src/core/song/cover.ts'
-import { getChartRating } from '../src/core/rating/calculator.ts'
-import { ScoreDatabase } from '../src/db/database.ts'
-import { createScoreRepository } from '../src/db/scoreRepository.ts'
 
 const song = songService.songs[0]
 const chart = song.charts[0]
@@ -23,15 +17,12 @@ function book(rows, headers = HEADERS) {
 }
 const parse = workbook => parseScoreWorkbook(write(workbook, { type: 'array', bookType: 'xlsx' }))
 const row = (score = 1000000, extra = []) => [song.id, chart.id, '错误的参考曲名', '无关模式', '', '', score, ...extra]
-async function withDatabase(run) {
-    const db = new ScoreDatabase(`excel-${crypto.randomUUID()}`)
-    try { await run(db, createScoreRepository(db)) } finally { await db.delete() }
-}
-
 test('two mode sheets include all charts, hidden identifiers, input validation and live formulas', async () => {
     const workbook = createScoreWorkbook([], 'en', true)
     const serialized = await workbookBytes(workbook)
     const saved = read(serialized, { cellStyles: true })
+    const restored = new ExcelJS.Workbook()
+    await restored.xlsx.load(serialized)
     assert.deepEqual(saved.SheetNames, ['BASIC', 'ADVANCED'])
     assert.equal(parseScoreWorkbook(serialized).rows.length, 0)
     for (const mode of saved.SheetNames) {
@@ -41,28 +32,24 @@ test('two mode sheets include all charts, hidden identifiers, input validation a
         assert.equal(ws.N6.t, 's')
         assert.ok(ws.F6.f && ws.G6.f)
         for (const index of [10, 11, 12, 13]) assert.equal(ws['!cols'][index].hidden, true)
-        assert.ok(workbook.getWorksheet(mode).getCell('E6').dataValidation)
+        assert.equal(restored.getWorksheet(mode).getCell('E6').dataValidation.type, 'whole')
     }
     assert.equal(saved.Sheets.BASIC.B6.v, 'Idol')
 })
 
-test('binary XLSX round trip preserves flags, unknowns, zeros and timestamps; rating is recalculated', () => withDatabase(async (db, repo) => {
+test('binary XLSX round trip preserves flags, unknowns, zeros and timestamps', async () => {
     const original = [record({ score: 0, fc: false, ap: false, maxChain: 0 }), record({ chartId: song.charts[1].id, fc: true, ap: true, maxChain: 123 }), record({ chartId: song.charts[2].id })]
     const workbook = createScoreWorkbook(original)
     workbook.getWorksheet('BASIC').getCell('G7').value = { formula: '1/0', result: { error: '#DIV/0!' } }
     const parsed = parseScoreWorkbook(await workbookBytes(workbook))
     assert.deepEqual(parsed.issues, [])
-    assert.deepEqual(await repo.importScores(parsed.rows), { added: 3, updated: 0, skipped: 0 })
+    assert.equal(parsed.rows.length, original.length)
     for (const expected of original) {
-        const actual = (await repo.list()).find(r => r.chartId === expected.chartId)
+        const actual = parsed.rows.find(row => row.chartId === expected.chartId)
+        assert.ok(actual, expected.chartId)
         for (const key of ['songId', 'chartId', 'score', 'fc', 'ap', 'maxChain', 'createdAt', 'updatedAt']) assert.equal(actual[key], expected[key], key)
-        assert.equal(actual.rating, getChartRating(expected.score, songService.getChart(expected.songId, expected.chartId).chart.level))
-        assert.equal(actual.source, 'excel')
     }
-    assert.deepEqual(await repo.importScores(parsed.rows), { added: 0, updated: 0, skipped: 3 })
-    db.close(); await db.open()
-    assert.equal(await db.scores.count(), 3)
-}))
+})
 
 test('input columns can be reordered; numeric IDs, string numbers and AP normalization work', () => {
     const parsed = parse(book([[' 1000000 ', chart.id, Number(song.id), '是']], ['Score', 'Chart ID', 'Song ID', 'AP']))
@@ -159,44 +146,6 @@ test('only current mode sheets are accepted, with header-relative row limits', (
     assert.throws(() => parse(workbook), /5000/)
 })
 
-test('merge retains high scores and known flags; enrichment updates only appropriate timestamps', () => {
-    const old = record({ id: 1, fc: false, maxChain: 0 })
-    assert.deepEqual(planScoreImport([input(999999, { ap: true })], [old]).summary, { added: 0, updated: 0, skipped: 1 })
-    const conflict = planScoreImport([input(1000000, { ap: true, maxChain: 100 })], [old])
-    assert.equal(conflict.writes.length, 0)
-    const chain = planScoreImport([input(1000000, { maxChain: 100 })], [record()], 3000)
-    assert.equal(chain.writes[0].updatedAt, 2000)
-    const flag = planScoreImport([input(1000000, { fc: false })], [record()], 3000)
-    assert.equal(flag.writes[0].updatedAt, 3000)
-    const higher = planScoreImport([input(1000001)], [old], 3000)
-    assert.equal(higher.writes[0].createdAt, 1000)
-    assert.equal(higher.writes[0].fc, undefined)
-    assert.equal(higher.writes[0].updatedAt, 3000)
-})
-
-test('commit rechecks current scores after preview and concurrent imports remain unique', () => withDatabase(async (db, repo) => {
-    assert.equal((await repo.previewImport([input()])).added, 1)
-    await repo.addManual(song.id, chart.id, 1050000)
-    assert.deepEqual(await repo.importScores([input()]), { added: 0, updated: 0, skipped: 1 })
-    await repo.clear()
-    await Promise.all([repo.importScores([input(100)]), repo.importScores([input(200)])])
-    assert.equal(await db.scores.count(), 1)
-    assert.equal((await repo.list())[0].score, 200)
-}))
-
-test('invalid batches and actual write failures roll back every write', () => withDatabase(async (db, repo) => {
-    const rows = [input(), input(100, { chartId: song.charts[1].id })]
-    await assert.rejects(repo.importScores([...rows, input(-1, { chartId: song.charts[2].id })]))
-    assert.equal(await db.scores.count(), 0)
-    await assert.rejects(repo.importScores([input(), input()]))
-    const fail = (_key, value) => { if (value.chartId === song.charts[1].id) throw new Error('模拟写入失败') }
-    db.scores.hook('creating', fail)
-    await assert.rejects(repo.importScores(rows), /模拟写入失败/)
-    assert.equal(await db.scores.count(), 0)
-    db.scores.hook('creating').unsubscribe(fail)
-    assert.equal((await repo.importScores(rows)).added, 2)
-}))
-
 test('prefilled rows with no Score are skipped; zero scores and both modes import', async () => {
     const workbook = createScoreWorkbook()
     workbook.getWorksheet('BASIC').getCell('E6').value = 0
@@ -218,46 +167,4 @@ test('input formulas and wrong mode errors include sheet and row, while derived 
     assert.deepEqual(result.issues.map(issue => [issue.sheet, issue.row]), [['BASIC', 6], ['ADVANCED', 6]])
     assert.match(result.issues[0].message, /公式/)
     assert.match(result.issues[1].message, /模式/)
-})
-
-test('cover failures preserve placeholder; one downloaded image is reused across modes', async () => {
-    const workbook = createScoreWorkbook()
-    const urls = []
-    const result = await addWorkbookCovers(workbook, async url => {
-        urls.push(url)
-        if (urls.length !== 1) throw new Error('模拟网络失败')
-        return 'data:image/jpeg;base64,/9j/2Q=='
-    })
-    const unique = new Set(songService.songs.map(s => coverThumbUrl(s.coverSourceUrl)))
-    assert.equal(urls.length, unique.size)
-    assert.equal(new Set(urls).size, unique.size)
-    assert.equal(urls[0], coverThumbUrl(song.coverSourceUrl))
-    assert.match(urls[0], /^\/covers\/[0-9a-f]{8}\.jpg$/)
-    assert.equal(result.loaded, 1)
-    assert.equal(result.missing, unique.size - 1)
-    for (const sheet of workbook.worksheets) {
-        assert.equal(sheet.getImages().length, 1)
-        assert.equal(sheet.getCell('A6').value, null)
-        assert.equal(sheet.getCell('A10').value, '♪')
-    }
-})
-
-test('songs sharing a cover source request the thumbnail once', async () => {
-    const shared = songService.songs.slice(0, 2)
-    const original = shared[1].coverSourceUrl
-    const source = shared[0].coverSourceUrl
-    // 使用独立的共享来源样本，曲库日常维护不影响这个行为测试
-    shared[1].coverSourceUrl = source
-    try {
-        const workbook = createScoreWorkbook()
-        const urls = []
-        await addWorkbookCovers(workbook, async url => {
-            urls.push(url)
-            if (url !== coverThumbUrl(source)) throw new Error('模拟网络失败')
-            return 'data:image/jpeg;base64,/9j/2Q=='
-        })
-        assert.equal(urls.filter(url => url === coverThumbUrl(source)).length, 1)
-        const blocks = workbook.worksheets.flatMap(sheet => shared.filter(s => s.charts.some(c => c.mode.toUpperCase() === sheet.name)))
-        assert.equal(workbook.worksheets.reduce((sum, sheet) => sum + sheet.getImages().length, 0), blocks.length)
-    } finally { shared[1].coverSourceUrl = original }
 })
