@@ -1,6 +1,8 @@
 import { read, utils, type WorkBook } from 'xlsx'
 import { songService } from '../song/songService'
 import { workbookBytes } from './template'
+import { normalizeExcelHeader } from './headers'
+import { inputMessages, MAX_CHAIN } from './validation'
 export { createScoreWorkbook, workbookBytes } from './template'
 import { validateImportedScore, type ImportedScore } from '../score/import'
 
@@ -59,10 +61,10 @@ function flag(value: unknown, label: string): boolean | undefined {
     if (empty(value)) return undefined
     if (typeof value === 'boolean') return value
     const text = String(value).trim().toLowerCase()
-    if (['true', '1', '是'].includes(text)) return true
+    if (['√', 'true', '1', '是'].includes(text)) return true
     if (['false', '0', '否'].includes(text)) return false
     throw new Error(
-        `${label} 请填写 TRUE / FALSE、是 / 否或 1 / 0，未知时留空。`,
+        `${label} 达成时填写 √，未达成时留空；也兼容 TRUE / FALSE、是 / 否或 1 / 0。`,
     )
 }
 function time(value: unknown, label: string): number | undefined {
@@ -120,7 +122,7 @@ export function parseScoreWorkbook(data: ArrayBuffer): ExcelPreview {
             .slice(0, MAX_HEADER_ROWS)
             .findIndex((row) =>
                 required.every((header) =>
-                    row.some((value) => String(value ?? '').trim() === header),
+                    row.some((value) => normalizeExcelHeader(value) === header),
                 ),
             )
         if (headerRow < 0)
@@ -129,9 +131,7 @@ export function parseScoreWorkbook(data: ArrayBuffer): ExcelPreview {
             )
         if (range.e.r - headerRow > MAX_EXCEL_ROWS)
             throw new Error(`${name} 表最多支持 5000 行数据。`)
-        const headers = (table[headerRow] ?? []).map((value) =>
-            String(value ?? '').trim(),
-        )
+        const headers = (table[headerRow] ?? []).map(normalizeExcelHeader)
         for (let c = 0; c <= range.e.c; c++) {
             const cell = sheet[utils.encode_cell({ r: headerRow, c })]
             if (cell?.f || cell?.t === 'e')
@@ -182,13 +182,16 @@ export function parseScoreWorkbook(data: ArrayBuffer): ExcelPreview {
                 const songId = empty(get('Song ID'))
                     ? (chartSongs.get(chartId) ?? '')
                     : String(get('Song ID')).trim()
+                const maxChain = number(get('Max Chain'), 'Max Chain', true)
+                if (maxChain !== undefined && maxChain > MAX_CHAIN)
+                    throw new Error(inputMessages['zh-CN'].chainError)
                 const row = validateImportedScore({
                     songId,
                     chartId,
                     score: number(get('Score'), 'Score')!,
-                    fc: flag(get('FC'), 'FC'),
+                    fc: headers.includes('FC') ? flag(get('FC'), 'FC') ?? false : undefined,
                     ap: flag(get('AP'), 'AP'),
-                    maxChain: number(get('Max Chain'), 'Max Chain', true),
+                    maxChain,
                     updatedAt: time(get('更新时间'), '更新时间'),
                 })
                 if (

@@ -50,7 +50,7 @@ const emit = defineEmits<{ clear: []; import: []; export: []; template: [] }>()
         <div class="setting-row">
             <div>
                 <h3>界面语言</h3>
-                <p>当前仅预览选择状态，界面仍为简体中文。</p>
+                <p>用于 Excel 表头，并同步切换曲目信息语言；界面当前仍为简体中文。</p>
             </div>
             <div
                 class="segmented ui-settings-options"
@@ -103,8 +103,8 @@ const emit = defineEmits<{ clear: []; import: []; export: []; template: [] }>()
                     条成绩，或按模板批量导入。导入前会检查数据并显示合并预览。
                 </p>
                 <p>
-                    模板按 BASIC / ADVANCED预填全部谱面， 填写 Score 后自动计算
-                    Rank / Rating。
+                    模板按 BASIC / ADVANCED 预填全部谱面，填写分数后自动计算
+                    Rank / Rating。FC / AP 达成时填写 √，未达成时留空。
                 </p>
                 <p v-if="excelBusy" role="status">
                     正在处理文件，曲绘加载最多等待 20 秒…

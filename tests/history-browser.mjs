@@ -196,9 +196,37 @@ try {
     await details.getByRole('button', { name: '下一页' }).click()
     await page.waitForFunction(() => document.querySelectorAll('.song-dialog tbody tr').length === 5)
     assert.equal(await details.locator('tbody tr').count(), 5)
+    // 删空末页后回到有效页，关闭重开恢复默认历史排序和第一页
+    for (let remaining = 4; remaining >= 0; remaining--) {
+        await details.locator('tbody tr').first().getByRole('button', { name: '删除历史成绩' }).click()
+        await page.getByRole('button', { name: '确认删除', exact: true }).click()
+        await page.getByRole('button', { name: '确认删除', exact: true }).waitFor({ state: 'hidden' })
+        await page.waitForFunction(expected => document.querySelectorAll('.song-dialog tbody tr').length === expected, remaining || 30)
+    }
+    assert.equal(await details.getByRole('navigation', { name: '历史成绩分页' }).count(), 0)
+    await details.locator('tbody tr').first().getByText('900,034', { exact: false }).waitFor()
+    await details.getByRole('button', { name: /^等级：/ }).click()
+    await page.keyboard.press('Escape')
+    await details.waitFor({ state: 'hidden' })
+    await page.locator('.history-table tbody tr').first().getByRole('button').first().click()
+    await details.locator('tbody tr').first().getByText('900,034', { exact: false }).waitFor()
+    assert.equal(await details.getByRole('button', { name: /^导入时间：/ }).getAttribute('aria-label'), '导入时间：当前降序，点击升序')
     await page.screenshot({ animations: 'disabled', path: '.preview/history-details-desktop.png', fullPage: true })
     await page.keyboard.press('Escape')
     await details.waitFor({ state: 'hidden' })
+    // 模拟历史存储读取失败，通过重试按钮恢复可见数据
+    await page.evaluate(async () => {
+        const { database } = await import('/src/db/database.ts')
+        window.historyOrderBy = database.scoreHistory.orderBy
+        database.scoreHistory.orderBy = () => { throw new Error('模拟历史读取失败') }
+    })
+    await page.locator('.history-table').getByRole('button', { name: /^Rank：/ }).click()
+    await page.locator('.history-table').getByRole('alert').waitFor()
+    assert.match(await page.locator('.history-table').getByRole('alert').textContent(), /无法读取历史成绩/)
+    await page.evaluate(async () => { (await import('/src/db/database.ts')).database.scoreHistory.orderBy = window.historyOrderBy })
+    await page.locator('.history-table').getByRole('button', { name: '重试', exact: true }).click()
+    await page.waitForFunction(() => !document.querySelector('.history-table [role=alert]') && document.querySelector('.history-table .table-scroll').getAttribute('aria-busy') === 'false')
+    assert.equal(await page.locator('.history-table tbody tr').count(), 10)
     await page.evaluate(() => { location.hash = '#settings' })
     await page.getByRole('button', { name: '清空数据', exact: true }).click()
     await page.getByRole('button', { name: '确认清空全部成绩', exact: true }).click()

@@ -3,24 +3,12 @@ import type { ScoreRecord } from '../../db/models'
 import { getSongTitle, songService } from '../song/songService'
 import { getRankByScore, rankThresholds } from '../rating/rank'
 import { getChartRating, ratingNodes } from '../rating/calculator'
+import { TEMPLATE_HEADERS, localizedHeaders, type ExcelLanguage } from './headers'
+import { inputMessages, MAX_CHAIN } from './validation'
 
 export const MODE_SHEETS = ['BASIC', 'ADVANCED'] as const
-export const TEMPLATE_HEADER_ROW = 5
-export const TEMPLATE_HEADERS = [
-    '曲绘',
-    '曲名',
-    '难度',
-    '等级',
-    'Score',
-    'Rank',
-    'RT',
-    'FC',
-    'AP',
-    'Max Chain',
-    '更新时间',
-    'Chart ID',
-    'Song ID',
-]
+export const TEMPLATE_HEADER_ROW = 1
+export { TEMPLATE_HEADERS } from './headers'
 const difficultyColors = {
     easy: ['FFDCFCE7', 'FF166534'],
     normal: ['FFFEF3C7', 'FF92400E'],
@@ -33,11 +21,12 @@ const fill = (argb: string): ExcelJS.Fill => ({
     fgColor: { argb },
 })
 
-export function scoreFormulas(row: number) {
+export function scoreFormulas(row: number, uiLanguage: ExcelLanguage = 'zh-CN') {
     const score = `E${row}`,
         level = `D${row}`
+    const checkScore = inputMessages[uiLanguage].checkScore
     const guard = (formula: string) =>
-        `IF(${score}="","",IF(NOT(ISNUMBER(${score})),"检查分数",IF(OR(${score}<0,${score}>1050000,MOD(${score},1)<>0),"检查分数",${formula})))`
+        `IF(${score}="","",IF(NOT(ISNUMBER(${score})),"${checkScore}",IF(OR(${score}<0,${score}>1050000,MOD(${score},1)<>0),"${checkScore}",${formula})))`
     const rank = rankThresholds
         .slice(0, -1)
         .reduceRight(
@@ -62,11 +51,13 @@ export function createScoreWorkbook(
     records: ScoreRecord[] = [],
     language: 'ja' | 'en' = 'ja',
     _template = false,
+    uiLanguage: ExcelLanguage = 'zh-CN',
 ): ExcelJS.Workbook {
     const book = new ExcelJS.Workbook()
     book.creator = 'Groove Archive'
     book.calcProperties.fullCalcOnLoad = true
     const byChart = new Map(records.map((record) => [record.chartId, record]))
+    const messages = inputMessages[uiLanguage]
     for (const mode of MODE_SHEETS) {
         const sheet = book.addWorksheet(mode, {
             properties: {
@@ -74,44 +65,20 @@ export function createScoreWorkbook(
             },
         })
         sheet.columns = [
-            15, 42, 14, 9, 16, 12, 12, 10, 10, 16, 28, 32, 12,
+            15, 42, 14, 9, 16, 16, 16, 10, 10, 16, 28, 32, 12,
         ].map((width, index) => ({ width, hidden: index >= 10 }))
         sheet.views = [
             {
                 state: 'frozen',
                 xSplit: 2,
                 ySplit: TEMPLATE_HEADER_ROW,
-                topLeftCell: 'C6',
-                activeCell: 'E6',
+                topLeftCell: 'C2',
+                activeCell: 'E2',
                 showGridLines: false,
                 zoomScale: 90,
             },
         ]
-        sheet.mergeCells('A1:J1')
-        sheet.getCell('A1').value = `${mode} · FP 成绩记录`
-        sheet.getCell('A1').font = {
-            name: '微软雅黑',
-            size: 18,
-            bold: true,
-            color: { argb: 'FF172039' },
-        }
-        sheet.getRow(1).height = 38
-        sheet.mergeCells('A2:J2')
-        sheet.getCell('A2').value =
-            '填写浅黄色单元格：Score、FC、AP、Max Chain。Score 留空不导入。'
-        sheet.mergeCells('A3:J3')
-        sheet.getCell('A3').value =
-            'Rank / Rating 自动计算；FC / AP 填“是 / 否”，留空按“否”。时间与谱面 ID 已隐藏，请勿删除。'
-        for (const row of [2, 3]) {
-            sheet.getRow(row).height = 26
-            sheet.getCell(`A${row}`).font = {
-                name: '微软雅黑',
-                size: 10,
-                color: { argb: 'FF53627A' },
-            }
-        }
-        sheet.getRow(4).height = 10
-        sheet.getRow(TEMPLATE_HEADER_ROW).values = TEMPLATE_HEADERS
+        sheet.getRow(TEMPLATE_HEADER_ROW).values = [...localizedHeaders[uiLanguage]]
         sheet.getRow(TEMPLATE_HEADER_ROW).height = 28
         sheet.getRow(TEMPLATE_HEADER_ROW).eachCell((cell) => {
             cell.fill = fill('FF24334D')
@@ -139,8 +106,8 @@ export function createScoreWorkbook(
                     record?.score ?? null,
                     null,
                     null,
-                    record?.fc === undefined ? null : record.fc ? '是' : '否',
-                    record?.ap === undefined ? null : record.ap ? '是' : '否',
+                    record?.fc ? '√' : null,
+                    record?.ap ? '√' : null,
                     record?.maxChain ?? null,
                     record ? new Date(record.updatedAt).toISOString() : null,
                     chart.id,
@@ -160,7 +127,7 @@ export function createScoreWorkbook(
                     }
                     cell.alignment = {
                         vertical: 'middle',
-                        horizontal: [4, 5, 7, 10].includes(column)
+                        horizontal: [5, 7, 10].includes(column)
                             ? 'right'
                             : 'center',
                     }
@@ -198,7 +165,7 @@ export function createScoreWorkbook(
                 row.getCell(5).numFmt = '#,##0'
                 row.getCell(7).numFmt = '0.00'
                 row.getCell(10).numFmt = '0'
-                const formulas = scoreFormulas(row.number)
+                const formulas = scoreFormulas(row.number, uiLanguage)
                 row.getCell(6).value = {
                     formula: formulas.rank,
                     result: record ? getRankByScore(record.score) : '',
@@ -216,26 +183,28 @@ export function createScoreWorkbook(
                     formulae: [0, 1050000],
                     showErrorMessage: true,
                     errorStyle: 'stop',
-                    errorTitle: '分数无效',
-                    error: '请填写 0～1050000 的整数，未游玩时留空',
+                    errorTitle: messages.scoreTitle,
+                    error: messages.scoreError,
                 }
                 row.getCell(10).dataValidation = {
                     type: 'whole',
                     operator: 'between',
                     allowBlank: true,
-                    formulae: [0, Number.MAX_SAFE_INTEGER],
+                    formulae: [0, MAX_CHAIN],
                     showErrorMessage: true,
                     errorStyle: 'stop',
-                    error: '请填写非负整数，未知时留空',
+                    errorTitle: messages.chainTitle,
+                    error: messages.chainError,
                 }
                 for (const column of [8, 9])
                     row.getCell(column).dataValidation = {
                         type: 'list',
                         allowBlank: true,
-                        formulae: ['"是,否"'],
+                        formulae: ['"√"'],
                         showErrorMessage: true,
                         errorStyle: 'stop',
-                        error: '请选择是或否，未知时留空',
+                        errorTitle: messages.achievementTitle,
+                        error: messages.achievementError,
                     }
             }
             if (charts.length > 1) {
@@ -249,13 +218,13 @@ export function createScoreWorkbook(
             }
         }
         sheet.addConditionalFormatting({
-            ref: `E6:E${sheet.rowCount}`,
+            ref: `E2:E${sheet.rowCount}`,
             rules: [
                 {
                     type: 'expression',
                     priority: 1,
                     formulae: [
-                        'AND(E6<>"",OR(NOT(ISNUMBER(E6)),E6<0,E6>1050000,MOD(E6,1)<>0))',
+                        'AND(E2<>"",OR(NOT(ISNUMBER(E2)),E2<0,E2>1050000,MOD(E2,1)<>0))',
                     ],
                     style: {
                         fill: fill('FFFEE2E2'),
@@ -265,12 +234,12 @@ export function createScoreWorkbook(
             ],
         })
         sheet.addConditionalFormatting({
-            ref: `H6:I${sheet.rowCount}`,
+            ref: `H2:I${sheet.rowCount}`,
             rules: [
                 {
                     type: 'expression',
                     priority: 2,
-                    formulae: ['AND($H6="否",$I6="是")'],
+                    formulae: ['AND($H2<>"√",$I2="√")'],
                     style: {
                         fill: fill('FFFEE2E2'),
                         font: { color: { argb: 'FFB91C1C' } },

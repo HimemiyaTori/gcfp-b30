@@ -41,8 +41,8 @@ try {
     )
     const partial = await download('missing-cover.xlsx')
     assert.equal(partial.media.length, expected - 1)
-    assert.equal(partial.getWorksheet('BASIC').getCell('A6').value, '♪')
-    assert.equal(partial.getWorksheet('ADVANCED').getCell('A6').value, '♪')
+    assert.equal(partial.getWorksheet('BASIC').getCell('A2').value, '♪')
+    assert.equal(partial.getWorksheet('ADVANCED').getCell('A2').value, '♪')
 
     await page.unroute(route)
     const restored = await download('template.xlsx')
@@ -56,7 +56,7 @@ try {
                 ),
             ).length,
         )
-        assert.equal(sheet.getCell('A6').value, null)
+        assert.equal(sheet.getCell('A2').value, null)
     }
     const repeated = await download('repeated-template.xlsx')
     assert.equal(repeated.media.length, expected)

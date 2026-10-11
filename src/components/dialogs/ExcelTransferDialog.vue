@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { scoreRepository } from '../../db/scoreRepository'
-import { songLanguage } from '../../composables/useSettings'
+import { songLanguage, uiLanguage } from '../../composables/useSettings'
 import type { ExcelPreview } from '../../core/excel/workbook'
 
 const props = defineProps<{ canWrite: boolean }>()
@@ -80,6 +80,8 @@ async function confirm() {
 }
 async function download(template: boolean) {
     if (pending.value || (!template && !props.canWrite)) return
+    const language = songLanguage.value
+    const headerLanguage = uiLanguage.value
     pending.value = true
     try {
         const { createScoreWorkbook, downloadWorkbook } =
@@ -88,7 +90,7 @@ async function download(template: boolean) {
         const name = template
             ? 'FP_B30_导入模板.xlsx'
             : `FP_B30_成绩_${new Date().toISOString().replace(/[:.]/g, '-')}.xlsx`
-        const book = createScoreWorkbook(records, songLanguage.value, template)
+        const book = createScoreWorkbook(records, language, template, headerLanguage)
         const { addWorkbookCovers } = await import('../../core/excel/covers')
         const covers = await addWorkbookCovers(book)
         await downloadWorkbook(book, name)

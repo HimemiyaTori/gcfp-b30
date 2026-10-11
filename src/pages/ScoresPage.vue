@@ -3,6 +3,7 @@ import { ListMusic } from 'lucide-vue-next'
 import { computed } from 'vue'
 import ScoreFilters from '../components/ScoreFilters.vue'
 import ScoreTable from '../components/ScoreTable.vue'
+import { useScoreTable } from '../composables/useScoreTable'
 import type { ScoreRow } from '../db/models'
 import { filterScores, hasScoreFilters, type ScoreFiltersState } from '../core/score/filter'
 const filters = defineModel<ScoreFiltersState>('filters', { required: true })
@@ -10,6 +11,7 @@ const hasFilters = computed(() => hasScoreFilters(filters.value))
 const props = defineProps<{ scores: ScoreRow[] }>()
 const emit = defineEmits<{ edit: [score: ScoreRow]; song: [score: ScoreRow] }>()
 const filtered = computed(() => filterScores(props.scores, filters.value))
+const { rows, sort, toggleSort, page, pagination } = useScoreTable(filtered, { sortKey: 'updatedAt', pageSize: 30 })
 </script>
 
 <template>
@@ -32,8 +34,12 @@ const filtered = computed(() => filterScores(props.scores, filters.value))
             v-model:difficulty="filters.difficulty"
         />
         <ScoreTable
-            :items="filtered"
+            :items="rows"
+            :sort="sort"
+            :pagination="pagination"
             editable
+            @sort="toggleSort"
+            @page="page = $event"
             @edit="emit('edit', $event)"
             @song="emit('song', $event)"
         />

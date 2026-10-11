@@ -11,7 +11,8 @@ import {
     Upload,
 } from 'lucide-vue-next'
 import { ref } from 'vue'
-import HistoryTable from '../components/HistoryTable.vue'
+import ScoreTable from '../components/ScoreTable.vue'
+import { useScoreHistory } from '../composables/useScoreHistory'
 import RatingTrend, { type RatingGrain } from '../components/RatingTrend.vue'
 import RollingNumber from '../components/common/RollingNumber.vue'
 import type { ScoreRow, RatingSnapshot } from '../db/models'
@@ -27,6 +28,7 @@ const b30Mode = defineModel<RatingMode>('mode', { required: true })
 const emit = defineEmits<{ upload: [files: File[]]; song: [row: ScoreRow] }>()
 const fileInput = ref<HTMLInputElement>()
 const dragging = ref(false)
+const { rows, sort, toggleSort, page, pagination, error, loading, reload } = useScoreHistory()
 function selectFiles(files: FileList | null) {
     const selected = Array.from(files ?? [])
     if (fileInput.value) fileInput.value.value = ''
@@ -196,6 +198,21 @@ function drop(event: DragEvent) {
                 >管理成绩 <ArrowRight :size="14"
             /></a>
         </div>
-        <HistoryTable @song="emit('song', $event)" />
+        <div class="history-table">
+            <ScoreTable
+                :items="rows"
+                :sort="sort"
+                :pagination="pagination"
+                :error="error"
+                :loading="loading"
+                time-key="importedAt"
+                empty-title="暂无历史成绩"
+                empty-description=""
+                @sort="toggleSort"
+                @page="page = $event"
+                @retry="reload"
+                @song="emit('song', $event)"
+            />
+        </div>
     </section>
 </template>

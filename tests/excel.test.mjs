@@ -2,6 +2,9 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import ExcelJS from 'exceljs'
 import { utils, read, write } from 'xlsx'
+import { mkdtemp, readFile, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import {
     createScoreWorkbook,
     parseScoreWorkbook,
@@ -51,6 +54,13 @@ function book(rows, headers = HEADERS) {
 }
 const parse = (workbook) =>
     parseScoreWorkbook(write(workbook, { type: 'array', bookType: 'xlsx' }))
+const files = await mkdtemp(join(tmpdir(), 'fp-excel-files-'))
+let fileNumber = 0
+async function savedWorkbook(workbook) {
+    const path = join(files, `${fileNumber++}.xlsx`)
+    await writeFile(path, Buffer.from(await workbookBytes(workbook)))
+    return readFile(path)
+}
 const row = (score = 1000000, extra = []) => [
     song.id,
     chart.id,
@@ -63,7 +73,7 @@ const row = (score = 1000000, extra = []) => [
 ]
 test('two mode sheets include all charts, hidden identifiers, input validation and live formulas', async () => {
     const workbook = createScoreWorkbook([], 'en', true)
-    const serialized = await workbookBytes(workbook)
+    const serialized = await savedWorkbook(workbook)
     const saved = read(serialized, { cellStyles: true })
     const restored = new ExcelJS.Workbook()
     await restored.xlsx.load(serialized)
@@ -74,18 +84,18 @@ test('two mode sheets include all charts, hidden identifiers, input validation a
         const expected = songService.songs.flatMap((s) =>
             s.charts.filter((c) => c.mode.toUpperCase() === mode),
         ).length
-        assert.equal(utils.decode_range(ws['!ref']).e.r - 4, expected)
-        assert.equal(ws.M6.t, 's')
+        assert.equal(utils.decode_range(ws['!ref']).e.r, expected)
+        assert.equal(ws.M2.t, 's')
         assert.equal(Object.values(ws).some(cell => cell?.v === '创建时间'), false)
-        assert.ok(ws.F6.f && ws.G6.f)
+        assert.ok(ws.F2.f && ws.G2.f)
         for (const index of [10, 11, 12])
             assert.equal(ws['!cols'][index].hidden, true)
         assert.equal(
-            restored.getWorksheet(mode).getCell('E6').dataValidation.type,
+            restored.getWorksheet(mode).getCell('E2').dataValidation.type,
             'whole',
         )
     }
-    assert.equal(saved.Sheets.BASIC.B6.v, 'Idol')
+    assert.equal(saved.Sheets.BASIC.B2.v, 'Idol')
 })
 
 test('binary XLSX round trip preserves flags, unknowns, zeros and timestamps', async () => {
@@ -98,13 +108,14 @@ test('binary XLSX round trip preserves flags, unknowns, zeros and timestamps', a
             maxChain: 123,
         }),
         record({ chartId: song.charts[2].id }),
+        record({ chartId: song.charts[3].id, fc: true, ap: false }),
     ]
     const workbook = createScoreWorkbook(original)
-    workbook.getWorksheet('BASIC').getCell('G7').value = {
+    workbook.getWorksheet('BASIC').getCell('G3').value = {
         formula: '1/0',
         result: { error: '#DIV/0!' },
     }
-    const parsed = parseScoreWorkbook(await workbookBytes(workbook))
+    const parsed = parseScoreWorkbook(await savedWorkbook(workbook))
     assert.deepEqual(parsed.issues, [])
     assert.equal(parsed.rows.length, original.length)
     for (const expected of original) {
@@ -210,20 +221,20 @@ test('trimmed templates retain scores after deleting rows, optional columns and 
         record({ chartId: song.charts[2].id }),
         record({ chartId: songService.songs.at(-1).charts[3].id }),
     ])
-    const original = read(await workbookBytes(source))
+    const original = read(await savedWorkbook(source))
     const cells = utils.sheet_to_json(original.Sheets.BASIC, {
         header: 1,
         raw: true,
         defval: null,
         range: 0,
     })
-    const columns = ['Score', 'Chart ID', 'AP'].map((header) =>
-        cells[4].indexOf(header),
+    const columns = ['分数', '谱面 ID', 'AP'].map((header) =>
+        cells[0].indexOf(header),
     )
-    // 模拟删除标题、未游玩行、参考列、时间及 Song ID，只保留部分成绩
+    // 模拟删除未游玩行、参考列、时间及曲目 ID，只保留部分成绩
     const retained = [
-        cells[4],
-        ...cells.slice(5).filter((row) => row[4] !== null),
+        cells[0],
+        ...cells.slice(1).filter((row) => row[4] !== null),
     ].map((row) => columns.map((index) => row[index]))
     const trimmed = utils.book_new()
     utils.book_append_sheet(trimmed, utils.aoa_to_sheet(retained), 'BASIC')
@@ -280,9 +291,9 @@ test('only current mode sheets are accepted, with header-relative row limits', (
 
 test('prefilled rows with no Score are skipped; zero scores and both modes import', async () => {
     const workbook = createScoreWorkbook()
-    workbook.getWorksheet('BASIC').getCell('E6').value = 0
-    workbook.getWorksheet('ADVANCED').getCell('E6').value = 1000000
-    const result = parseScoreWorkbook(await workbookBytes(workbook))
+    workbook.getWorksheet('BASIC').getCell('E2').value = 0
+    workbook.getWorksheet('ADVANCED').getCell('E2').value = 1000000
+    const result = parseScoreWorkbook(await savedWorkbook(workbook))
     assert.equal(result.rows.length, 2)
     assert.equal(result.rows[0].score, 0)
     assert.equal(
@@ -298,18 +309,18 @@ test('prefilled rows with no Score are skipped; zero scores and both modes impor
 
 test('input formulas and wrong mode errors include sheet and row, while derived formulas are ignored', async () => {
     const workbook = createScoreWorkbook()
-    workbook.getWorksheet('BASIC').getCell('E6').value = {
+    workbook.getWorksheet('BASIC').getCell('E2').value = {
         formula: '1+1',
         result: 2,
     }
-    workbook.getWorksheet('ADVANCED').getCell('E6').value = 1000000
-    workbook.getWorksheet('ADVANCED').getCell('L6').value = chart.id
-    const result = parseScoreWorkbook(await workbookBytes(workbook))
+    workbook.getWorksheet('ADVANCED').getCell('E2').value = 1000000
+    workbook.getWorksheet('ADVANCED').getCell('L2').value = chart.id
+    const result = parseScoreWorkbook(await savedWorkbook(workbook))
     assert.deepEqual(
         result.issues.map((issue) => [issue.sheet, issue.row]),
         [
-            ['BASIC', 6],
-            ['ADVANCED', 6],
+            ['BASIC', 2],
+            ['ADVANCED', 2],
         ],
     )
     assert.match(result.issues[0].message, /公式/)

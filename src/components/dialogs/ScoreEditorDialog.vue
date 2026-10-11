@@ -8,7 +8,11 @@ import { scoreRepository } from '../../db/scoreRepository'
 import { getChartRating } from '../../core/rating/calculator'
 import { getRankByScore } from '../../core/rating/rank'
 import { isValidScore } from '../../core/score/validation'
-import { songService, getSongDisplay, formatLevel } from '../../core/song/songService'
+import {
+    songService,
+    getSongDisplay,
+    formatLevel,
+} from '../../core/song/songService'
 import { searchSongs } from '../../core/search/songSearch'
 const props = defineProps<{ canWrite: boolean }>()
 const emit = defineEmits<{ notify: [message: string, title?: string] }>()
@@ -37,9 +41,16 @@ const songQuery = ref(''),
 const editorMode = ref('ADVANCED'),
     editorDifficulty = ref('MASTER')
 const filteredSongs = computed(() =>
-    searchSongs(songQuery.value).map(song => getSongDisplay(song, songLanguage.value)),
+    searchSongs(songQuery.value).map((song) =>
+        getSongDisplay(song, songLanguage.value),
+    ),
 )
-const currentSong = computed(() => getSongDisplay(songService.getSong(selectedSong.value)!, songLanguage.value))
+const currentSong = computed(() =>
+    getSongDisplay(
+        songService.getSong(selectedSong.value)!,
+        songLanguage.value,
+    ),
+)
 const chartOptions = computed(() =>
     songService
         .getSong(selectedSong.value)!
@@ -68,9 +79,7 @@ watch([inputScore, selectedSong, editorMode, editorDifficulty], () => {
     saveError.value = ''
 })
 const validScore = computed(
-    () =>
-        inputScore.value !== '' &&
-        isValidScore(Number(inputScore.value)),
+    () => inputScore.value !== '' && isValidScore(Number(inputScore.value)),
 )
 const liveRank = computed(() =>
     validScore.value ? getRankByScore(Number(inputScore.value)) : '—',
@@ -244,10 +253,7 @@ defineExpose({ open })
                                 >{{ song[songLanguage]
                                 }}<small>{{ song.artist }}</small></span
                             >
-                            <Check
-                                v-if="selectedSong === song.id"
-                                :size="16"
-                            />
+                            <Check v-if="selectedSong === song.id" :size="16" />
                         </button>
                         <p v-if="!filteredSongs.length" class="form-note">
                             未找到匹配曲目，试试其他关键词。已选曲目保持不变。
@@ -307,9 +313,7 @@ defineExpose({ open })
                         v-for="chart in chartOptions"
                         :key="chart.id"
                         type="button"
-                        :aria-pressed="
-                            editorDifficulty === chart.difficulty
-                        "
+                        :aria-pressed="editorDifficulty === chart.difficulty"
                         :class="{
                             selected: editorDifficulty === chart.difficulty,
                         }"
@@ -354,18 +358,13 @@ defineExpose({ open })
                 请输入 0～1,050,000 范围内的整数。
             </p>
             <p v-if="lowered" class="warning">
-                将调低「{{ editing?.[songLanguage] }}」的成绩，保存后 Rank
-                与 Rating 会重新计算。
+                将调低「{{ editing?.[songLanguage] }}」的成绩，保存后 Rank 与
+                Rating 会重新计算。
             </p>
-            <div class="form-note">
-                Rank 与 Rating 随 Score
-                实时计算，保存后刷新页面仍可查看成绩。
-            </div>
             <label v-if="lowered"
-                ><input
-                    v-model="lowerConfirmed"
-                    type="checkbox"
-                />确认调低「{{ editing?.[songLanguage] }}」的成绩</label
+                ><input v-model="lowerConfirmed" type="checkbox" />确认调低「{{
+                    editing?.[songLanguage]
+                }}」的成绩</label
             >
             <p v-if="saveError" class="error" role="alert">
                 {{ saveError }}

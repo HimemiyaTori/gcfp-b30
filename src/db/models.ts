@@ -46,5 +46,6 @@ export interface ScoreRow extends ScoreAchievements {
     rating: number
     updatedAt: number
     importedAt?: number
+    correctedAt?: number
     coverSourceUrl: string
 }

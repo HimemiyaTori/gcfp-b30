@@ -1,24 +1,43 @@
 <script setup lang="ts">
-import { ArrowDown, ArrowUp, ArrowUpDown, Music2, Pencil, Info } from 'lucide-vue-next'
-import { computed, ref, watch } from 'vue'
+import { ArrowDown, ArrowUp, ArrowUpDown, Music2, Pencil, Info, Trash2 } from 'lucide-vue-next'
+import { computed } from 'vue'
 import { songLanguage } from '../composables/useSettings'
 import { getRankByScore } from '../core/rating/rank'
-import { createScoreComparator, type ScoreSortKey } from '../core/scoreSort'
+import type { ScoreTableSort, ScoreTableSortKey } from '../core/scoreSort'
 import SongCover from './SongCover.vue'
 import type { ScoreRow } from '../db/models'
-const props = defineProps<{
-    items: ScoreRow[]
-    positionItems?: ScoreRow[]
+
+const props = withDefaults(defineProps<{
+    items: readonly ScoreRow[]
+    sort: ScoreTableSort
+    positions?: ReadonlyMap<number, number>
     hideMode?: boolean
     ranked?: boolean
     editable?: boolean
+    deletable?: boolean
+    canWrite?: boolean
+    timeKey?: 'updatedAt' | 'importedAt'
+    pagination?: { page: number; pageCount: number; total?: number }
+    loading?: boolean
+    error?: string
+    emptyTitle?: string
+    emptyDescription?: string
+}>(), {
+    canWrite: true,
+    timeKey: 'updatedAt',
+    emptyTitle: '暂时没有成绩',
+    emptyDescription: '试试其他筛选条件，或录入你的第一份成绩。',
+})
+
+defineEmits<{
+    edit: [score: ScoreRow]
+    song: [score: ScoreRow]
+    remove: [score: ScoreRow]
+    sort: [key: ScoreTableSortKey]
+    page: [page: number]
+    retry: []
 }>()
-defineEmits<{ edit: [score: ScoreRow]; song: [score: ScoreRow] }>()
-type SortKey = 'position' | ScoreSortKey
-const sortKey = ref<SortKey>(
-    props.ranked ? 'position' : props.editable ? 'updatedAt' : 'score',
-)
-const ascending = ref(props.ranked ?? false)
+
 const monthDayFormatter = new Intl.DateTimeFormat('zh-CN', {
     month: 'numeric',
     day: 'numeric',
@@ -33,82 +52,67 @@ const timeFormatter = new Intl.DateTimeFormat('zh-CN', {
     minute: '2-digit',
     hour12: false,
 })
-function formatUpdatedDate(timestamp: number) {
+function formatDate(timestamp: number) {
     const date = new Date(timestamp)
     return (date.getFullYear() === new Date().getFullYear()
         ? monthDayFormatter
         : fullDateFormatter
     ).format(date)
 }
-const positions = computed(() =>
-    new Map((props.positionItems ?? props.items).map((s, i) => [s.id, i + 1])),
-)
-const columns = computed(() => [
-    ...(props.ranked ? [{ keys: ['position'], labels: ['排名'], numeric: false }] : []),
-    { keys: ['title'], labels: ['曲目'], numeric: false },
-    { keys: ['difficulty', 'level'], labels: ['难度', '等级'], numeric: false },
-    { keys: ['score'], labels: ['Score'], numeric: true },
-    { keys: ['rank'], labels: ['Rank'], numeric: true },
-    { keys: ['rating'], labels: ['Rating'], numeric: true },
-    ...(props.editable || props.ranked
-        ? [{ keys: ['updatedAt'], labels: ['更新时间'], numeric: false }]
-        : []),
-])
-function toggleSort(key: string) {
-    if (sortKey.value === key) ascending.value = !ascending.value
-    else {
-        sortKey.value = key as SortKey
-        ascending.value = ['title', 'position'].includes(key)
-    }
-}
-const sortedItems = computed(() => {
-    if (sortKey.value === 'position') {
-        return ascending.value ? [...props.items] : [...props.items].reverse()
-    }
-    const direction = ascending.value ? 1 : -1
-    const compare = createScoreComparator(sortKey.value, songLanguage.value, {
-        primaryOnly: props.ranked,
-    })
-    return [...props.items].sort((a, b) => compare(a, b) * direction)
+const columns = computed(() => {
+    const columns: { keys: ScoreTableSortKey[]; labels: string[]; numeric: boolean }[] = [
+        { keys: ['title'], labels: ['曲目'], numeric: false },
+        { keys: ['difficulty', 'level'], labels: ['难度', '等级'], numeric: false },
+        { keys: ['score'], labels: ['Score'], numeric: true },
+        { keys: ['rank'], labels: ['Rank'], numeric: true },
+        { keys: ['rating'], labels: ['Rating'], numeric: true },
+        { keys: [props.timeKey], labels: [props.timeKey === 'importedAt' ? '导入时间' : '更新时间'], numeric: false },
+    ]
+    if (props.ranked) columns.unshift({ keys: ['position'], labels: ['排名'], numeric: false })
+    return columns
 })
-const pageSize = 30
-const currentPage = ref(1)
-const pageCount = computed(() => Math.ceil(sortedItems.value.length / pageSize))
-const visibleItems = computed(() =>
-    props.editable
-        ? sortedItems.value.slice(
-              (currentPage.value - 1) * pageSize,
-              currentPage.value * pageSize,
-          )
-        : sortedItems.value,
-)
-watch([() => props.items, sortKey, ascending], () => (currentPage.value = 1))
 </script>
+
 <template>
-    <div class="table-scroll">
+    <p v-if="error" role="alert">
+        {{ error }} <button type="button" @click="$emit('retry')">重试</button>
+    </p>
+    <p v-if="loading" role="status" class="table-loading">正在读取成绩…</p>
+    <div class="table-scroll" :aria-busy="loading">
         <table class="score-table">
             <thead>
                 <tr>
-                    <th v-for="column in columns" :key="column.keys[0]" :class="{ num: column.numeric, position: column.keys[0] === 'position' }" :aria-sort="column.keys.includes(sortKey) ? (ascending ? 'ascending' : 'descending') : 'none'">
+                    <th
+                        v-for="column in columns"
+                        :key="column.keys[0]"
+                        :class="{ num: column.numeric, position: column.keys[0] === 'position' }"
+                        :aria-sort="column.keys.includes(sort.key) ? (sort.ascending ? 'ascending' : 'descending') : 'none'">
                         <div class="sort-head" :class="{ 'sort-numeric': column.numeric }">
-                            <button v-for="(key, i) in column.keys" :key="key" class="sort-button" :class="{ selected: sortKey === key }" :aria-label="`${column.labels[i]}：${sortKey === key ? (ascending ? '当前升序，点击降序' : '当前降序，点击升序') : '点击排序'}`" @click="toggleSort(key)">
+                            <button
+                                v-for="(key, i) in column.keys"
+                                :key="key"
+                                type="button"
+                                class="sort-button"
+                                :class="{ selected: sort.key === key }"
+                                :aria-label="`${column.labels[i]}：${sort.key === key ? (sort.ascending ? '当前升序，点击降序' : '当前降序，点击升序') : '点击排序'}`"
+                                @click="$emit('sort', key)">
                                 {{ column.labels[i] }}
-                                <ArrowUp v-if="sortKey === key && ascending" :size="12" />
-                                <ArrowDown v-else-if="sortKey === key" :size="12" />
+                                <ArrowUp v-if="sort.key === key && sort.ascending" :size="12" />
+                                <ArrowDown v-else-if="sort.key === key" :size="12" />
                                 <ArrowUpDown v-else :size="11" />
                             </button>
                         </div>
                     </th>
-                    <th v-if="editable">操作</th>
+                    <th v-if="editable || deletable">操作</th>
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="s in visibleItems" :key="s.id">
+                <tr v-for="s in items" :key="s.id">
                     <td
                         v-if="ranked"
                         class="position"
-                        :class="{ podium: (positions.get(s.id) ?? 0) <= 3 }">
-                        {{ String(positions.get(s.id)).padStart(2, '0') }}
+                        :class="{ podium: (positions?.get(s.id) ?? Infinity) <= 3 }">
+                        {{ positions?.has(s.id) ? String(positions.get(s.id)).padStart(2, '0') : '—' }}
                     </td>
                     <td>
                         <button type="button" class="row gap-3 song-link" @click="$emit('song', s)">
@@ -121,10 +125,7 @@ watch([() => props.items, sortKey, ascending], () => (currentPage.value = 1))
                     </td>
                     <td>
                         <div class="row gap-2">
-                            <span
-                                class="difficulty"
-                                :class="s.difficulty.toLowerCase()"
-                                >{{ s.difficulty }}</span
+                            <span class="difficulty" :class="s.difficulty.toLowerCase()">{{ s.difficulty }}</span
                             ><b class="level">{{ s.level }}</b>
                         </div>
                         <small v-if="!hideMode" class="mode">{{ s.mode }}</small>
@@ -137,50 +138,52 @@ watch([() => props.items, sortKey, ascending], () => (currentPage.value = 1))
                         <span class="rank">{{ getRankByScore(s.score) }}</span>
                     </td>
                     <td class="num rating-num">{{ s.rating.toFixed(2) }}</td>
-                    <td v-if="editable || ranked" class="updated-at">
-                        <time :datetime="new Date(s.updatedAt).toISOString()">
-                            <span class="updated-date">{{ formatUpdatedDate(s.updatedAt) }}</span>
-                            <span class="updated-time">{{ timeFormatter.format(s.updatedAt) }}</span>
+                    <td class="updated-at">
+                        <time v-if="s[timeKey] !== undefined" :datetime="new Date(s[timeKey]!).toISOString()">
+                            <span class="updated-date">{{ formatDate(s[timeKey]!) }}</span>
+                            <span class="updated-time">{{ timeFormatter.format(s[timeKey]!) }}</span>
                         </time>
+                        <span v-else>—</span>
+                        <small v-if="timeKey === 'importedAt' && s.correctedAt">已修正</small>
                     </td>
-                    <td v-if="editable">
+                    <td v-if="editable || deletable">
+                        <template v-if="editable">
+                            <button type="button" class="icon-button" aria-label="编辑成绩" @click="$emit('edit', s)">
+                                <Pencil :size="16" />
+                            </button>
+                            <button type="button" class="icon-button" aria-label="歌曲信息" @click="$emit('song', s)">
+                                <Info :size="15" />
+                            </button>
+                        </template>
                         <button
+                            v-if="deletable"
+                            type="button"
                             class="icon-button"
-                            aria-label="编辑成绩"
-                            @click="$emit('edit', s)">
-                            <Pencil :size="16" /></button
-                        ><button
-                            class="icon-button"
-                            aria-label="歌曲信息"
-                            @click="$emit('song', s)">
-                            <Info :size="15" />
+                            :disabled="!canWrite || loading"
+                            aria-label="删除历史成绩"
+                            @click="$emit('remove', s)">
+                            <Trash2 :size="16" />
                         </button>
                     </td>
                 </tr>
             </tbody>
         </table>
-        <div v-if="!items.length" class="empty">
+        <div v-if="!items.length && !loading && !error" class="empty">
             <Music2 :size="32" />
-            <h3>暂时没有成绩</h3>
-            <p>试试其他筛选条件，或录入你的第一份成绩。</p>
+            <h3>{{ emptyTitle }}</h3>
+            <p v-if="emptyDescription">{{ emptyDescription }}</p>
         </div>
     </div>
     <nav
-        v-if="editable && pageCount > 1"
+        v-if="pagination && pagination.pageCount > 1"
         class="table-pagination"
-        aria-label="成绩分页">
-        <span>第 {{ currentPage }} / {{ pageCount }} 页</span>
+        :aria-label="timeKey === 'importedAt' ? '历史成绩分页' : '成绩分页'">
+        <span>第 {{ pagination.page }} / {{ pagination.pageCount }} 页<template v-if="pagination.total !== undefined"> · 共 {{ pagination.total }} 条</template></span>
         <div class="row gap-2">
-            <button
-                type="button"
-                :disabled="currentPage === 1"
-                @click="currentPage--">
+            <button type="button" :disabled="pagination.page === 1 || loading" @click="$emit('page', pagination.page - 1)">
                 上一页
             </button>
-            <button
-                type="button"
-                :disabled="currentPage === pageCount"
-                @click="currentPage++">
+            <button type="button" :disabled="pagination.page === pagination.pageCount || loading" @click="$emit('page', pagination.page + 1)">
                 下一页
             </button>
         </div>

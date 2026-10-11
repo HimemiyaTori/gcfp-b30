@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Activity, CircleHelp, Trophy } from 'lucide-vue-next'
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import ScoreFilters from '../components/ScoreFilters.vue'
 import ScoreTable from '../components/ScoreTable.vue'
+import { useScoreTable } from '../composables/useScoreTable'
 import { filterScores, hasScoreFilters, type ScoreFiltersState } from '../core/score/filter'
 import type { ScoreRow } from '../db/models'
 import type { getModeB30, RatingMode } from '../core/rating/calculator'
@@ -13,6 +14,9 @@ const props = defineProps<{ modeRatings: ReturnType<typeof getModeB30>[]; select
 const b30Mode = defineModel<RatingMode>('mode', { required: true })
 const b30 = computed(() => props.selectedRating.items)
 const filteredB30 = computed(() => filterScores(b30.value, filters.value))
+const positions = computed(() => new Map(b30.value.map((row, index) => [row.id, index + 1])))
+const { rows, sort, toggleSort, resetSort } = useScoreTable(filteredB30, { sortKey: 'position', ascending: true, ranked: true })
+watch(b30Mode, resetSort)
 </script>
 
 <template>
@@ -101,11 +105,12 @@ const filteredB30 = computed(() => filterScores(b30.value, filters.value))
             v-model:difficulty="filters.difficulty"
         />
         <ScoreTable @song="emit('song', $event)"
-            :key="b30Mode"
-            :items="filteredB30"
-            :position-items="b30"
+            :items="rows"
+            :sort="sort"
+            :positions="positions"
             hide-mode
             ranked
+            @sort="toggleSort"
         />
     </section>
     <p class="rating-explainer">

@@ -2,7 +2,7 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { liveQuery } from 'dexie'
 import { scoreRepository } from '../db/scoreRepository'
 import type { ScoreRecord, ScoreRow, RatingSnapshot } from '../db/models'
-import { songService, getSongDisplay, formatLevel } from '../core/song/songService'
+import { getScoreRow } from '../core/score/display'
 import { songLanguage } from './useSettings'
 import { database } from '../db/database'
 export function useScoreList() {
@@ -26,9 +26,6 @@ export function useScoreList() {
     }
     onMounted(reload)
     onUnmounted(() => { disposed = true; subscription?.unsubscribe() })
-    const scores = computed<ScoreRow[]>(() => records.value.map(record => {
-        const { song, chart } = songService.getChart(record.songId, record.chartId)
-        return { ...getSongDisplay(song, songLanguage.value), ...record, id: record.id!, category: song.genre, difficulty: chart.difficulty.toUpperCase(), mode: chart.mode.toUpperCase(), level: formatLevel(chart.level) }
-    }))
+    const scores = computed<ScoreRow[]>(() => records.value.map(record => getScoreRow(record, songLanguage.value)))
     return { scores, historyCount, snapshots, error, loading, reload }
 }

@@ -4,6 +4,7 @@ import { mkdir, mkdtemp, readFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { utils, read, write } from 'xlsx'
+import ExcelJS from 'exceljs'
 import {
     createScoreWorkbook,
     parseScoreWorkbook,
@@ -30,12 +31,34 @@ const records = [
         score: 1040000,
         fc: true,
         ap: true,
-        maxChain: 200,
+        maxChain: 2000,
         rating: 0,
         source: 'manual',
         updatedAt: 4000,
     },
 ]
+const expectedInputMessages = {
+    简体中文: ['分数无效', '请填写 0～1050000 的整数，未游玩时留空', 'Max Chain 无效', 'Max Chain 必须为 0～2000 的整数，未知时留空', '完成标记无效', '达成时填写 √，未达成时留空', '检查分数'],
+    繁體中文: ['分數無效', '請填寫 0～1050000 的整數，未遊玩時留空', 'Max Chain 無效', 'Max Chain 必須為 0～2000 的整數，未知時留空', '完成標記無效', '達成時填寫 √，未達成時留空', '檢查分數'],
+    日本語: ['スコアが無効です', '0～1050000 の整数を入力してください。未プレイの場合は空欄にしてください', 'Max Chain が無効です', 'Max Chain は 0～2000 の整数を入力してください。不明な場合は空欄にしてください', '達成マークが無効です', '達成した場合は √ を入力し、未達成の場合は空欄にしてください', 'スコアを確認'],
+    English: ['Invalid score', 'Enter an integer from 0 to 1050000. Leave blank if unplayed', 'Invalid Max Chain', 'Max Chain must be an integer from 0 to 2000. Leave blank if unknown', 'Invalid achievement', 'Enter √ if achieved. Otherwise, leave blank', 'Check'],
+}
+function checkDownloadedInputs(sheet, messages) {
+    for (const address of ['D2', 'D3'])
+        assert.equal(sheet.getCell(address).alignment.horizontal, 'center')
+    assert.deepEqual(sheet.getCell('J2').dataValidation.formulae, [0, 2000])
+    for (const [address, title, body] of [
+        ['E2', messages[0], messages[1]],
+        ['J2', messages[2], messages[3]],
+        ['H2', messages[4], messages[5]],
+        ['I2', messages[4], messages[5]],
+    ]) {
+        assert.equal(sheet.getCell(address).dataValidation.errorTitle, title)
+        assert.equal(sheet.getCell(address).dataValidation.error, body)
+    }
+    for (const address of ['F2', 'G2'])
+        assert.ok(sheet.getCell(address).formula.includes(`"${messages[6]}"`))
+}
 const browser = await chromium.launch({
     channel: process.env.OCR_BROWSER || 'msedge',
     headless: true,
@@ -71,6 +94,19 @@ try {
     await template.saveAs(join(downloads, 'template.xlsx'))
     const templateData = await readFile(join(downloads, 'template.xlsx'))
     assert.deepEqual(read(templateData).SheetNames, ['BASIC', 'ADVANCED'])
+    const templateBook = new ExcelJS.Workbook()
+    await templateBook.xlsx.load(templateData)
+    for (const sheet of templateBook.worksheets) {
+        assert.deepEqual(sheet.getRow(1).values.slice(1), ['曲绘', '曲名', '难度', '等级', '分数', '评级', 'Rating', 'FC', 'AP', 'Max Chain', '更新时间', '谱面 ID', '曲目 ID'])
+        assert.equal(sheet.getCell('H2').value, null)
+        assert.equal(sheet.getCell('I2').value, null)
+        assert.equal(sheet.views[0].ySplit, 1)
+        assert.equal(sheet.getColumn(6).width, sheet.getColumn(5).width)
+        assert.equal(sheet.getColumn(7).width, sheet.getColumn(5).width)
+        assert.equal(sheet.getCell('H2').dataValidation.formulae[0], '"√"')
+        assert.equal(sheet.getCell('I2').dataValidation.formulae[0], '"√"')
+        checkDownloadedInputs(sheet, expectedInputMessages.简体中文)
+    }
     assert.equal(
         parseScoreWorkbook(
             templateData.buffer.slice(
@@ -116,7 +152,16 @@ try {
         await dialog.getByRole('button', { name: '确认导入' }).isDisabled(),
     )
     await dialog.getByRole('button', { name: '取消', exact: true }).click()
-    const validBook = createScoreWorkbook(records)
+    // 在真实下载的模板中填写 √ 或留空，验证用户填写后的导入流程
+    const validBook = templateBook
+    for (const [index, record] of records.entries()) {
+        const row = validBook.getWorksheet('BASIC').getRow(index + 2)
+        row.getCell(5).value = record.score
+        row.getCell(8).value = record.fc ? '√' : null
+        row.getCell(9).value = record.ap ? '√' : null
+        row.getCell(10).value = record.maxChain
+        row.getCell(11).value = new Date(record.updatedAt).toISOString()
+    }
     await upload(validBook)
     assert.match(await dialog.textContent(), /最佳新增 2 条/)
     assert.equal(await count(), 0)
@@ -124,12 +169,19 @@ try {
     assert.equal(await count(), 0)
 
     const invalidBook = createScoreWorkbook(records)
-    invalidBook.getWorksheet('BASIC').getCell('E7').value = 1050001
+    invalidBook.getWorksheet('BASIC').getCell('E3').value = 1050001
     await upload(invalidBook)
-    assert.match(await dialog.textContent(), /BASIC 第 7 行/)
+    assert.match(await dialog.textContent(), /BASIC 第 3 行/)
     assert.ok(
         await dialog.getByRole('button', { name: '确认导入' }).isDisabled(),
     )
+    assert.equal(await count(), 0)
+    await dialog.getByRole('button', { name: '取消', exact: true }).click()
+    const invalidChainBook = createScoreWorkbook(records)
+    invalidChainBook.getWorksheet('BASIC').getCell('J2').value = 2001
+    await upload(invalidChainBook)
+    assert.match(await dialog.textContent(), /Max Chain 必须为 0～2000 的整数/)
+    assert.ok(await dialog.getByRole('button', { name: '确认导入' }).isDisabled())
     assert.equal(await count(), 0)
     await dialog.getByRole('button', { name: '取消', exact: true }).click()
     await upload(validBook)
@@ -182,8 +234,56 @@ try {
     )
     assert.equal(actual.length, 2)
     assert.equal(actual.find((r) => r.score === 1000000).maxChain, 0)
+    assert.equal(actual.find((r) => r.score === 1000000).fc, false)
+    assert.equal(actual.find((r) => r.score === 1000000).ap, false)
     assert.equal(actual.find((r) => r.score === 1040000).updatedAt, 4000)
+    assert.equal(actual.find((r) => r.score === 1040000).fc, true)
+    assert.equal(actual.find((r) => r.score === 1040000).ap, true)
+    assert.equal(actual.find((r) => r.score === 1040000).maxChain, 2000)
     await restored.close()
+
+    // 切换界面语言后下载真实文件，跨语言重新导入并保留完成标记
+    const languageOptions = page.getByRole('main').getByRole('group', { name: '界面语言（预览选择）', exact: true })
+    for (const [label, headers] of [
+        ['繁體中文', ['曲繪', '曲名', '難度', '等級', '分數', '評級', 'Rating', 'FC', 'AP', 'Max Chain', '更新時間', '譜面 ID', '曲目 ID']],
+        ['日本語', ['ジャケット', '曲名', '難易度', 'レベル', 'スコア', 'ランク', 'レーティング', 'FC', 'AP', 'Max Chain', '更新日時', '譜面 ID', '楽曲 ID']],
+        ['English', ['Cover', 'Title', 'Difficulty', 'Level', 'Score', 'Rank', 'Rating', 'FC', 'AP', 'Max Chain', 'Updated At', 'Chart ID', 'Song ID']],
+        ['简体中文', ['曲绘', '曲名', '难度', '等级', '分数', '评级', 'Rating', 'FC', 'AP', 'Max Chain', '更新时间', '谱面 ID', '曲目 ID']],
+    ]) {
+        await languageOptions.getByRole('button', { name: label, exact: true }).click()
+        for (const button of ['下载模板', '导出成绩']) {
+            const event = page.waitForEvent('download')
+            await page.getByRole('button', { name: button, exact: true }).click()
+            const file = await event
+            const path = join(downloads, `${label}-${button}.xlsx`)
+            await file.saveAs(path)
+            const bytes = await readFile(path)
+            const saved = read(bytes)
+            const downloadedBook = new ExcelJS.Workbook()
+            await downloadedBook.xlsx.load(bytes)
+            for (const sheet of downloadedBook.worksheets)
+                checkDownloadedInputs(sheet, expectedInputMessages[label])
+            for (const sheet of Object.values(saved.Sheets)) {
+                assert.deepEqual(utils.sheet_to_json(sheet, { header: 1 })[0], headers)
+                assert.equal(sheet.H2?.v ?? null, null)
+                assert.equal(sheet.I2?.v ?? null, null)
+            }
+            const preview = parseScoreWorkbook(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength))
+            assert.deepEqual(preview.issues, [])
+            assert.equal(preview.rows.length, button === '下载模板' ? 0 : 2)
+            if (button === '导出成绩') {
+                assert.equal(saved.Sheets.BASIC.H3.v, '√')
+                assert.equal(saved.Sheets.BASIC.I3.v, '√')
+                await languageOptions.getByRole('button', { name: label === 'English' ? '简体中文' : 'English', exact: true }).click()
+                const chooser = page.waitForEvent('filechooser')
+                await importButton.click()
+                await (await chooser).setFiles(path)
+                await dialog.getByText(/重复跳过 2 条/).waitFor()
+                await dialog.getByRole('button', { name: '取消', exact: true }).click()
+            }
+        }
+    }
+    await languageOptions.getByRole('button', { name: '简体中文', exact: true }).click()
 
     await page.setViewportSize({ width: 390, height: 844 })
     await page.screenshot({
@@ -315,7 +415,7 @@ try {
     assert.deepEqual(errors, [])
     console.log('Downloads:', downloads)
     console.log(
-        'Excel browser regression passed: template/download/import/preview/cancel/errors/restore/idempotency/mobile/home picker and drop/trimmed template/image routing',
+        'Excel browser regression passed: first-row multilingual headers/centered levels/Max Chain limit/localized input errors/achievement marks and blanks/cross-language import/template/download/import/preview/cancel/errors/restore/idempotency/mobile/home picker and drop/trimmed template/image routing',
     )
 } finally {
     await browser.close()

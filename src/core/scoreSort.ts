@@ -1,7 +1,12 @@
 import type { ScoreRow } from '../db/models'
 import { getRankByScore } from './rating/rank'
 
-export type ScoreSortKey = 'title' | 'difficulty' | 'level' | 'score' | 'rank' | 'rating' | 'updatedAt'
+export type ScoreSortKey = 'title' | 'difficulty' | 'level' | 'score' | 'rank' | 'rating' | 'updatedAt' | 'importedAt'
+export type ScoreTableSortKey = ScoreSortKey | 'position'
+export interface ScoreTableSort {
+    key: ScoreTableSortKey
+    ascending: boolean
+}
 
 const difficulties = ['EASY', 'NORMAL', 'HARD', 'MASTER']
 const ranks = ['E', 'D', 'C', 'B', 'A', 'AA', 'AAA', 'S', 'S+', 'SS', 'SS+', 'SSS', 'SSS+']
@@ -35,6 +40,7 @@ export function createScoreComparator(
             }
             case 'rating': return primaryOnly ? rating : rating || score || level || difficulty || mode || title
             case 'updatedAt': return a.updatedAt - b.updatedAt
+            case 'importedAt': return (a.importedAt ?? 0) - (b.importedAt ?? 0)
         }
     }
 }
