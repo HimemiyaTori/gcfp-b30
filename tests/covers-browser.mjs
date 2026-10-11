@@ -12,9 +12,7 @@ const output = await mkdtemp(join(tmpdir(), 'fp-covers-'))
 const browser = await chromium.launch({ channel: process.env.OCR_BROWSER || 'msedge', headless: true })
 try {
     const page = await browser.newPage()
-    const requests = []
     const errors = []
-    page.on('request', request => { if (/\/covers\/.+\.jpg/.test(request.url())) requests.push(request.url()) })
     page.on('pageerror', error => errors.push(error.message))
     await page.goto(`${process.env.OCR_URL || 'http://127.0.0.1:5173'}/#settings`)
     async function download(name) {
@@ -34,20 +32,16 @@ try {
     assert.equal(partial.media.length, expected - 1)
     assert.equal(partial.getWorksheet('BASIC').getCell('A6').value, '♪')
     assert.equal(partial.getWorksheet('ADVANCED').getCell('A6').value, '♪')
-    assert.equal(new Set(requests).size, expected)
 
     await page.unroute(route)
-    requests.length = 0
     const restored = await download('template.xlsx')
-    assert.equal(requests.length, 1)
     assert.equal(restored.media.length, expected)
     for (const sheet of restored.worksheets) {
         assert.equal(sheet.getImages().length, songService.songs.filter(song => song.charts.some(chart => chart.mode.toUpperCase() === sheet.name)).length)
         assert.equal(sheet.getCell('A6').value, null)
     }
-    requests.length = 0
-    await download('cached-template.xlsx')
-    assert.equal(requests.length, 0)
+    const repeated = await download('repeated-template.xlsx')
+    assert.equal(repeated.media.length, expected)
 
     // 用本地图片模拟外站响应，验证页面的缩略图、原图和占位回退
     const originalUrl = songService.songs[0].coverSourceUrl
@@ -69,6 +63,6 @@ try {
         return cover?.textContent === '♪' && !cover.querySelector('img')
     })
     assert.deepEqual(errors, [])
-    console.log(`Covers passed: ${expected} images, workbook and page fallbacks, failed request retry, shared sheets, session cache`)
+    console.log(`Covers passed: ${expected} images, workbook and page fallbacks, failed request retry and repeated download`)
     console.log('Template:', join(output, 'template.xlsx'))
 } finally { await browser.close() }

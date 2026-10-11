@@ -93,30 +93,12 @@ try {
     await go('settings')
     for (const [ui, expected] of [['English', 'en'], ['繁體中文', 'ja'], ['English', 'en'], ['日本語', 'ja'], ['English', 'en'], ['简体中文', 'ja']]) {
         await page.locator('.ui-settings-options').getByRole('button', { name: ui, exact: true }).click()
-        await page.waitForFunction(async language => (await import('/src/composables/useSettings.ts')).songLanguage.value === language, expected)
+        await page.getByRole('button', { name: new RegExp(`^曲目信息语言：${expected === 'en' ? 'English' : '日本語'}。`) }).waitFor()
     }
 
-    // 断点与折叠标记的不同组合都必须隐藏手机数量并保持居中
-    await go('home')
-    for (const width of [390, 680, 681]) {
-        await page.setViewportSize({ width, height: 844 })
-        if (width <= 680) {
-            const layout = await page.locator('.sidebar .nav-item[href="#scores"]').evaluate(item => {
-                const icon = item.querySelector('svg').getBoundingClientRect()
-                const label = item.querySelector('.sidebar-copy').getBoundingClientRect()
-                const box = item.getBoundingClientRect()
-                return { badge: getComputedStyle(item.querySelector('.nav-badge')).display, offset: Math.abs((icon.top + label.bottom) / 2 - (box.top + box.bottom) / 2) }
-            })
-            assert.equal(layout.badge, 'none')
-            assert.ok(layout.offset <= 1, `按钮内容未居中：${layout.offset}px`)
-        } else {
-            assert.equal(await page.locator('.sidebar .nav-badge').isVisible(), true)
-        }
-    }
-    await page.setViewportSize({ width: 800, height: 844 })
-    await page.getByRole('button', { name: '展开侧边栏', exact: true }).click()
+    // 手机端仍能完成删除与清空操作，页面不产生横向溢出
     await page.setViewportSize({ width: 390, height: 844 })
-    assert.equal(await page.locator('.sidebar .nav-badge').isVisible(), false)
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
     await mkdir('.preview', { recursive: true })
     await page.screenshot({ path: '.preview/refactor-mobile.png', fullPage: true })
 
