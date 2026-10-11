@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { Check, Monitor, Moon, Sun } from 'lucide-vue-next'
-import { songLanguage, theme, uiLanguages, uiLanguage } from '../composables/useSettings'
-defineProps<{ count: number; canWrite: boolean; excelBusy: boolean }>()
+import {
+    songLanguage,
+    theme,
+    uiLanguages,
+    uiLanguage,
+} from '../composables/useSettings'
+defineProps<{ count: number; historyCount: number; canWrite: boolean; excelBusy: boolean }>()
 const emit = defineEmits<{ clear: []; import: []; export: []; template: [] }>()
 </script>
 
@@ -38,10 +43,7 @@ const emit = defineEmits<{ clear: []; import: []; export: []; template: [] }>()
                 >
                     <component :is="option.icon" :size="21" />
                     <span>{{ option.label }} </span>
-                    <Check
-                        v-if="theme === option.id"
-                        :size="13"
-                    />
+                    <Check v-if="theme === option.id" :size="13" />
                 </button>
             </div>
         </div>
@@ -95,26 +97,51 @@ const emit = defineEmits<{ clear: []; import: []; export: []; template: [] }>()
         <div class="setting-row">
             <div>
                 <h3>Excel 导入与导出</h3>
-                <p>导出全部 {{ count }} 条成绩，或按模板批量导入。导入前会检查数据并显示合并预览。</p>
-                <p>支持 .xlsx，最大 5 MiB。模板按 BASIC / ADVANCED 预填全部谱面，填写 Score 后自动计算 Rank / RT。</p>
-                <p v-if="excelBusy" role="status">正在处理文件，曲绘加载最多等待 20 秒…</p>
+                <p>
+                    导出全部
+                    {{ count }}
+                    条成绩，或按模板批量导入。导入前会检查数据并显示合并预览。
+                </p>
+                <p>
+                    模板按 BASIC / ADVANCED预填全部谱面， 填写 Score 后自动计算
+                    Rank / Rating。
+                </p>
+                <p v-if="excelBusy" role="status">
+                    正在处理文件，曲绘加载最多等待 20 秒…
+                </p>
             </div>
             <div class="excel-actions">
-                <button class="button secondary" :disabled="excelBusy" @click="emit('template')">下载导入模板</button>
-                <button class="button secondary" :disabled="excelBusy || !canWrite || !count" @click="emit('export')">导出全部成绩</button>
-                <button class="button primary" :disabled="excelBusy || !canWrite" @click="emit('import')">导入 Excel</button>
+                <button
+                    class="button secondary"
+                    :disabled="excelBusy"
+                    @click="emit('template')"
+                >
+                    下载模板
+                </button>
+                <button
+                    class="button secondary"
+                    :disabled="excelBusy || !canWrite || !count"
+                    @click="emit('export')"
+                >
+                    导出成绩
+                </button>
+                <button
+                    class="button secondary"
+                    :disabled="excelBusy || !canWrite"
+                    @click="emit('import')"
+                >
+                    导入成绩
+                </button>
             </div>
         </div>
         <div class="setting-row">
             <div>
                 <h3>清空成绩数据</h3>
-                <p>删除本机存储的全部成绩。</p>
+                <p>删除本机存储的全部成绩、{{ historyCount }} 条历史及 Rating 趋势。</p>
             </div>
             <button
                 class="button secondary danger-button"
-                :disabled="
-                    !count || !canWrite || excelBusy
-                "
+                :disabled="(!count && !historyCount) || !canWrite || excelBusy"
                 @click="emit('clear')"
             >
                 清空数据
@@ -124,6 +151,18 @@ const emit = defineEmits<{ clear: []; import: []; export: []; template: [] }>()
 </template>
 
 <style scoped>
-.excel-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; flex-shrink: 0; max-width: 360px; }
-@media (max-width: 680px) { .excel-actions { justify-content: flex-start; max-width: 100%; } }
+.excel-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    flex-shrink: 0;
+    max-width: 360px;
+}
+@media (max-width: 680px) {
+    .excel-actions {
+        justify-content: flex-start;
+        max-width: 100%;
+    }
+}
 </style>

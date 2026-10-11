@@ -2242,3 +2242,8 @@ input::placeholder {
     .mode-label-enter-active, .mode-label-leave-active { transition: none; }
 }
 .rating-mode-toggle:focus-visible { outline: 2px solid #263153; outline-offset: 3px; }
+
+.song-link { background: none; border: 0; padding: 0; color: inherit; text-align: left; cursor: pointer; font: inherit; }
+.song-link:focus-visible { outline: 2px solid #13a7bd; outline-offset: 4px; border-radius: 4px; }
+
+.history-loading { padding: 12px 24px; color: var(--muted); font-size: 12px; }

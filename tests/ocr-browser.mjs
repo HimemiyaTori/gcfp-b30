@@ -16,6 +16,8 @@ for (const sample of samples) {
 if (missing.length) throw new Error(
     `缺少 ${missing.length} 张 OCR 标注样本，目录：${sampleDirectory}。请按 tests/ocr-samples.json 准备图片，或设置 OCR_SAMPLES_DIR 指向包含 result、select、playing 子目录的样本目录。缺失：${missing.join(', ')}`,
 )
+// 在批次末尾重复首张截图，验证不相邻的相同成绩只保留一次
+samples.push({ ...samples[0] })
 await mkdir('.preview', { recursive: true })
 const browser = await chromium.launch({
     channel: process.env.OCR_BROWSER || 'msedge',
@@ -44,7 +46,7 @@ try {
     )
     // 通过真实上传验证识别结果、跳过提示和浏览器持久化
     await page
-        .locator('input[type=file]')
+        .getByLabel('选择成绩截图或 Excel', { exact: true })
         .setInputFiles(samples.map((s) => samplePath(s.path)))
     await page.locator('.import-result').first().waitFor()
     await page.waitForFunction(
@@ -57,6 +59,7 @@ try {
     )
     const jobs = await page.locator('.import-result').allTextContents()
     assert.equal(jobs.length, samples.length)
+    assert.match(jobs.at(-1), /本批次重复/)
     for (let i = 0; i < samples.length; i++) {
         if (samples[i].skip)
             assert.ok(
@@ -65,7 +68,7 @@ try {
             )
         else
             assert.ok(
-                jobs[i].includes('已处理') || jobs[i].includes('重复成绩'),
+                jobs[i].includes('已处理') || jobs[i].includes('重复'),
                 `${samples[i].path}: ${jobs[i]}`,
             )
     }
@@ -87,13 +90,13 @@ try {
     }
     await page.getByRole('button', { name: '关闭', exact: true }).click()
     // 关闭结果弹窗后再次导入，应提示重复成绩
-    await page.locator('input[type=file]').setInputFiles(samplePath('result/6292.jpg'))
+    await page.getByLabel('选择成绩截图或 Excel', { exact: true }).setInputFiles(samplePath('result/6292.jpg'))
     await page.waitForFunction(
         () => document.querySelector('.import-result.skipped'),
         {},
         { timeout: 30000 },
     )
-    assert.ok((await page.locator('.import-result').textContent()).includes('重复成绩'))
+    assert.ok((await page.locator('.import-result').textContent()).includes('重复'))
     await page.getByRole('button', { name: '关闭', exact: true }).click()
     console.log('Upload queue and repeated import passed')
     // 完成批次后切页再返回，仍能继续上传
@@ -101,7 +104,7 @@ try {
     await page.getByRole('heading', { name: '成绩一览' }).waitFor()
     await page.evaluate(() => { location.hash = '#home' })
     await page.getByRole('heading', { name: '录入新成绩' }).waitFor()
-    await page.locator('input[type=file]').setInputFiles(samplePath('result/6292.jpg'))
+    await page.getByLabel('选择成绩截图或 Excel', { exact: true }).setInputFiles(samplePath('result/6292.jpg'))
     await page.waitForFunction(() => document.querySelector('.import-result.skipped'), {}, { timeout: 30000 })
     await page.getByRole('button', { name: '关闭', exact: true }).click()
     console.log('Upload after page navigation passed')
@@ -117,13 +120,16 @@ try {
     const beforeCancellation = await page.evaluate(async () =>
         (await import('/src/db/scoreRepository.ts')).scoreRepository.list(),
     )
+    const beforeHistory = await page.evaluate(async () =>
+        (await import('/src/db/scoreRepository.ts')).scoreRepository.history(),
+    )
     // 取消识别，再在新批次运行时切换页面，成绩不应改变
     await page
-        .locator('input[type=file]')
+        .getByLabel('选择成绩截图或 Excel', { exact: true })
         .setInputFiles(samplePath('result/6292.jpg'))
     await page.getByRole('button', { name: '取消识别', exact: true }).click()
     await page
-        .locator('input[type=file]')
+        .getByLabel('选择成绩截图或 Excel', { exact: true })
         .setInputFiles(samplePath('result/6292.jpg'))
     await page.evaluate(() => {
         location.hash = '#scores'
@@ -137,6 +143,9 @@ try {
         ),
         beforeCancellation,
     )
+    assert.deepEqual(await page.evaluate(async () =>
+        (await import('/src/db/scoreRepository.ts')).scoreRepository.history(),
+    ), beforeHistory)
     // 手动录入允许 Max Chain 为空；AP 会触发 FC，刷新后仍保留
     await page.getByRole('button', { name: '手动新增', exact: true }).click()
     const dialog = page.locator('dialog[open]')
@@ -172,7 +181,7 @@ try {
         window.ocrFailNextWorker = true
     })
     await page.getByRole('heading', { name: '录入新成绩' }).waitFor()
-    await page.locator('input[type=file]').setInputFiles([
+    await page.getByLabel('选择成绩截图或 Excel', { exact: true }).setInputFiles([
         samplePath('result/6292.jpg'),
         samplePath('result/6292.jpg'),
     ])
@@ -193,7 +202,7 @@ try {
             return timeout.call(AbortSignal, 0)
         }
     })
-    await page.locator('input[type=file]').setInputFiles([
+    await page.getByLabel('选择成绩截图或 Excel', { exact: true }).setInputFiles([
         samplePath('result/6292.jpg'),
         samplePath('result/6292.jpg'),
     ])
@@ -210,9 +219,9 @@ try {
         const record = (await scoreRepository.list()).find(item => item.chartId === '6-basic-hard')
         await scoreRepository.edit(record.id, 0, true)
     })
-    await page.locator('input[type=file]').setInputFiles(samplePath('result/6292.jpg'))
+    await page.getByLabel('选择成绩截图或 Excel', { exact: true }).setInputFiles(samplePath('result/6292.jpg'))
     await page.waitForFunction(() => document.querySelector('.import-result.success'), {}, { timeout: 30000 })
-    await page.locator('input[type=file]').setInputFiles(samplePath('result/6292.jpg'))
+    await page.getByLabel('选择成绩截图或 Excel', { exact: true }).setInputFiles(samplePath('result/6292.jpg'))
     await page.waitForFunction(() => document.querySelector('.import-result.skipped'), {}, { timeout: 30000 })
     // 等待用户可见的完成反馈结束，新批次结果弹窗应保持打开
     await page.waitForTimeout(3000)

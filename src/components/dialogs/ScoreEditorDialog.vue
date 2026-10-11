@@ -147,7 +147,7 @@ async function saveScore() {
                 achievements,
             )
         dialog.value?.close()
-        emit('notify', '成绩已保存到本机。')
+        emit('notify', '成绩已保存，最佳成绩与历史趋势已重新计算。')
     } catch (error) {
         saveError.value =
             error instanceof Error ? error.message : '保存失败，请重试。'
@@ -183,7 +183,7 @@ defineExpose({ open })
             <p class="muted">
                 {{
                     editing
-                        ? '可修改 Score、完成状态与 Max Chain，曲目与谱面保持不变。'
+                        ? '修正最佳成绩对应的历史，导入时间保持不变。其他历史可能成为新的最佳成绩。'
                         : '选择曲目与谱面，记录你的精彩发挥。'
                 }}
             </p>

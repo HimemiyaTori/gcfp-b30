@@ -10,6 +10,7 @@
         "test": "tsx --test tests/excel.test.mjs",
         "test:ocr": "node tests/ocr-browser.mjs",
         "test:ui": "node tests/ui-browser.mjs",
+        "test:history": "node tests/history-browser.mjs",
         "test:excel": "tsx tests/excel-browser.mjs",
         "test:covers": "tsx tests/covers-browser.mjs",
         "test:b30-export": "node tests/b30-export-browser.mjs"

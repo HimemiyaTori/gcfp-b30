@@ -1,6 +1,7 @@
 import type ExcelJS from 'exceljs'
 import { songService } from '../song/songService'
 import { coverThumbUrl } from '../song/cover'
+import { TEMPLATE_HEADERS } from './template'
 
 export type CoverLoader = (url: string, signal: AbortSignal) => Promise<string>
 // 与成绩列表使用同一缩略图地址，已显示过的曲绘直接命中浏览器缓存
@@ -19,11 +20,12 @@ const loaded = new Map<string, string>()
 
 export async function addWorkbookCovers(book: ExcelJS.Workbook, loader: CoverLoader = loadCover) {
     const targets = new Map<string, { sheet: ExcelJS.Worksheet; row: number; count: number }[]>()
+    const songIdColumn = TEMPLATE_HEADERS.indexOf('Song ID') + 1
     for (const sheet of book.worksheets) {
         for (let row = 6; row <= sheet.rowCount;) {
-            const id = String(sheet.getCell(row, 14).value ?? '')
+            const id = String(sheet.getCell(row, songIdColumn).value ?? '')
             let end = row + 1
-            while (end <= sheet.rowCount && sheet.getCell(end, 14).value === id) end++
+            while (end <= sheet.rowCount && sheet.getCell(end, songIdColumn).value === id) end++
             const url = coverThumbUrl(songService.getSong(id)?.coverSourceUrl ?? '')
             if (url) targets.set(url, [...(targets.get(url) ?? []), { sheet, row, count: end - row }])
             row = end

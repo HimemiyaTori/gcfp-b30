@@ -1,11 +1,13 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { liveQuery } from 'dexie'
 import { scoreRepository } from '../db/scoreRepository'
-import type { ScoreRecord, ScoreRow } from '../db/models'
+import type { ScoreRecord, ScoreRow, RatingSnapshot } from '../db/models'
 import { songService, getSongDisplay, formatLevel } from '../core/song/songService'
 import { songLanguage } from './useSettings'
+import { database } from '../db/database'
 export function useScoreList() {
     const records = ref<ScoreRecord[]>([]), error = ref(''), loading = ref(true)
+    const historyCount = ref(0), snapshots = ref<RatingSnapshot[]>([])
     let subscription: { unsubscribe(): void } | undefined
     let disposed = false
     async function reload() {
@@ -13,8 +15,8 @@ export function useScoreList() {
         try {
             await scoreRepository.initialize()
             if (disposed) return
-            subscription = liveQuery(() => scoreRepository.list()).subscribe({
-                next: value => { records.value = value; loading.value = false; error.value = '' },
+            subscription = liveQuery(() => database.transaction('r', [database.scores, database.scoreHistory, database.ratingSnapshots], async () => ({ records: await scoreRepository.list(), count: await database.scoreHistory.count(), snapshots: await scoreRepository.snapshots() }))).subscribe({
+                next: value => { records.value = value.records; historyCount.value = value.count; snapshots.value = value.snapshots; loading.value = false; error.value = '' },
                 error: () => { error.value = '无法读取本地成绩，请检查浏览器存储权限后重试。'; loading.value = false },
             })
         } catch {
@@ -28,5 +30,5 @@ export function useScoreList() {
         const { song, chart } = songService.getChart(record.songId, record.chartId)
         return { ...getSongDisplay(song, songLanguage.value), ...record, id: record.id!, category: song.genre, difficulty: chart.difficulty.toUpperCase(), mode: chart.mode.toUpperCase(), level: formatLevel(chart.level) }
     }))
-    return { scores, error, loading, reload }
+    return { scores, historyCount, snapshots, error, loading, reload }
 }

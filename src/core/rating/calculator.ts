@@ -28,19 +28,16 @@ export function getChartRating(score: number, level: number): number {
 
 export const ratingModes = ['BASIC', 'ADVANCED'] as const
 export type RatingMode = (typeof ratingModes)[number]
+export function getTotalRating(ratings: readonly number[]) {
+    return Math.floor(ratings.map(value => Math.round(value * 100)).sort((a, b) => b - a).slice(0, 30).reduce((sum, value) => sum + value, 0) / 30) / 100
+}
 
 export function getModeB30(scores: readonly ScoreRow[], mode: RatingMode) {
     const candidates = scores.filter((score) => score.mode === mode)
     const compare = createScoreComparator('rating', 'ja')
     const items = candidates.sort((a, b) => compare(b, a)).slice(0, 30)
     // 先按模式选取谱面，再以整数百分位计算该模式的总 RT
-    const rating =
-        Math.floor(
-            items.reduce(
-                (sum, score) => sum + Math.round(score.rating * 100),
-                0,
-            ) / 30,
-        ) / 100
+    const rating = getTotalRating(items.map(score => score.rating))
     return {
         mode,
         label: mode === 'BASIC' ? 'BASIC' : 'ADVANCED',

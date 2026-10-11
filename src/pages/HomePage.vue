@@ -1,13 +1,30 @@
 <script setup lang="ts">
-import { Activity, ArrowRight, ArrowLeftRight, CircleHelp, Disc3, FileImage, ShieldCheck, Sparkles, Upload } from 'lucide-vue-next'
+import {
+    Activity,
+    ArrowRight,
+    ArrowLeftRight,
+    CircleHelp,
+    Disc3,
+    FileImage,
+    ShieldCheck,
+    Sparkles,
+    Upload,
+} from 'lucide-vue-next'
 import { ref } from 'vue'
-import ScoreTable from '../components/ScoreTable.vue'
+import HistoryTable from '../components/HistoryTable.vue'
+import RatingTrend, { type RatingGrain } from '../components/RatingTrend.vue'
 import RollingNumber from '../components/common/RollingNumber.vue'
-import type { ScoreRow } from '../db/models'
+import type { ScoreRow, RatingSnapshot } from '../db/models'
 import type { getModeB30, RatingMode } from '../core/rating/calculator'
-defineProps<{ scores: ScoreRow[]; selectedRating: ReturnType<typeof getModeB30> }>()
+defineProps<{
+    scores: ScoreRow[]
+    historyCount: number
+    snapshots: RatingSnapshot[]
+    selectedRating: ReturnType<typeof getModeB30>
+}>()
+const grain = defineModel<RatingGrain>('grain', { required: true })
 const b30Mode = defineModel<RatingMode>('mode', { required: true })
-const emit = defineEmits<{ upload: [files: File[]] }>()
+const emit = defineEmits<{ upload: [files: File[]]; song: [row: ScoreRow] }>()
 const fileInput = ref<HTMLInputElement>()
 const dragging = ref(false)
 function selectFiles(files: FileList | null) {
@@ -25,9 +42,7 @@ function drop(event: DragEvent) {
     <section v-if="scores.length" class="stats-grid">
         <article class="rating-card">
             <div class="row gap-2">
-                <Activity :size="16" /><span
-                    >Groove Rating</span
-                >
+                <Activity :size="16" /><span>Groove Rating</span>
                 <button
                     type="button"
                     :class="[
@@ -40,13 +55,21 @@ function drop(event: DragEvent) {
                         b30Mode = b30Mode === 'BASIC' ? 'ADVANCED' : 'BASIC'
                     "
                 >
-                    <Transition name="mode-label" mode="out-in"><span :key="b30Mode">{{ b30Mode === 'BASIC' ? 'BAS' : 'ADV' }}</span></Transition>
+                    <Transition name="mode-label" mode="out-in"
+                        ><span :key="b30Mode">{{
+                            b30Mode === 'BASIC' ? 'BAS' : 'ADV'
+                        }}</span></Transition
+                    >
                     <ArrowLeftRight :size="12" />
                 </button>
             </div>
             <div class="rating-values">
                 <div class="big-rating">
-                    <RollingNumber :value="selectedRating.rating" :decimals="2" :motion-key="b30Mode" /><span>RT</span>
+                    <RollingNumber
+                        :value="selectedRating.rating"
+                        :decimals="2"
+                        :motion-key="b30Mode"
+                    /><span>RT</span>
                 </div>
                 <div class="rating-floor">
                     <span>Floor</span>
@@ -65,21 +88,19 @@ function drop(event: DragEvent) {
         <article class="stat-card">
             <div class="between">
                 <span>已收录成绩</span
-                ><span class="stat-icon blue"
-                    ><Disc3 :size="18"
-                /></span>
+                ><span class="stat-icon blue"><Disc3 :size="18" /></span>
             </div>
             <div class="stat-value">
                 <RollingNumber :value="scores.length" /> <span>谱面</span>
             </div>
-            <small>每张谱面，保留一份最佳成绩</small>
+            <small>每张谱面，保留一份最佳成绩 · {{ historyCount }} 条历史</small>
             <a href="#scores" class="text-link"
                 >查看全部成绩 <ArrowRight :size="13"
             /></a>
         </article>
     </section>
 
-
+    <RatingTrend :snapshots="snapshots" :mode="b30Mode" v-model:grain="grain" />
     <section class="import-grid">
         <article class="panel import-panel">
             <div class="section-title between">
@@ -87,9 +108,7 @@ function drop(event: DragEvent) {
                     <Upload :size="18" />
                     <h2>录入新成绩</h2>
                 </div>
-                <span class="micro-label"
-                    >SCORE IMPORT</span
-                >
+                <span class="micro-label">SCORE IMPORT</span>
             </div>
             <label
                 :class="['drop-zone', { dragging }]"
@@ -100,10 +119,10 @@ function drop(event: DragEvent) {
                 <div class="upload-illustration">
                     <div class="image-sheet back"></div>
                     <div class="image-sheet">
-                        <FileImage
-                            :size="33"
-                            :stroke-width="1.3"
-                        /><span class="plus-bubble">+</span>
+                        <FileImage :size="33" :stroke-width="1.3" /><span
+                            class="plus-bubble"
+                            >+</span
+                        >
                     </div>
                 </div>
                 <h3>拖入或选择成绩截图 / Excel</h3>
@@ -115,17 +134,13 @@ function drop(event: DragEvent) {
                     multiple
                     aria-label="选择成绩截图或 Excel"
                     @change="
-                        selectFiles(
-                            ($event.target as HTMLInputElement)
-                                .files,
-                        )
+                        selectFiles(($event.target as HTMLInputElement).files)
                     "
-                /><small>PNG / JPG / WebP 可批量上传 · Excel 每次一个 .xlsx 文件</small>
+                /><small>PNG / JPG / WebP 可批量上传</small>
             </label>
             <div class="import-foot between">
                 <span class="row gap-2"
-                    ><ShieldCheck :size="14" />
-                    仅在本地识别截图、存储数据</span
+                    ><ShieldCheck :size="14" /> 仅在本地识别截图、存储数据</span
                 >
             </div>
         </article>
@@ -153,9 +168,7 @@ function drop(event: DragEvent) {
                 :key="step.title"
                 class="guide-step"
             >
-                <span>{{
-                    String(i + 1).padStart(2, '0')
-                }}</span>
+                <span>{{ String(i + 1).padStart(2, '0') }}</span>
                 <div>
                     <h3>{{ step.title }}</h3>
                     <p>{{ step.text }}</p>
@@ -173,18 +186,16 @@ function drop(event: DragEvent) {
     <section class="panel">
         <div class="section-title between">
             <div class="row gap-2">
-                <h2>成绩一览</h2>
-                <span class="count-badge">{{
-                    scores.length
-                }}</span
+                <h2>最近成绩</h2>
+                <span class="count-badge">{{ historyCount }}</span
                 ><span class="muted section-subtitle"
-                    >每一个好成绩，都值得再看一眼</span
+                    >按导入时间回顾每一次发挥</span
                 >
             </div>
             <a class="text-link" href="#scores"
-                >查看全部 <ArrowRight :size="14"
+                >管理成绩 <ArrowRight :size="14"
             /></a>
         </div>
-        <ScoreTable :items="scores.slice(0, 4)" />
+        <HistoryTable @song="emit('song', $event)" />
     </section>
 </template>

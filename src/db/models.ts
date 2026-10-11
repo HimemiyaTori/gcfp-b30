@@ -1,6 +1,6 @@
 import type { SongCategory } from '../data/categories'
 export interface ScoreAchievements {
-    // undefined 表示未知，也包括 OCR 功能加入前创建的记录
+    // 未提供完成标记时按 false 处理，Max Chain 缺省表示未记录
     fc?: boolean
     ap?: boolean
     maxChain?: number
@@ -12,8 +12,19 @@ export interface ScoreRecord extends ScoreAchievements {
     score: number
     rating: number
     source: 'ocr' | 'manual' | 'excel'
-    createdAt: number
+    historyId: number
     updatedAt: number
+}
+export interface ScoreHistory extends Omit<ScoreRecord, 'historyId'> {
+    importedAt: number
+    batchId: string
+    correctedAt?: number
+}
+export interface RatingSnapshot {
+    id?: number
+    importedAt: number
+    basic: number
+    advanced: number
 }
 export interface RatingCalculationMetadata {
     key: 'calculation'
@@ -34,5 +45,6 @@ export interface ScoreRow extends ScoreAchievements {
     score: number
     rating: number
     updatedAt: number
+    importedAt?: number
     coverSourceUrl: string
 }

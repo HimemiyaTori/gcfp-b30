@@ -45,7 +45,7 @@ async function start(files: File[]) {
             timer = setTimeout(() => {
                 const count = jobs.value.length
                 close()
-                emit('notify', `已处理 ${count} 张截图，同一谱面仅保留最高分。`, '录入完成')
+                emit('notify', `已处理 ${count} 张截图，历史已保存，最佳成绩保留最高分。`, '录入完成')
             }, motionTiming.successHold + motionTiming.successCircle + motionTiming.successCheck)
         }, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : motionTiming.progress)
     }
@@ -70,7 +70,7 @@ defineExpose({ start })
             <AnimatedSuccess />
             <h2 id="import-title">录入完成</h2>
             <p>已处理全部 {{ jobs.length }} 张截图</p>
-            <small>同一谱面仅保留最高分</small>
+            <small>历史已保存，最佳成绩保留最高分</small>
         </div>
         <template v-else>
             <div class="between">

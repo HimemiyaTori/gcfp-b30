@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowDown, ArrowUp, ArrowUpDown, Music2, Pencil, Trash2 } from 'lucide-vue-next'
+import { ArrowDown, ArrowUp, ArrowUpDown, Music2, Pencil, Info } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
 import { songLanguage } from '../composables/useSettings'
 import { getRankByScore } from '../core/rating/rank'
@@ -13,7 +13,7 @@ const props = defineProps<{
     ranked?: boolean
     editable?: boolean
 }>()
-defineEmits<{ edit: [score: ScoreRow]; remove: [score: ScoreRow] }>()
+defineEmits<{ edit: [score: ScoreRow]; song: [score: ScoreRow] }>()
 type SortKey = 'position' | ScoreSortKey
 const sortKey = ref<SortKey>(
     props.ranked ? 'position' : props.editable ? 'updatedAt' : 'score',
@@ -111,13 +111,13 @@ watch([() => props.items, sortKey, ascending], () => (currentPage.value = 1))
                         {{ String(positions.get(s.id)).padStart(2, '0') }}
                     </td>
                     <td>
-                        <div class="row gap-3">
+                        <button type="button" class="row gap-3 song-link" @click="$emit('song', s)">
                             <SongCover :src="s.coverSourceUrl" />
                             <div class="song-copy">
                                 <strong>{{ s[songLanguage] }}</strong
                                 ><small>{{ s.artist }}</small>
                             </div>
-                        </div>
+                        </button>
                     </td>
                     <td>
                         <div class="row gap-2">
@@ -151,9 +151,9 @@ watch([() => props.items, sortKey, ascending], () => (currentPage.value = 1))
                             <Pencil :size="16" /></button
                         ><button
                             class="icon-button"
-                            aria-label="删除成绩"
-                            @click="$emit('remove', s)">
-                            <Trash2 :size="15" />
+                            aria-label="歌曲信息"
+                            @click="$emit('song', s)">
+                            <Info :size="15" />
                         </button>
                     </td>
                 </tr>

@@ -16,7 +16,8 @@ import B30ExportButton from './components/B30ExportButton.vue'
 import SettingsPage from './pages/SettingsPage.vue'
 import ScoreEditorDialog from './components/dialogs/ScoreEditorDialog.vue'
 import OcrImportDialog from './components/dialogs/OcrImportDialog.vue'
-import ScoreDeleteDialog from './components/dialogs/ScoreDeleteDialog.vue'
+import SongDetailsDialog from './components/dialogs/SongDetailsDialog.vue'
+import type { RatingGrain } from './components/RatingTrend.vue'
 import ClearScoresDialog from './components/dialogs/ClearScoresDialog.vue'
 import ExcelTransferDialog from './components/dialogs/ExcelTransferDialog.vue'
 const { t } = useI18n()
@@ -24,12 +25,15 @@ const page = ref<Page>('home')
 const sidebarCollapsed = ref(false)
 const {
     scores,
+    historyCount,
+    snapshots,
     error: databaseError,
     loading: databaseLoading,
     reload: reloadDatabase,
 } = useScoreList()
 const canWrite = computed(() => !databaseLoading.value && !databaseError.value)
 const b30Mode = ref<RatingMode>('BASIC')
+const ratingGrain = ref<RatingGrain>('day')
 const modeRatings = computed(() => ratingModes.map(mode => getModeB30(scores.value, mode)))
 const selectedRating = computed(
     () => modeRatings.value.find(summary => summary.mode === b30Mode.value)!,
@@ -38,7 +42,7 @@ const scoreFilters = ref(createScoreFilters())
 const b30Filters = ref(createScoreFilters())
 const editor = ref<InstanceType<typeof ScoreEditorDialog>>()
 const ocr = ref<InstanceType<typeof OcrImportDialog>>()
-const deletion = ref<InstanceType<typeof ScoreDeleteDialog>>()
+const songDetails = ref<InstanceType<typeof SongDetailsDialog>>()
 const clearDialog = ref<InstanceType<typeof ClearScoresDialog>>()
 const excel = ref<InstanceType<typeof ExcelTransferDialog>>()
 const notification = ref<InstanceType<typeof AppNotification>>()
@@ -134,13 +138,17 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
                     :selected-rating="selectedRating"
                     v-model:mode="b30Mode"
                     @upload="uploadFiles"
+                    :history-count="historyCount"
+                    :snapshots="snapshots"
+                    v-model:grain="ratingGrain"
+                    @song="songDetails?.open($event)"
                 />
                 <ScoresPage
                     v-if="page === 'scores'"
                     :scores="scores"
                     v-model:filters="scoreFilters"
                     @edit="editor?.open($event)"
-                    @remove="deletion?.open($event)"
+                    @song="songDetails?.open($event)"
                 />
                 <B30Page
                     v-if="page === 'b30'"
@@ -148,10 +156,11 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
                     :selected-rating="selectedRating"
                     v-model:mode="b30Mode"
                     v-model:filters="b30Filters"
+                    @song="songDetails?.open($event)"
                 />
                 <SettingsPage
                     v-if="page === 'settings'"
-                    :count="scores.length"
+                    :count="scores.length" :history-count="historyCount"
                     :can-write="canWrite"
                     :excel-busy="excel?.pending ?? false"
                     @clear="clearDialog?.open()"
@@ -188,8 +197,8 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
             @notify="notify"
             @manual-add="editor?.open()"
         />
-        <ScoreDeleteDialog ref="deletion" :can-write="canWrite" @notify="notify" />
-        <ClearScoresDialog ref="clearDialog" :can-write="canWrite" :count="scores.length" @notify="notify" />
+        <SongDetailsDialog ref="songDetails" :scores="scores" :can-write="canWrite" @notify="notify" />
+        <ClearScoresDialog ref="clearDialog" :can-write="canWrite" :count="scores.length" :history-count="historyCount" @notify="notify" />
         <AppNotification ref="notification" />
         <ExcelTransferDialog ref="excel" :can-write="canWrite" @notify="notify" />
     </div>

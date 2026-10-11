@@ -8,7 +8,7 @@ import { filterScores, hasScoreFilters, type ScoreFiltersState } from '../core/s
 const filters = defineModel<ScoreFiltersState>('filters', { required: true })
 const hasFilters = computed(() => hasScoreFilters(filters.value))
 const props = defineProps<{ scores: ScoreRow[] }>()
-const emit = defineEmits<{ edit: [score: ScoreRow]; remove: [score: ScoreRow] }>()
+const emit = defineEmits<{ edit: [score: ScoreRow]; song: [score: ScoreRow] }>()
 const filtered = computed(() => filterScores(props.scores, filters.value))
 </script>
 
@@ -35,7 +35,7 @@ const filtered = computed(() => filterScores(props.scores, filters.value))
             :items="filtered"
             editable
             @edit="emit('edit', $event)"
-            @remove="emit('remove', $event)"
+            @song="emit('song', $event)"
         />
     </section>
 </template>

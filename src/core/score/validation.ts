@@ -19,8 +19,8 @@ export function validateAchievements(
     if (value.ap && value.fc === false)
         throw new Error('AP 成绩必须同时为 FC。')
     return {
-        fc: value.ap ? true : value.fc,
-        ap: value.ap,
+        fc: value.ap ? true : value.fc ?? false,
+        ap: value.ap ?? false,
         maxChain: value.maxChain,
     }
 }

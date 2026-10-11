@@ -1,6 +1,7 @@
 import { computed, onUnmounted, ref } from 'vue'
 import { createRecognizer } from '../core/ocr/recognizer'
 import { scoreRepository } from '../db/scoreRepository'
+import { scoreIdentity } from '../core/score/import'
 
 export const MAX_IMPORT_FILES = 60
 
@@ -52,6 +53,7 @@ export function useOcrImport() {
         cancel()
         if (!files.length) return
         const current = new AbortController()
+        const seen = new Set<string>()
         controller = current
         const queue: (File | undefined)[] = [...files]
         files.length = 0
@@ -97,6 +99,8 @@ export function useOcrImport() {
                         job.status = 'skipped'
                         job.error = result.reason
                     } else {
+                        const identity = scoreIdentity({ ...result, ...result.achievements })
+                        if (seen.has(identity)) { job.status = 'skipped'; job.error = '本批次重复成绩，已跳过。'; continue }
                         const saved = await scoreRepository.addOcr(
                             result.songId,
                             result.chartId,
@@ -105,9 +109,10 @@ export function useOcrImport() {
                             current.signal,
                         )
                         current.signal.throwIfAborted()
+                        seen.add(identity)
                         job.status = saved.skipped ? 'skipped' : 'success'
                         job.error = saved.skipped
-                            ? '重复成绩，已保留最高分。'
+                            ? '与最近一次记录重复，已跳过。'
                             : ''
                     }
                 } catch (error) {

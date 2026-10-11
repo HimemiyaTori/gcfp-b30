@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { scoreRepository } from '../../db/scoreRepository'
-const props = defineProps<{ canWrite: boolean; count: number }>()
+const props = defineProps<{ canWrite: boolean; count: number; historyCount: number }>()
 const emit = defineEmits<{ notify: [message: string, title?: string] }>()
 const pending = ref(false)
 const clearDialog = ref<HTMLDialogElement>(),
@@ -38,7 +38,7 @@ defineExpose({ open })
         <h2 id="clear-data-title">清空全部成绩？</h2>
         <p class="muted">
             将永久删除此浏览器中的
-            {{ count }} 条成绩，无法撤销。B30 和总 RT
+            {{ count }} 条当前成绩、{{ historyCount }} 条历史及 Rating 趋势，无法撤销。B30 和总 RT
             会随之清空，曲库与外观偏好将保留。
         </p>
         <p v-if="clearError" class="error" role="alert">{{ clearError }}</p>
