@@ -102,7 +102,12 @@ function drop(event: DragEvent) {
         </article>
     </section>
 
-    <RatingTrend :snapshots="snapshots" :mode="b30Mode" v-model:grain="grain" />
+    <RatingTrend
+        v-if="scores.length"
+        :snapshots="snapshots"
+        :mode="b30Mode"
+        v-model:grain="grain"
+    />
     <section class="import-grid">
         <article class="panel import-panel">
             <div class="section-title between">
