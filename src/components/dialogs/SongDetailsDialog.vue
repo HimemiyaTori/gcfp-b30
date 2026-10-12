@@ -7,6 +7,7 @@ import { songLanguage } from '../../composables/useSettings'
 import type { Chart } from '../../core/song/models'
 import {
     formatLevel,
+    formatSongPack,
     getSongArtist,
     getSongTitle,
     songService,
@@ -18,11 +19,11 @@ import ScoreTable from '../ScoreTable.vue'
 import SongCover from '../SongCover.vue'
 import ScoreDeleteDialog from './ScoreDeleteDialog.vue'
 const chartFields: { key: keyof Chart; label: string }[] = [
-    { key: 'target', label: 'note数' },
+    { key: 'note', label: 'note数' },
     { key: 'special', label: '特殊note' },
     { key: 'combo', label: '总连击' },
-    { key: 'note', label: '圆圈' },
-    { key: 'goldNote', label: '特殊圆圈' },
+    { key: 'circle', label: '圆圈' },
+    { key: 'goldCircle', label: '特殊圆圈' },
     { key: 'hold', label: '长按' },
     { key: 'goldHold', label: '特殊长按' },
     { key: 'arrow', label: '滑动' },
@@ -30,8 +31,8 @@ const chartFields: { key: keyof Chart; label: string }[] = [
     { key: 'square', label: '方块' },
     { key: 'goldSquare', label: '特殊方块' },
     { key: 'advNote', label: '进阶note' },
-    { key: 'blueNote', label: '蓝色圆圈' },
-    { key: 'redNote', label: '红色圆圈' },
+    { key: 'blueCircle', label: '蓝色圆圈' },
+    { key: 'redCircle', label: '红色圆圈' },
     { key: 'advHold', label: '进阶长按' },
     { key: 'advArrow', label: '进阶滑动' },
     { key: 'blueArrow', label: '蓝色滑动' },
@@ -71,7 +72,9 @@ const vocalName = computed(() =>
         ''
     ).trim(),
 )
-const packName = computed(() => song.value?.pack?.trim() ?? '')
+const packName = computed(() =>
+    formatSongPack(song.value?.pack, songLanguage.value),
+)
 watch([songId, active], () => {
     playSubscription?.unsubscribe()
     playSubscription = undefined
@@ -165,7 +168,7 @@ defineExpose({ open })
                     <dt>BPM</dt>
                     <dd>
                         {{ song.bpm || '--'
-                        }}{{ song.bpmMax ? `–${song.bpmMax}` : '' }}
+                        }}{{ song.bpmMax ? ` - ${song.bpmMax}` : '' }}
                     </dd>
                 </div>
                 <div v-if="packName">

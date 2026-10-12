@@ -5,10 +5,10 @@ export interface Chart {
     mode: 'basic' | 'advanced'
     difficulty: 'easy' | 'normal' | 'hard' | 'master'
     level: number
-    target?: number; special?: number; combo?: number
-    note?: number; goldNote?: number; hold?: number; goldHold?: number
+    note?: number; special?: number; combo?: number
+    circle?: number; goldCircle?: number; hold?: number; goldHold?: number
     arrow?: number; goldArrow?: number; square?: number; goldSquare?: number
-    advNote?: number; blueNote?: number; redNote?: number; advHold?: number
+    advNote?: number; blueCircle?: number; redCircle?: number; advHold?: number
     advArrow?: number; blueArrow?: number; redArrow?: number
 }
 export interface Song {

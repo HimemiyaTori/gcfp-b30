@@ -340,7 +340,7 @@ interface Song {
         | 'music-game'
         | 'original'
 
-    // 曲包：不存在时属于游戏内免费曲包；为"story"则是剧情解锁，其他值为 DLC 曲包名称
+    // 曲包：不存在时属于游戏内免费曲包；剧情解锁为「角色 章节」，如 "kakeru 1-2"、"aria 1-3"；其他值为 DLC 曲包名称
     pack?: string
 
     // 歌曲更新时间，不存在为游戏发售时即有，一般格式为"DLC Update #3: 2025-11-13"或"Free Update #9: 2026-08-06"
@@ -356,11 +356,11 @@ interface Chart {
     difficulty: 'easy' | 'normal' | 'hard' | 'master'
     mode: 'basic' | 'advanced'
     level: number
-    target?: number
+    note?: number
     special?: number
     combo?: number
-    note?: number
-    goldNote?: number
+    circle?: number
+    goldCircle?: number
     hold?: number
     goldHold?: number
     arrow?: number
@@ -370,8 +370,8 @@ interface Chart {
 
     // ADV 难度专用
     advNote?: number
-    blueNote?: number
-    redNote?: number
+    blueCircle?: number
+    redCircle?: number
     advHold?: number
     advArrow?: number
     blueArrow?: number
@@ -399,8 +399,8 @@ level 为谱面定数表示；整数代表普通等级，.5 代表游戏中的 +
 `pack` 表示歌曲所属的曲包，与 `genre` 歌曲分类是两个独立属性。
 
 - `pack` 为空（未提供该可选字段或值为空字符串）时，表示歌曲属于游戏内的免费曲包。
-- `pack` 为 "story" 时，表示歌曲为剧情解锁曲目。
-- `pack` 有值时，其值为该歌曲所属的 **DLC 曲包名称**。
+- `pack` 为 `kakeru 1-2`、`aria 1-3` 这类「角色键 章节」时，表示剧情解锁曲。界面按曲目语言显示角色名加「篇」和章节，例如「閃道カケル篇 1-2」「Sendou Kakeru篇 1-2」。
+- 其他非空值是 DLC 曲包名称，界面原样显示。
 - 当前类型为可选字符串 `pack?: string`；不使用 `null` 表示空值。
 
 #### Song.coverSourceUrl：封面来源
@@ -861,7 +861,7 @@ B30 的搜索与筛选只作用于当前模式已入选的最多 30 张谱面；
 
 成绩管理增加歌曲分类筛选，可与曲名搜索、模式及难度筛选叠加。分类属于歌曲元数据，同曲不同谱面共享同一分类；以固定分类 ID 保存筛选值，日／英文名称跟随曲目信息语言切换，切换后不重置筛选。全部分类选项作为简体中文 UI 文案保留。
 
-正式曲库的 `Song.genre` 按第 6.2 节定义保存以上分类 ID 之一；`Song.pack` 则独立表示免费曲包或 DLC 曲包名称。分类映射统一存放于 `src/data/categories.ts`。成绩展示层将曲库的 `genre` 映射到筛选字段 `category`；无成绩的分类显示空结果。
+正式曲库的 `Song.genre` 按第 6.2 节定义保存以上分类 ID 之一；`Song.pack` 则独立表示免费曲包、剧情章节或 DLC 曲包名称。分类映射统一存放于 `src/data/categories.ts`。成绩展示层将曲库的 `genre` 映射到筛选字段 `category`；无成绩的分类显示空结果。
 
 ### 11.3 成绩新增与编辑
 
