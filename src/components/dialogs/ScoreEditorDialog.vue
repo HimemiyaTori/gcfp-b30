@@ -92,15 +92,15 @@ const liveRating = computed(() =>
 const lowered = computed(
     () => editing.value && Number(inputScore.value) < editing.value.score,
 )
-function open(s?: ScoreRow) {
+function open(s?: ScoreRow, chart?: { songId: string; mode: string; difficulty: string }) {
     songPickerExpanded.value = false
     editing.value = s ?? null
-    selectedSong.value = s?.songId ?? songService.songs[0]!.id
+    selectedSong.value = s?.songId ?? chart?.songId ?? songService.songs[0]!.id
     saveError.value = ''
     lowerConfirmed.value = false
     songQuery.value = ''
-    editorMode.value = s?.mode ?? 'ADVANCED'
-    editorDifficulty.value = s?.difficulty ?? 'MASTER'
+    editorMode.value = s?.mode ?? chart?.mode ?? 'ADVANCED'
+    editorDifficulty.value = s?.difficulty ?? chart?.difficulty ?? 'MASTER'
     inputScore.value = s?.score ?? 1040000
     inputAchievement.value = s?.ap
         ? 'ap'
@@ -165,7 +165,11 @@ async function saveScore() {
     }
 }
 
-defineExpose({ open })
+function openChart(chart: { songId: string; mode: string; difficulty: string }) {
+    open(undefined, chart)
+}
+
+defineExpose({ open, openChart })
 </script>
 
 <template>

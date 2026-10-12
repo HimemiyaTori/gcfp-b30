@@ -25,7 +25,7 @@ defineProps<{
 }>()
 const grain = defineModel<RatingGrain>('grain', { required: true })
 const b30Mode = defineModel<RatingMode>('mode', { required: true })
-const emit = defineEmits<{ upload: [files: File[]]; song: [row: ScoreRow] }>()
+const emit = defineEmits<{ upload: [files: File[]]; song: [row: { songId: string; mode: string }] }>()
 const fileInput = ref<HTMLInputElement>()
 const dragging = ref(false)
 const { rows, sort, toggleSort, page, pagination, error, loading, reload } = useScoreHistory()
@@ -92,10 +92,17 @@ function drop(event: DragEvent) {
                 <span>已收录成绩</span
                 ><span class="stat-icon blue"><Disc3 :size="18" /></span>
             </div>
-            <div class="stat-value">
-                <RollingNumber :value="scores.length" /> <span>谱面</span>
+            <div class="stat-metrics">
+                <div class="stat-value">
+                    <RollingNumber :value="scores.length" />
+                    <span>谱面</span>
+                </div>
+                <div class="stat-history">
+                    <span>历史</span>
+                    <RollingNumber :value="historyCount" />
+                </div>
             </div>
-            <small>每张谱面，保留一份最佳成绩 · {{ historyCount }} 条历史</small>
+            <small>每张谱面，保留一份最佳成绩</small>
             <a href="#scores" class="text-link"
                 >查看全部成绩 <ArrowRight :size="13"
             /></a>

@@ -1,6 +1,5 @@
 import { computed, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
-import type { ScoreRow } from '../db/models'
-import { createScoreComparator, type ScoreTableSort, type ScoreTableSortKey } from '../core/scoreSort'
+import { compareChartIdentity, createScoreComparator, lacksSortMetric, type ScoreTableSort, type ScoreTableSortKey, type SortableChart } from '../core/scoreSort'
 import { songLanguage } from './useSettings'
 
 export function useScoreSort(key: ScoreTableSortKey, ascending = false) {
@@ -19,8 +18,8 @@ export function useScoreSort(key: ScoreTableSortKey, ascending = false) {
     return { sort, toggleSort, resetSort }
 }
 
-export function useScoreTable(
-    items: MaybeRefOrGetter<readonly ScoreRow[]>,
+export function useScoreTable<T extends SortableChart>(
+    items: MaybeRefOrGetter<readonly T[]>,
     options: { sortKey: ScoreTableSortKey; ascending?: boolean; pageSize?: number; ranked?: boolean },
 ) {
     const { sort, toggleSort, resetSort } = useScoreSort(options.sortKey, options.ascending)
@@ -29,8 +28,18 @@ export function useScoreTable(
         const rows = [...toValue(items)]
         const { key, ascending } = sort.value
         if (key === 'position') return ascending ? rows : rows.reverse()
-        const compare = createScoreComparator(key, songLanguage.value, { primaryOnly: options.ranked })
-        return rows.sort((a, b) => compare(a, b) * (ascending ? 1 : -1))
+        const language = songLanguage.value
+        const compare = createScoreComparator(key, language, { primaryOnly: options.ranked })
+        // 没有分数或时间的谱面固定排在后面，彼此按曲名、模式、难度排列
+        return rows.sort((a, b) => {
+            const blankA = lacksSortMetric(a, key)
+            const blankB = lacksSortMetric(b, key)
+            if (blankA || blankB) {
+                if (blankA !== blankB) return blankA ? 1 : -1
+                return compareChartIdentity(a, b, language)
+            }
+            return compare(a, b) * (ascending ? 1 : -1)
+        })
     })
     const pageCount = computed(() => options.pageSize
         ? Math.max(1, Math.ceil(sortedItems.value.length / options.pageSize))

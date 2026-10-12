@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Search, SlidersHorizontal } from 'lucide-vue-next'
 import { songLanguage } from '../composables/useSettings'
+import { sanitizeLevelInput } from '../core/score/filter'
 import { songCategories, type SongCategory } from '../data/categories'
 
 defineProps<{ hideMode?: boolean }>()
@@ -9,6 +10,16 @@ const query = defineModel<string>('query', { required: true })
 const category = defineModel<SongCategory | 'ALL'>('category', { required: true })
 const mode = defineModel<string>('mode', { required: true })
 const difficulty = defineModel<string>('difficulty', { required: true })
+const levelMin = defineModel<string>('levelMin', { required: true })
+const levelMax = defineModel<string>('levelMax', { required: true })
+
+function writeLevel(event: Event, target: 'min' | 'max') {
+    const input = event.target as HTMLInputElement
+    const next = sanitizeLevelInput(input.value)
+    input.value = next
+    if (target === 'min') levelMin.value = next
+    else levelMax.value = next
+}
 </script>
 
 <template>
@@ -42,6 +53,25 @@ const difficulty = defineModel<string>('difficulty', { required: true })
                 <option>NORMAL</option>
                 <option>EASY</option>
             </select>
+            <div class="level-range" role="group" aria-label="筛选等级">
+                <input
+                    :value="levelMin"
+                    placeholder="1"
+                    aria-label="等级下限"
+                    inputmode="text"
+                    autocomplete="off"
+                    @input="writeLevel($event, 'min')"
+                />
+                <span aria-hidden="true">–</span>
+                <input
+                    :value="levelMax"
+                    placeholder="14+"
+                    aria-label="等级上限"
+                    inputmode="text"
+                    autocomplete="off"
+                    @input="writeLevel($event, 'max')"
+                />
+            </div>
         </div>
     </div>
 </template>

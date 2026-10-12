@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import { ArrowDown, ArrowUp, ArrowUpDown, Music2, Pencil, Info, Trash2 } from 'lucide-vue-next'
+import { ArrowDown, ArrowUp, ArrowUpDown, Music2, Pencil, Plus, Info, Trash2 } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { songLanguage } from '../composables/useSettings'
+import { isPlayedChart, type ChartListRow, type UnplayedChartRow } from '../core/score/catalog'
 import { getRankByScore } from '../core/rating/rank'
 import type { ScoreTableSort, ScoreTableSortKey } from '../core/scoreSort'
 import SongCover from './SongCover.vue'
 import type { ScoreRow } from '../db/models'
 
 const props = withDefaults(defineProps<{
-    items: readonly ScoreRow[]
+    items: readonly ChartListRow[]
     sort: ScoreTableSort
     positions?: ReadonlyMap<number, number>
     hideMode?: boolean
@@ -17,6 +18,7 @@ const props = withDefaults(defineProps<{
     deletable?: boolean
     canWrite?: boolean
     timeKey?: 'updatedAt' | 'importedAt'
+    rowKey?: 'id' | 'chartId'
     pagination?: { page: number; pageCount: number; total?: number }
     loading?: boolean
     error?: string
@@ -25,18 +27,30 @@ const props = withDefaults(defineProps<{
 }>(), {
     canWrite: true,
     timeKey: 'updatedAt',
+    rowKey: 'id',
     emptyTitle: '暂时没有成绩',
     emptyDescription: '试试其他筛选条件，或录入你的第一份成绩。',
 })
 
-defineEmits<{
+const emit = defineEmits<{
     edit: [score: ScoreRow]
-    song: [score: ScoreRow]
+    add: [chart: UnplayedChartRow]
+    song: [score: { songId: string; mode: string }]
     remove: [score: ScoreRow]
     sort: [key: ScoreTableSortKey]
     page: [page: number]
     retry: []
 }>()
+
+function rowDomKey(row: ChartListRow) {
+    return props.rowKey === 'chartId' ? row.chartId : isPlayedChart(row) ? row.id : row.chartId
+}
+function recordId(row: ChartListRow) {
+    return isPlayedChart(row) ? row.id : undefined
+}
+function rowTime(row: ChartListRow) {
+    return isPlayedChart(row) ? row[props.timeKey] : undefined
+}
 
 const monthDayFormatter = new Intl.DateTimeFormat('zh-CN', {
     month: 'numeric',
@@ -107,19 +121,19 @@ const columns = computed(() => {
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="s in items" :key="s.id">
+                <tr v-for="s in items" :key="rowDomKey(s)">
                     <td
                         v-if="ranked"
                         class="position"
-                        :class="{ podium: (positions?.get(s.id) ?? Infinity) <= 3 }">
-                        {{ positions?.has(s.id) ? String(positions.get(s.id)).padStart(2, '0') : '—' }}
+                        :class="{ podium: (positions?.get(recordId(s) ?? -1) ?? Infinity) <= 3 }">
+                        {{ recordId(s) != null && positions?.has(recordId(s)!) ? String(positions.get(recordId(s)!)).padStart(2, '0') : '—' }}
                     </td>
                     <td>
                         <button type="button" class="row gap-3 song-link" @click="$emit('song', s)">
                             <SongCover :src="s.coverSourceUrl" />
                             <div class="song-copy">
                                 <strong>{{ s[songLanguage] }}</strong
-                                ><small>{{ s.artist }}</small>
+                                ><small :title="s.artist">{{ s.artist }}</small>
                             </div>
                         </button>
                     </td>
@@ -131,37 +145,47 @@ const columns = computed(() => {
                         <small v-if="!hideMode" class="mode">{{ s.mode }}</small>
                     </td>
                     <td class="num score-num">
-                        {{ s.score.toLocaleString('en-US') }}
-                        <small>{{ s.ap ? 'AP' : s.fc ? 'FC' : '' }}{{ s.maxChain !== undefined ? ` · Max Chain ${s.maxChain}` : '' }}</small>
+                        <template v-if="isPlayedChart(s)">
+                            {{ s.score.toLocaleString('en-US') }}
+                            <small>{{ s.ap ? 'AP' : s.fc ? 'FC' : '' }}{{ s.maxChain !== undefined ? ` · Max Chain ${s.maxChain}` : '' }}</small>
+                        </template>
+                        <span v-else>—</span>
                     </td>
                     <td class="num">
-                        <span class="rank">{{ getRankByScore(s.score) }}</span>
+                        <span v-if="isPlayedChart(s)" class="rank">{{ getRankByScore(s.score) }}</span>
+                        <span v-else>—</span>
                     </td>
-                    <td class="num rating-num">{{ s.rating.toFixed(2) }}</td>
+                    <td class="num rating-num">
+                        <template v-if="isPlayedChart(s)">{{ s.rating.toFixed(2) }}</template>
+                        <span v-else>—</span>
+                    </td>
                     <td class="updated-at">
-                        <time v-if="s[timeKey] !== undefined" :datetime="new Date(s[timeKey]!).toISOString()">
-                            <span class="updated-date">{{ formatDate(s[timeKey]!) }}</span>
-                            <span class="updated-time">{{ timeFormatter.format(s[timeKey]!) }}</span>
+                        <time v-if="rowTime(s) !== undefined" :datetime="new Date(rowTime(s)!).toISOString()">
+                            <span class="updated-date">{{ formatDate(rowTime(s)!) }}</span>
+                            <span class="updated-time">{{ timeFormatter.format(rowTime(s)!) }}</span>
                         </time>
                         <span v-else>—</span>
-                        <small v-if="timeKey === 'importedAt' && s.correctedAt">已修正</small>
+                        <small v-if="timeKey === 'importedAt' && isPlayedChart(s) && s.correctedAt">已修正</small>
                     </td>
                     <td v-if="editable || deletable">
                         <template v-if="editable">
-                            <button type="button" class="icon-button" aria-label="编辑成绩" @click="$emit('edit', s)">
+                            <button v-if="isPlayedChart(s)" type="button" class="icon-button" aria-label="编辑成绩" @click="emit('edit', s)">
                                 <Pencil :size="16" />
                             </button>
-                            <button type="button" class="icon-button" aria-label="歌曲信息" @click="$emit('song', s)">
+                            <button v-else type="button" class="icon-button" aria-label="录入成绩" @click="emit('add', s)">
+                                <Plus :size="16" />
+                            </button>
+                            <button type="button" class="icon-button" aria-label="歌曲信息" @click="emit('song', s)">
                                 <Info :size="15" />
                             </button>
                         </template>
                         <button
-                            v-if="deletable"
+                            v-if="deletable && isPlayedChart(s)"
                             type="button"
                             class="icon-button"
                             :disabled="!canWrite || loading"
                             aria-label="删除历史成绩"
-                            @click="$emit('remove', s)">
+                            @click="emit('remove', s)">
                             <Trash2 :size="16" />
                         </button>
                     </td>

@@ -498,12 +498,19 @@ h1 {
     background: #eef2f9;
     color: #8296b5;
 }
+.stat-metrics {
+    display: flex;
+    align-items: end;
+    gap: 16px;
+    margin: 9px 0 11px;
+}
 .stat-value {
     font-size: 34px;
     font-weight: 550;
     letter-spacing: -1px;
-    margin: 9px 0 11px;
+    line-height: 1.2;
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
 }
 .stat-value > span {
     font-size: 13px;
@@ -511,6 +518,25 @@ h1 {
     letter-spacing: 0;
     color: var(--muted);
     margin-left: 4px;
+}
+.stat-history {
+    border-left: 1px solid var(--line);
+    padding-left: 14px;
+    padding-bottom: 2px;
+    font-size: 22px;
+    font-weight: 550;
+    letter-spacing: -0.6px;
+    line-height: 1.2;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+.stat-history > span {
+    display: block;
+    margin-bottom: 2px;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--muted);
 }
 .stat-card small {
     font-size: 11px;
@@ -835,14 +861,26 @@ h2 {
     left: 10px;
     top: 8px;
 }
+.score-table td:has(.song-link) {
+    max-width: 400px;
+}
+.song-link {
+    max-width: 360px;
+}
 .song-copy {
     max-width: 310px;
+    min-width: 0;
+    overflow: hidden;
 }
-.song-copy strong {
+.song-copy strong,
+.song-copy small {
     display: block;
-    font-weight: 550;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.song-copy strong {
+    font-weight: 550;
 }
 .song-copy small {
     font-size: 11px;
@@ -969,6 +1007,23 @@ input::placeholder {
 .filter-bar > .row {
     color: var(--muted);
 }
+.level-range {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--field);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 0 8px;
+    color: var(--muted);
+}
+.level-range input {
+    width: 3.2em;
+    border: 0;
+    background: transparent;
+    padding: 11px 0;
+    text-align: center;
+}
 .table-pagination {
     display: flex;
     align-items: center;
@@ -1078,6 +1133,17 @@ input::placeholder {
     background: var(--panel);
     color: var(--accent);
     box-shadow: 0 1px 4px #0000000c;
+}
+.segmented.compact button {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+.scores-heading,
+.scores-heading-tools {
+    flex-wrap: wrap;
+}
+.scores-heading-tools {
+    justify-content: flex-end;
 }
 .ui-settings-options {
     display: grid;
@@ -1312,6 +1378,9 @@ input::placeholder {
     .score-table th {
         padding-left: 18px;
         padding-right: 18px;
+    }
+    .song-link {
+        max-width: 275px;
     }
     .song-copy {
         max-width: 225px;
@@ -1677,6 +1746,9 @@ input::placeholder {
     .score-table td {
         padding: 14px 17px;
     }
+    .song-link {
+        max-width: 275px;
+    }
     .song-copy {
         max-width: 225px;
     }
@@ -1698,7 +1770,8 @@ input::placeholder {
     .filter-bar > .row {
         width: 100%;
     }
-    .filter-bar select {
+    .filter-bar select,
+    .level-range {
         flex: 1;
         min-width: 0;
     }

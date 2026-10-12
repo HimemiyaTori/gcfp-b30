@@ -5,9 +5,8 @@ import ScoreFilters from '../components/ScoreFilters.vue'
 import ScoreTable from '../components/ScoreTable.vue'
 import { useScoreTable } from '../composables/useScoreTable'
 import { filterScores, hasScoreFilters, type ScoreFiltersState } from '../core/score/filter'
-import type { ScoreRow } from '../db/models'
 import type { getModeB30, RatingMode } from '../core/rating/calculator'
-const emit = defineEmits<{ song: [score: ScoreRow] }>()
+const emit = defineEmits<{ song: [score: { songId: string; mode: string }] }>()
 const filters = defineModel<ScoreFiltersState>('filters', { required: true })
 const hasFilters = computed(() => hasScoreFilters(filters.value))
 const props = defineProps<{ modeRatings: ReturnType<typeof getModeB30>[]; selectedRating: ReturnType<typeof getModeB30> }>()
@@ -103,6 +102,8 @@ watch(b30Mode, resetSort)
             :mode="b30Mode"
             hide-mode
             v-model:difficulty="filters.difficulty"
+            v-model:level-min="filters.levelMin"
+            v-model:level-max="filters.levelMax"
         />
         <ScoreTable @song="emit('song', $event)"
             :items="rows"

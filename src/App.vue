@@ -148,6 +148,7 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
                     :scores="scores"
                     v-model:filters="scoreFilters"
                     @edit="editor?.open($event)"
+                    @add="editor?.openChart($event)"
                     @song="songDetails?.open($event)"
                 />
                 <B30Page

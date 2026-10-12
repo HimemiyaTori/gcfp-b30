@@ -3,7 +3,6 @@ import { liveQuery } from 'dexie'
 import { ChevronDown, History, X } from 'lucide-vue-next'
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { useScoreHistory } from '../../composables/useScoreHistory'
-import { database } from '../../db/database'
 import { songLanguage } from '../../composables/useSettings'
 import type { Chart } from '../../core/song/models'
 import {
@@ -13,25 +12,26 @@ import {
     songService,
 } from '../../core/song/songService'
 import { songCategories } from '../../data/categories'
+import { database } from '../../db/database'
 import type { ScoreRow } from '../../db/models'
 import ScoreTable from '../ScoreTable.vue'
 import SongCover from '../SongCover.vue'
 import ScoreDeleteDialog from './ScoreDeleteDialog.vue'
 const chartFields: { key: keyof Chart; label: string }[] = [
-    { key: 'target', label: '目标数' },
-    { key: 'special', label: '特殊目标' },
+    { key: 'target', label: 'note数' },
+    { key: 'special', label: '特殊note' },
     { key: 'combo', label: '总连击' },
-    { key: 'note', label: '音符' },
-    { key: 'goldNote', label: '金色音符' },
+    { key: 'note', label: '圆圈' },
+    { key: 'goldNote', label: '特殊圆圈' },
     { key: 'hold', label: '长按' },
-    { key: 'goldHold', label: '金色长按' },
+    { key: 'goldHold', label: '特殊长按' },
     { key: 'arrow', label: '滑动' },
-    { key: 'goldArrow', label: '金色滑动' },
-    { key: 'square', label: '方形目标' },
-    { key: 'goldSquare', label: '金色方形目标' },
-    { key: 'advNote', label: '进阶音符' },
-    { key: 'blueNote', label: '蓝色音符' },
-    { key: 'redNote', label: '红色音符' },
+    { key: 'goldArrow', label: '特殊滑动' },
+    { key: 'square', label: '方块' },
+    { key: 'goldSquare', label: '特殊方块' },
+    { key: 'advNote', label: '进阶note' },
+    { key: 'blueNote', label: '蓝色圆圈' },
+    { key: 'redNote', label: '红色圆圈' },
     { key: 'advHold', label: '进阶长按' },
     { key: 'advArrow', label: '进阶滑动' },
     { key: 'blueArrow', label: '蓝色滑动' },
@@ -87,7 +87,10 @@ watch([songId, active], () => {
             if (songId.value !== id) return
             const counts = new Map<string, number>()
             for (const record of records)
-                counts.set(record.chartId, (counts.get(record.chartId) ?? 0) + 1)
+                counts.set(
+                    record.chartId,
+                    (counts.get(record.chartId) ?? 0) + 1,
+                )
             playCounts.value = counts
         },
     })
@@ -106,7 +109,7 @@ function closeOnOutside(event: MouseEvent) {
     )
         element.close()
 }
-function open(row: ScoreRow) {
+function open(row: { songId: string; mode: string }) {
     songId.value = row.songId
     mode.value = row.mode
     notesOpen.value = false
@@ -172,7 +175,11 @@ defineExpose({ open })
             </dl>
             <div class="chart-heading">
                 <h3>谱面信息</h3>
-                <div class="segmented chart-mode" role="group" aria-label="歌曲模式">
+                <div
+                    class="segmented chart-mode"
+                    role="group"
+                    aria-label="歌曲模式"
+                >
                     <button
                         v-for="item in ['BASIC', 'ADVANCED']"
                         :key="item"
@@ -201,9 +208,9 @@ defineExpose({ open })
                                 :class="{ 'is-empty': !best.get(chart.id) }"
                             >
                                 {{
-                                    best.get(chart.id)?.score.toLocaleString(
-                                        'en-US',
-                                    ) ?? '--'
+                                    best
+                                        .get(chart.id)
+                                        ?.score.toLocaleString('en-US') ?? '--'
                                 }}
                             </p>
                             <span class="chart-caption">最高成绩</span>
@@ -214,9 +221,9 @@ defineExpose({ open })
                                             'is-empty': !best.get(chart.id),
                                         }"
                                         >{{
-                                            best.get(chart.id)?.rating.toFixed(
-                                                2,
-                                            ) ?? '--'
+                                            best
+                                                .get(chart.id)
+                                                ?.rating.toFixed(2) ?? '--'
                                         }}</strong
                                     >
                                     <span>Rating</span>
@@ -250,10 +257,7 @@ defineExpose({ open })
                         }}</span>
                     </div>
                     <dl v-if="notesOpen">
-                        <template
-                            v-for="field in chartFields"
-                            :key="field.key"
-                        >
+                        <template v-for="field in chartFields" :key="field.key">
                             <dt
                                 :class="{
                                     'is-empty': chart[field.key] == null,
@@ -278,7 +282,9 @@ defineExpose({ open })
                         <History :size="18" />
                         <h2>历史成绩</h2>
                     </div>
-                    <span class="count-badge">共 {{ pagination.total }} 条</span>
+                    <span class="count-badge"
+                        >共 {{ pagination.total }} 条</span
+                    >
                 </div>
                 <div class="history-table">
                     <ScoreTable
