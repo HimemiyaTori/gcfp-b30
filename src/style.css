@@ -513,24 +513,9 @@ h1 {
     color: var(--muted);
     margin-left: 4px;
 }
-.stat-history {
+.stat-metrics .stat-value + .stat-value {
     border-left: 1px solid var(--line);
     padding-left: 14px;
-    padding-bottom: 2px;
-    font-size: 22px;
-    font-weight: 550;
-    letter-spacing: -0.6px;
-    line-height: 1.2;
-    white-space: nowrap;
-    font-variant-numeric: tabular-nums;
-}
-.stat-history > span {
-    display: block;
-    margin-bottom: 2px;
-    font-size: 11px;
-    font-weight: 400;
-    letter-spacing: 0;
-    color: var(--muted);
 }
 .stat-card small {
     font-size: 11px;

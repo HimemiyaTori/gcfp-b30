@@ -99,9 +99,9 @@ function drop(event: DragEvent) {
                     <RollingNumber :value="scores.length" />
                     <span>{{ t('home.charts') }}</span>
                 </div>
-                <div class="stat-history">
-                    <span>{{ t('home.history') }}</span>
+                <div class="stat-value">
                     <RollingNumber :value="historyCount" />
+                    <span>{{ t('home.history') }}</span>
                 </div>
             </div>
             <small>{{ t('home.bestPerChart') }}</small>

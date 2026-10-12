@@ -79,7 +79,7 @@
         "collected": "登録済みスコア",
         "charts": "譜面",
         "history": "履歴",
-        "bestPerChart": "譜面ごとにベストスコアを 1 件保存",
+        "bestPerChart": "譜面はベストを残し、履歴は毎回の記録を残します",
         "viewAll": "すべてのスコアを見る",
         "importTitle": "新しいスコアを登録",
         "dropTitle": "スクリーンショット / Excel をドロップまたは選択",

@@ -79,7 +79,7 @@
         "collected": "Scores collected",
         "charts": "charts",
         "history": "History",
-        "bestPerChart": "One best score kept per chart",
+        "bestPerChart": "Charts keep the best score, history keeps every play",
         "viewAll": "View all scores",
         "importTitle": "Add new scores",
         "dropTitle": "Drop or choose screenshots / Excel",
