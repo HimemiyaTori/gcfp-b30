@@ -75,9 +75,9 @@ function drop(event: DragEvent) {
                         :motion-key="b30Mode"
                     /><span>RT</span>
                 </div>
-                <div class="rating-floor">
+                <div class="rating-floor" lang="en">
                     <span>Floor</span>
-                    <strong>{{
+                    <strong :class="{ 'floor-empty': selectedRating.floor == null }">{{
                         selectedRating.floor?.toFixed(2) ?? '—'
                     }}</strong
                     ><span>RT</span>
@@ -141,7 +141,10 @@ function drop(event: DragEvent) {
                         >
                     </div>
                 </div>
-                <h3>{{ t('home.dropTitle') }}</h3>
+                <h3>
+                    <span class="drop-title-full">{{ t('home.dropTitle') }}</span>
+                    <span class="drop-title-mobile">{{ t('home.dropTitleMobile') }}</span>
+                </h3>
                 <input
                     ref="fileInput"
                     class="drop-zone-input"

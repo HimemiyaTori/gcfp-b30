@@ -27,9 +27,7 @@
         },
         "localData": "本機成績",
         "loading": "正在載入本機成績…",
-        "footerTagline": "為每一次熱愛留個紀錄",
-        "footerLocal": "本機成績管理",
-        "footerOcr": "截圖 OCR 本機辨識",
+        "footerTagline": "為每一次熱愛留下紀錄",
         "excelOneFile": "Excel 請一次上傳一個檔案，成績截圖請另外上傳。",
         "chooseFileTitle": "請選擇檔案",
         "excelBusy": "Excel 正在處理，請完成後再上傳。",
@@ -42,8 +40,7 @@
         "collapse": "收合側邊欄"
     },
     "header": {
-        "home": "Groove Coaster Future Performers B30 首頁",
-        "preview": "介面預覽"
+        "home": "Groove Coaster Future Performers B30 首頁"
     },
     "display": {
         "songLanguage": "曲目資訊語言：{current}",
@@ -86,6 +83,7 @@
         "viewAll": "查看全部成績",
         "importTitle": "登錄新成績",
         "dropTitle": "拖曳或選擇成績截圖 / Excel",
+        "dropTitleMobile": "選擇成績截圖 / Excel",
         "fileInput": "選擇成績截圖或 Excel",
         "dropHint": "PNG / JPG / WebP 可批次上傳",
         "localOnly": "僅在本機辨識截圖、儲存資料",
@@ -131,6 +129,7 @@
     "scores": {
         "title": "成績一覽",
         "scope": "譜面範圍",
+        "scopeToggle": "譜面範圍：{current}。點擊切換為{next}",
         "played": "已有成績",
         "all": "全部譜面",
         "noCharts": "沒有符合條件的譜面",

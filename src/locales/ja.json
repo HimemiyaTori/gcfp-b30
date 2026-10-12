@@ -28,8 +28,6 @@
         "localData": "この端末のスコア",
         "loading": "ローカルのスコアを読み込み中…",
         "footerTagline": "すべての「好き」を記録に残す",
-        "footerLocal": "ローカルでスコア管理",
-        "footerOcr": "スクリーンショットを端末内で OCR",
         "excelOneFile": "Excel は 1 回につき 1 ファイルずつアップロードし、スクリーンショットは別にアップロードしてください。",
         "chooseFileTitle": "ファイルを選択してください",
         "excelBusy": "Excel を処理中です。完了してからアップロードしてください。",
@@ -42,8 +40,7 @@
         "collapse": "サイドバーを閉じる"
     },
     "header": {
-        "home": "Groove Coaster Future Performers B30 ホーム",
-        "preview": "プレビュー"
+        "home": "Groove Coaster Future Performers B30 ホーム"
     },
     "display": {
         "songLanguage": "楽曲情報の言語：{current}",
@@ -86,6 +83,7 @@
         "viewAll": "すべてのスコアを見る",
         "importTitle": "新しいスコアを登録",
         "dropTitle": "スクリーンショット / Excel をドロップまたは選択",
+        "dropTitleMobile": "スクリーンショット / Excel を選択",
         "fileInput": "スクリーンショットまたは Excel を選択",
         "dropHint": "PNG / JPG / WebP をまとめてアップロードできます",
         "localOnly": "スクリーンショットの認識もデータ保存も端末内だけで行います",
@@ -131,6 +129,7 @@
     "scores": {
         "title": "スコア一覧",
         "scope": "譜面の範囲",
+        "scopeToggle": "譜面の範囲：{current}。クリックで{next}に切り替え",
         "played": "スコアあり",
         "all": "すべての譜面",
         "noCharts": "条件に合う譜面がありません",

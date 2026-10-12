@@ -2,24 +2,28 @@
 import { Plus } from 'lucide-vue-next'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { navigation, type Page } from './navigation'
-import { useScoreList } from './composables/useScoreList'
-import { getModeB30, ratingModes, type RatingMode } from './core/rating/calculator'
-import { createScoreFilters } from './core/score/filter'
-import AppNavigation from './components/app/AppNavigation.vue'
 import AppHeader from './components/app/AppHeader.vue'
+import AppNavigation from './components/app/AppNavigation.vue'
 import AppNotification from './components/app/AppNotification.vue'
-import HomePage from './pages/HomePage.vue'
-import ScoresPage from './pages/ScoresPage.vue'
-import B30Page from './pages/B30Page.vue'
 import B30ExportButton from './components/B30ExportButton.vue'
-import SettingsPage from './pages/SettingsPage.vue'
-import ScoreEditorDialog from './components/dialogs/ScoreEditorDialog.vue'
-import OcrImportDialog from './components/dialogs/OcrImportDialog.vue'
-import SongDetailsDialog from './components/dialogs/SongDetailsDialog.vue'
-import type { RatingGrain } from './components/RatingTrend.vue'
 import ClearScoresDialog from './components/dialogs/ClearScoresDialog.vue'
 import ExcelTransferDialog from './components/dialogs/ExcelTransferDialog.vue'
+import OcrImportDialog from './components/dialogs/OcrImportDialog.vue'
+import ScoreEditorDialog from './components/dialogs/ScoreEditorDialog.vue'
+import SongDetailsDialog from './components/dialogs/SongDetailsDialog.vue'
+import type { RatingGrain } from './components/RatingTrend.vue'
+import { useScoreList } from './composables/useScoreList'
+import {
+    getModeB30,
+    ratingModes,
+    type RatingMode,
+} from './core/rating/calculator'
+import { createScoreFilters } from './core/score/filter'
+import { navigation, type Page } from './navigation'
+import B30Page from './pages/B30Page.vue'
+import HomePage from './pages/HomePage.vue'
+import ScoresPage from './pages/ScoresPage.vue'
+import SettingsPage from './pages/SettingsPage.vue'
 const { t } = useI18n()
 const page = ref<Page>('home')
 const sidebarCollapsed = ref(false)
@@ -34,9 +38,11 @@ const {
 const canWrite = computed(() => !databaseLoading.value && !databaseError.value)
 const b30Mode = ref<RatingMode>('BASIC')
 const ratingGrain = ref<RatingGrain>('day')
-const modeRatings = computed(() => ratingModes.map(mode => getModeB30(scores.value, mode)))
+const modeRatings = computed(() =>
+    ratingModes.map((mode) => getModeB30(scores.value, mode)),
+)
 const selectedRating = computed(
-    () => modeRatings.value.find(summary => summary.mode === b30Mode.value)!,
+    () => modeRatings.value.find((summary) => summary.mode === b30Mode.value)!,
 )
 const scoreFilters = ref(createScoreFilters())
 const b30Filters = ref(createScoreFilters())
@@ -54,7 +60,7 @@ function uploadFiles(files: File[]) {
         notify(t('common.databaseNotReady'))
         return
     }
-    const workbooks = files.filter(file => /\.xlsx$/i.test(file.name))
+    const workbooks = files.filter((file) => /\.xlsx$/i.test(file.name))
     if (workbooks.length) {
         if (files.length !== 1) {
             notify(t('app.excelOneFile'), t('app.chooseFileTitle'))
@@ -69,7 +75,9 @@ function uploadFiles(files: File[]) {
 }
 function readHash() {
     const id = location.hash.slice(1)
-    page.value = navigation.some(item => item.id === id) ? id as Page : 'home'
+    page.value = navigation.some((item) => item.id === id)
+        ? (id as Page)
+        : 'home'
 }
 onMounted(() => {
     readHash()
@@ -81,7 +89,11 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
 
 <template>
     <div :class="['app-shell', { 'sidebar-collapsed': sidebarCollapsed }]">
-        <AppNavigation v-model:collapsed="sidebarCollapsed" :page="page" :count="scores.length" />
+        <AppNavigation
+            v-model:collapsed="sidebarCollapsed"
+            :page="page"
+            :count="scores.length"
+        />
         <div class="workspace">
             <AppHeader />
             <main>
@@ -92,9 +104,9 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
                                 page === 'home'
                                     ? 'EVERY PLAY COUNTS'
                                     : page === 'b30'
-                                      ? 'YOUR BEST PERFORMANCES'
+                                      ? 'MY BEST PERFORMANCES'
                                       : page === 'scores'
-                                        ? 'YOUR PERSONAL COLLECTION'
+                                        ? 'MY PERSONAL COLLECTION'
                                         : 'MAKE IT YOURS'
                             }}
                         </div>
@@ -114,11 +126,13 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
                     >
                         <Plus :size="17" /> {{ t('common.manualAdd') }}
                     </button>
-                    <B30ExportButton v-show="page === 'b30'" :summary="selectedRating" :ready="canWrite" @notify="notify" />
-                    <div
-                        v-if="page === 'home'"
-                        class="demo-label"
-                    >
+                    <B30ExportButton
+                        v-show="page === 'b30'"
+                        :summary="selectedRating"
+                        :ready="canWrite"
+                        @notify="notify"
+                    />
+                    <div v-if="page === 'home'" class="demo-label">
                         LOCAL DATA <span>{{ t('app.localData') }}</span>
                     </div>
                 </div>
@@ -151,7 +165,8 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
                 />
                 <SettingsPage
                     v-if="page === 'settings'"
-                    :count="scores.length" :history-count="historyCount"
+                    :count="scores.length"
+                    :history-count="historyCount"
                     :can-write="canWrite"
                     :excel-busy="excel?.pending ?? false"
                     @clear="clearDialog?.open()"
@@ -159,28 +174,29 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
                     @export="excel?.download(false)"
                     @template="excel?.download(true)"
                 />
-                <p v-if="databaseLoading" role="status">{{ t('app.loading') }}</p>
+                <p v-if="databaseLoading" role="status">
+                    {{ t('app.loading') }}
+                </p>
                 <div v-if="databaseError" class="panel error" role="alert">
                     {{ databaseError }}
                     <button class="button secondary" @click="reloadDatabase">
                         {{ t('common.retry') }}
                     </button>
                 </div>
-                <footer class="page-footer between">
+                <footer class="page-footer">
                     <span>
                         GROOVE ARCHIVE
                         <span class="footer-dot">·</span>
                         {{ t('app.footerTagline') }}
                     </span>
-                    <span>
-                        {{ t('app.footerLocal') }}
-                        <span class="footer-dot">/</span>
-                        {{ t('app.footerOcr') }}
-                    </span>
                 </footer>
             </main>
         </div>
-        <ScoreEditorDialog ref="editor" :can-write="canWrite" @notify="notify" />
+        <ScoreEditorDialog
+            ref="editor"
+            :can-write="canWrite"
+            @notify="notify"
+        />
         <OcrImportDialog
             ref="ocr"
             :active="page === 'home'"
@@ -188,9 +204,24 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
             @notify="notify"
             @manual-add="editor?.open()"
         />
-        <SongDetailsDialog ref="songDetails" :scores="scores" :can-write="canWrite" @notify="notify" />
-        <ClearScoresDialog ref="clearDialog" :can-write="canWrite" :count="scores.length" :history-count="historyCount" @notify="notify" />
+        <SongDetailsDialog
+            ref="songDetails"
+            :scores="scores"
+            :can-write="canWrite"
+            @notify="notify"
+        />
+        <ClearScoresDialog
+            ref="clearDialog"
+            :can-write="canWrite"
+            :count="scores.length"
+            :history-count="historyCount"
+            @notify="notify"
+        />
         <AppNotification ref="notification" />
-        <ExcelTransferDialog ref="excel" :can-write="canWrite" @notify="notify" />
+        <ExcelTransferDialog
+            ref="excel"
+            :can-write="canWrite"
+            @notify="notify"
+        />
     </div>
 </template>

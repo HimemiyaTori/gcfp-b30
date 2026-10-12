@@ -27,9 +27,7 @@
         },
         "localData": "On this device",
         "loading": "Loading local scores…",
-        "footerTagline": "A record for every play you love",
-        "footerLocal": "Local score management",
-        "footerOcr": "On-device screenshot OCR",
+        "footerTagline": "Records for every play you love",
         "excelOneFile": "Upload one Excel file at a time, and upload screenshots separately.",
         "chooseFileTitle": "Choose a file",
         "excelBusy": "An Excel file is being processed. Please wait until it finishes.",
@@ -42,8 +40,7 @@
         "collapse": "Collapse sidebar"
     },
     "header": {
-        "home": "Groove Coaster Future Performers B30 home",
-        "preview": "Preview"
+        "home": "Groove Coaster Future Performers B30 home"
     },
     "display": {
         "songLanguage": "Song info language: {current}",
@@ -86,6 +83,7 @@
         "viewAll": "View all scores",
         "importTitle": "Add new scores",
         "dropTitle": "Drop or choose screenshots / Excel",
+        "dropTitleMobile": "Choose screenshots / Excel",
         "fileInput": "Choose screenshots or an Excel file",
         "dropHint": "Upload multiple PNG / JPG / WebP files at once",
         "localOnly": "Screenshots are recognized and data is stored only on this device",
@@ -131,6 +129,7 @@
     "scores": {
         "title": "All scores",
         "scope": "Chart scope",
+        "scopeToggle": "Chart scope: {current}. Click to switch to {next}",
         "played": "Played",
         "all": "All charts",
         "noCharts": "No matching charts",

@@ -21,9 +21,6 @@ const { t } = useI18n()
             <span class="game-edition">B30</span>
         </a>
         <div class="row gap-4">
-            <span class="preview-pill"
-                ><span class="tiny-dot"></span> {{ t('header.preview') }}</span
-            >
             <div class="topbar-mobile-controls">
                 <DisplayControls />
             </div>

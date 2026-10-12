@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ListMusic } from 'lucide-vue-next'
+import { ArrowLeftRight, ListMusic } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ScoreFilters from '../components/ScoreFilters.vue'
@@ -34,7 +34,14 @@ const { rows, sort, toggleSort, page, pagination } = useScoreTable(filtered, { s
 
 <template>
     <section class="panel">
-        <div class="section-title between scores-heading">
+        <div class="section-title between scores-heading" :class="{ 'scores-all': showAll }">
+            <button
+                type="button"
+                class="scores-scope-hit"
+                :aria-pressed="showAll"
+                :aria-label="t('scores.scopeToggle', { current: showAll ? t('scores.all') : t('scores.played'), next: showAll ? t('scores.played') : t('scores.all') })"
+                @click="showAll = !showAll"
+            ></button>
             <div class="row gap-2">
                 <ListMusic :size="18" />
                 <h2>{{ t('scores.title') }}</h2>
@@ -45,6 +52,7 @@ const { rows, sort, toggleSort, page, pagination } = useScoreTable(filtered, { s
                     <button type="button" :class="{ selected: showAll }" :aria-pressed="showAll" @click="showAll = true">{{ t('scores.all') }}</button>
                 </div>
                 <span class="count-badge">{{ countLabel }}</span>
+                <span class="scores-scope-hint" aria-hidden="true"><ArrowLeftRight :size="13" /></span>
             </div>
         </div>
         <ScoreFilters

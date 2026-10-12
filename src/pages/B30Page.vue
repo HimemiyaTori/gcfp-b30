@@ -55,9 +55,9 @@ const { t } = useI18n()
                     {{ summary.rating.toFixed(2)
                     }}<span>RT</span>
                 </div>
-                <div class="rating-floor">
+                <div class="rating-floor" lang="en">
                     <span>B30 Floor</span>
-                    <strong>{{
+                    <strong :class="{ 'floor-empty': summary.floor == null }">{{
                         summary.floor?.toFixed(2) ?? '—'
                     }}</strong
                     ><span>RT</span>

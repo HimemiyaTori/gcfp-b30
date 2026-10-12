@@ -32,8 +32,11 @@ function writeLevel(event: Event, target: 'min' | 'max') {
                 :placeholder="t('filters.searchPlaceholder')"
                 :aria-label="t('filters.search')"
         /></label>
-        <div class="row gap-2">
-            <SlidersHorizontal :size="16" />
+        <div
+            class="row gap-2 filter-controls"
+            :class="{ 'filter-controls-single-mode': hideMode }"
+        >
+            <SlidersHorizontal class="filter-icon" :size="16" />
             <select v-model="category" class="category-select" :aria-label="t('filters.category')">
                 <option value="ALL">{{ t('filters.allCategories') }}</option>
                 <option
