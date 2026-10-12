@@ -11,6 +11,7 @@ import {
     Upload,
 } from 'lucide-vue-next'
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import ScoreTable from '../components/ScoreTable.vue'
 import { useScoreHistory } from '../composables/useScoreHistory'
 import RatingTrend, { type RatingGrain } from '../components/RatingTrend.vue'
@@ -26,6 +27,7 @@ defineProps<{
 const grain = defineModel<RatingGrain>('grain', { required: true })
 const b30Mode = defineModel<RatingMode>('mode', { required: true })
 const emit = defineEmits<{ upload: [files: File[]]; song: [row: { songId: string; mode: string }] }>()
+const { t } = useI18n()
 const fileInput = ref<HTMLInputElement>()
 const dragging = ref(false)
 const { rows, sort, toggleSort, page, pagination, error, loading, reload } = useScoreHistory()
@@ -52,7 +54,7 @@ function drop(event: DragEvent) {
                         'rating-mode-toggle',
                         { advanced: b30Mode === 'ADVANCED' },
                     ]"
-                    :aria-label="`当前 ${selectedRating.label}，切换到 ${b30Mode === 'BASIC' ? 'ADV' : 'BAS'}`"
+                    :aria-label="t('home.modeToggle', { current: selectedRating.label, next: b30Mode === 'BASIC' ? 'ADV' : 'BAS' })"
                     @click="
                         b30Mode = b30Mode === 'BASIC' ? 'ADVANCED' : 'BASIC'
                     "
@@ -82,29 +84,29 @@ function drop(event: DragEvent) {
                 </div>
             </div>
             <div class="metric-bottom">
-                每一份热爱，都在这里累积 <span>↗</span>
+                {{ t('home.ratingTagline') }} <span>↗</span>
             </div>
             <div class="orbit orbit-one"></div>
             <div class="orbit orbit-two"></div>
         </article>
         <article class="stat-card">
             <div class="between">
-                <span>已收录成绩</span
+                <span>{{ t('home.collected') }}</span
                 ><span class="stat-icon blue"><Disc3 :size="18" /></span>
             </div>
             <div class="stat-metrics">
                 <div class="stat-value">
                     <RollingNumber :value="scores.length" />
-                    <span>谱面</span>
+                    <span>{{ t('home.charts') }}</span>
                 </div>
                 <div class="stat-history">
-                    <span>历史</span>
+                    <span>{{ t('home.history') }}</span>
                     <RollingNumber :value="historyCount" />
                 </div>
             </div>
-            <small>每张谱面，保留一份最佳成绩</small>
+            <small>{{ t('home.bestPerChart') }}</small>
             <a href="#scores" class="text-link"
-                >查看全部成绩 <ArrowRight :size="13"
+                >{{ t('home.viewAll') }} <ArrowRight :size="13"
             /></a>
         </article>
     </section>
@@ -120,7 +122,7 @@ function drop(event: DragEvent) {
             <div class="section-title between">
                 <div class="row gap-2">
                     <Upload :size="18" />
-                    <h2>录入新成绩</h2>
+                    <h2>{{ t('home.importTitle') }}</h2>
                 </div>
                 <span class="micro-label">SCORE IMPORT</span>
             </div>
@@ -139,59 +141,46 @@ function drop(event: DragEvent) {
                         >
                     </div>
                 </div>
-                <h3>拖入或选择成绩截图 / Excel</h3>
+                <h3>{{ t('home.dropTitle') }}</h3>
                 <input
                     ref="fileInput"
                     class="drop-zone-input"
                     type="file"
                     accept="image/png,image/jpeg,image/webp,.xlsx"
                     multiple
-                    aria-label="选择成绩截图或 Excel"
+                    :aria-label="t('home.fileInput')"
                     @change="
                         selectFiles(($event.target as HTMLInputElement).files)
                     "
-                /><small>PNG / JPG / WebP 可批量上传</small>
+                /><small>{{ t('home.dropHint') }}</small>
             </label>
             <div class="import-foot between">
                 <span class="row gap-2"
-                    ><ShieldCheck :size="14" /> 仅在本地识别截图、存储数据</span
+                    ><ShieldCheck :size="14" /> {{ t('home.localOnly') }}</span
                 >
             </div>
         </article>
         <article class="guide-panel">
             <div class="row gap-2">
                 <Sparkles :size="17" />
-                <h2>从文件，到你的成绩库</h2>
+                <h2>{{ t('home.guideTitle') }}</h2>
             </div>
-            <p class="guide-intro">少一点整理，多一点游戏。</p>
+            <p class="guide-intro">{{ t('home.guideIntro') }}</p>
             <div
-                v-for="(step, i) in [
-                    {
-                        title: '放入截图或 Excel',
-                        text: '截图支持批量上传，Excel 可使用本站模板填写。',
-                    },
-                    {
-                        title: '自动识别与整理',
-                        text: '截图识别成功后录入，Excel 检查并预览后确认导入。',
-                    },
-                    {
-                        title: '见证每一次突破',
-                        text: '自动计算 Rating，更新你的个人 B30。',
-                    },
-                ]"
-                :key="step.title"
+                v-for="(step, i) in ['add', 'recognize', 'grow']"
+                :key="step"
                 class="guide-step"
             >
                 <span>{{ String(i + 1).padStart(2, '0') }}</span>
                 <div>
-                    <h3>{{ step.title }}</h3>
-                    <p>{{ step.text }}</p>
+                    <h3>{{ t(`home.steps.${step}.title`) }}</h3>
+                    <p>{{ t(`home.steps.${step}.text`) }}</p>
                 </div>
             </div>
             <div class="guide-tip">
                 <CircleHelp :size="16" />
                 <p>
-                    识别有误？在成绩管理中修改分数。<br />未能识别的成绩也可以手动新增。
+                    {{ t('home.tipFix') }}<br />{{ t('home.tipManual') }}
                 </p>
             </div>
         </article>
@@ -200,14 +189,14 @@ function drop(event: DragEvent) {
     <section class="panel">
         <div class="section-title between">
             <div class="row gap-2">
-                <h2>最近成绩</h2>
+                <h2>{{ t('home.recent') }}</h2>
                 <span class="count-badge">{{ historyCount }}</span
                 ><span class="muted section-subtitle"
-                    >按导入时间回顾每一次发挥</span
+                    >{{ t('home.recentSubtitle') }}</span
                 >
             </div>
             <a class="text-link" href="#scores"
-                >管理成绩 <ArrowRight :size="14"
+                >{{ t('home.manage') }} <ArrowRight :size="14"
             /></a>
         </div>
         <div class="history-table">
@@ -218,7 +207,7 @@ function drop(event: DragEvent) {
                 :error="error"
                 :loading="loading"
                 time-key="importedAt"
-                empty-title="暂无历史成绩"
+                :empty-title="t('table.noHistory')"
                 empty-description=""
                 @sort="toggleSort"
                 @page="page = $event"

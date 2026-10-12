@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import DisplayControls from './DisplayControls.vue'
+const { t } = useI18n()
 </script>
 
 <template>
@@ -7,7 +9,7 @@ import DisplayControls from './DisplayControls.vue'
         <a
             href="#home"
             class="game-identity"
-            aria-label="Groove Coaster Future Performers B30 首页"
+            :aria-label="t('header.home')"
         >
             <img
                 class="game-logo"
@@ -20,7 +22,7 @@ import DisplayControls from './DisplayControls.vue'
         </a>
         <div class="row gap-4">
             <span class="preview-pill"
-                ><span class="tiny-dot"></span> 界面预览</span
+                ><span class="tiny-dot"></span> {{ t('header.preview') }}</span
             >
             <div class="topbar-mobile-controls">
                 <DisplayControls />

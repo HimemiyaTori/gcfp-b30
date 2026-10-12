@@ -24,7 +24,7 @@ const browser = await chromium.launch({
     headless: true,
 })
 try {
-    const page = await browser.newPage()
+    const page = await browser.newPage({ locale: 'zh-CN' })
     await page.addInitScript(() => {
         const OriginalWorker = window.Worker
         window.Worker = class extends OriginalWorker {

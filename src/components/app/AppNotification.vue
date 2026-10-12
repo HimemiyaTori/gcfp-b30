@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { CheckCircle2, X } from 'lucide-vue-next'
 import { onUnmounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import CardTransition from '../common/CardTransition.vue'
+const { t } = useI18n()
 const toast = ref(''),
     toastTitle = ref('')
 let toastTimer: ReturnType<typeof setTimeout>
-function show(message: string, title = '提示') {
+function show(message: string, title = t('common.notice')) {
     clearTimeout(toastTimer)
     toast.value = message
     toastTitle.value = title
@@ -31,7 +33,7 @@ defineExpose({ show })
             </div>
             <button
                 class="icon-button"
-                aria-label="关闭提示"
+                :aria-label="t('common.closeNotice')"
                 @click="toast = ''"
             >
                 <X :size="16" />

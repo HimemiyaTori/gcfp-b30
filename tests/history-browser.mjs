@@ -4,7 +4,7 @@ import { utils, write } from 'xlsx'
 import { mkdir } from 'node:fs/promises'
 const browser = await chromium.launch({ channel: process.env.OCR_BROWSER || 'msedge', headless: true })
 try {
-    const context = await browser.newContext({ viewport: { width: 1280, height: 960 } })
+    const context = await browser.newContext({ viewport: { width: 1280, height: 960 }, locale: 'zh-CN' })
     const page = await context.newPage()
     await page.emulateMedia({ reducedMotion: 'reduce' })
     const errors = []
@@ -88,6 +88,7 @@ try {
     assert.equal((await state()).best.find(row => row.chartId === '1-basic-easy').score, 1000000)
     await easyRow.getByRole('button', { name: '歌曲信息' }).click()
     assert.equal(await details.locator('.chart-detail').count(), 4)
+    await details.locator('tbody tr').nth(4).waitFor()
     assert.equal(await details.locator('tbody tr').count(), 5)
     await details.getByRole('button', { name: 'ADVANCED', exact: true }).click()
     await details.getByText('暂无历史成绩', { exact: true }).waitFor()

@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { scoreRepository } from '../../db/scoreRepository'
 const props = defineProps<{ canWrite: boolean; count: number; historyCount: number }>()
 const emit = defineEmits<{ notify: [message: string, title?: string] }>()
+const { t } = useI18n()
 const pending = ref(false)
 const clearDialog = ref<HTMLDialogElement>(),
     clearError = ref('')
@@ -17,9 +19,9 @@ async function clearScores() {
     try {
         await scoreRepository.clear()
         clearDialog.value?.close()
-        emit('notify', '本地成绩已全部清空。')
+        emit('notify', t('clear.done'))
     } catch {
-        clearError.value = '清空失败，请检查浏览器存储权限后重试。'
+        clearError.value = t('clear.failed')
     } finally {
         pending.value = false
     }
@@ -35,11 +37,9 @@ defineExpose({ open })
         aria-labelledby="clear-data-title"
         @cancel="pending && $event.preventDefault()"
     >
-        <h2 id="clear-data-title">清空全部成绩？</h2>
+        <h2 id="clear-data-title">{{ t('clear.title') }}</h2>
         <p class="muted">
-            将永久删除此浏览器中的
-            {{ count }} 条当前成绩、{{ historyCount }} 条历史及 Rating 趋势，无法撤销。B30 和总 RT
-            会随之清空，曲库与外观偏好将保留。
+            {{ t('clear.description', { count, history: historyCount }) }}
         </p>
         <p v-if="clearError" class="error" role="alert">{{ clearError }}</p>
         <div class="dialog-actions">
@@ -48,14 +48,14 @@ defineExpose({ open })
                 :disabled="pending"
                 @click="clearDialog?.close()"
             >
-                取消
+                {{ t('common.cancel') }}
             </button>
             <button
                 class="button primary danger-button"
                 :disabled="pending || !canWrite"
                 @click="clearScores"
             >
-                {{ pending ? '清空中…' : '确认清空全部成绩' }}
+                {{ pending ? t('clear.pending') : t('clear.confirm') }}
             </button>
         </div>
     </dialog>

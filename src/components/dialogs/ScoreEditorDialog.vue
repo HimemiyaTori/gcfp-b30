@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Check, ChevronDown, X } from 'lucide-vue-next'
 import { computed, nextTick, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import SongCover from '../SongCover.vue'
 import { songLanguage } from '../../composables/useSettings'
 import type { ScoreRow } from '../../db/models'
@@ -16,6 +17,7 @@ import {
 import { searchSongs } from '../../core/search/songSearch'
 const props = defineProps<{ canWrite: boolean }>()
 const emit = defineEmits<{ notify: [message: string, title?: string] }>()
+const { t } = useI18n()
 const dialog = ref<HTMLDialogElement>(),
     editing = ref<ScoreRow | null>(null)
 const inputScore = ref<number | string>(1040000)
@@ -121,7 +123,7 @@ async function saveScore() {
     )
         return
     if (lowered.value && !lowerConfirmed.value) {
-        saveError.value = '请勾选确认调低该曲目的成绩。'
+        saveError.value = t('editor.confirmLowerRequired')
         return
     }
     pending.value = true
@@ -156,10 +158,10 @@ async function saveScore() {
                 achievements,
             )
         dialog.value?.close()
-        emit('notify', '成绩已保存，最佳成绩与历史趋势已重新计算。')
+        emit('notify', t('editor.saved'))
     } catch (error) {
         saveError.value =
-            error instanceof Error ? error.message : '保存失败，请重试。'
+            error instanceof Error ? error.message : t('editor.saveFailed')
     } finally {
         pending.value = false
     }
@@ -182,23 +184,19 @@ defineExpose({ open, openChart })
             <div class="between">
                 <div>
                     <div class="eyebrow">SCORE PREVIEW</div>
-                    <h2>{{ editing ? '编辑成绩' : '手动新增成绩' }}</h2>
+                    <h2>{{ editing ? t('table.edit') : t('editor.addTitle') }}</h2>
                 </div>
                 <button
                     type="button"
                     class="icon-button"
-                    aria-label="关闭弹窗"
+                    :aria-label="t('editor.close')"
                     @click="dialog?.close()"
                 >
                     <X :size="20" />
                 </button>
             </div>
             <p class="muted">
-                {{
-                    editing
-                        ? '修正最佳成绩对应的历史，导入时间保持不变。其他历史可能成为新的最佳成绩。'
-                        : '选择曲目与谱面，记录你的精彩发挥。'
-                }}
+                {{ editing ? t('editor.editIntro') : t('editor.addIntro') }}
             </p>
             <div class="song-picker">
                 <button
@@ -212,7 +210,7 @@ defineExpose({ open, openChart })
                 >
                     <SongCover :src="currentSong.coverSourceUrl" />
                     <span class="song-picker-copy"
-                        ><small>已选曲目</small
+                        ><small>{{ t('editor.selectedSong') }}</small
                         ><strong>{{ currentSong[songLanguage] }}</strong
                         ><small>{{ currentSong.artist }}</small></span
                     >
@@ -226,7 +224,7 @@ defineExpose({ open, openChart })
                 <div v-else class="selected-song song-picker-toggle">
                     <SongCover :src="currentSong.coverSourceUrl" />
                     <span class="song-picker-copy"
-                        ><small>当前曲目</small
+                        ><small>{{ t('editor.currentSong') }}</small
                         ><strong>{{ currentSong[songLanguage] }}</strong
                         ><small>{{ currentSong.artist }}</small></span
                     >
@@ -237,13 +235,13 @@ defineExpose({ open, openChart })
                     class="song-search-panel"
                 >
                     <label
-                        >搜索曲目<input
+                        >{{ t('editor.searchSong') }}<input
                             ref="songSearchInput"
                             v-model="songQuery"
                             type="search"
-                            placeholder="输入日文 / 英文曲名或艺术家"
+                            :placeholder="t('editor.searchPlaceholder')"
                     /></label>
-                    <div class="song-options" aria-label="曲目搜索结果">
+                    <div class="song-options" :aria-label="t('editor.searchResults')">
                         <button
                             v-for="song in filteredSongs"
                             :key="song.id"
@@ -260,14 +258,14 @@ defineExpose({ open, openChart })
                             <Check v-if="selectedSong === song.id" :size="16" />
                         </button>
                         <p v-if="!filteredSongs.length" class="form-note">
-                            未找到匹配曲目，试试其他关键词。已选曲目保持不变。
+                            {{ t('editor.noMatch') }}
                         </p>
                     </div>
                 </div>
             </div>
             <div class="editor-control-row">
                 <fieldset class="chart-picker" :disabled="!!editing">
-                    <legend>模式</legend>
+                    <legend>{{ t('editor.mode') }}</legend>
                     <div class="chart-buttons">
                         <button
                             v-for="item in [
@@ -285,7 +283,7 @@ defineExpose({ open, openChart })
                     </div>
                 </fieldset>
                 <fieldset class="chart-picker">
-                    <legend>完成状态</legend>
+                    <legend>{{ t('editor.achievement') }}</legend>
                     <div class="chart-buttons">
                         <button
                             v-for="item in [
@@ -311,7 +309,7 @@ defineExpose({ open, openChart })
                 </fieldset>
             </div>
             <fieldset class="chart-picker" :disabled="!!editing">
-                <legend>难度</legend>
+                <legend>{{ t('table.difficulty') }}</legend>
                 <div class="chart-buttons">
                     <button
                         v-for="chart in chartOptions"
@@ -338,12 +336,12 @@ defineExpose({ open, openChart })
                         required
                 /></label>
                 <label
-                    >Max Chain（可选）<input
+                    >{{ t('editor.maxChain') }}<input
                         v-model="inputMaxChain"
                         type="number"
                         min="0"
                         step="1"
-                        placeholder="未记录"
+                        :placeholder="t('editor.notRecorded')"
                 /></label>
             </div>
             <div class="live-metrics" aria-live="polite">
@@ -351,7 +349,7 @@ defineExpose({ open, openChart })
                     <small>Rank</small><strong>{{ liveRank }}</strong>
                 </div>
                 <div>
-                    <small>歌曲定数 → 单曲 Rating</small
+                    <small>{{ t('editor.ratingPreview') }}</small
                     ><strong
                         >{{ chartBase.toFixed(1) }} <span>→</span>
                         {{ liveRating }}</strong
@@ -359,28 +357,27 @@ defineExpose({ open, openChart })
                 </div>
             </div>
             <p v-if="!validScore" class="error">
-                请输入 0～1,050,000 范围内的整数。
+                {{ t('editor.invalidScore') }}
             </p>
             <p v-if="lowered" class="warning">
-                将调低「{{ editing?.[songLanguage] }}」的成绩，保存后 Rank 与
-                Rating 会重新计算。
+                {{ t('editor.lowerWarning', { title: editing?.[songLanguage] }) }}
             </p>
             <label v-if="lowered"
-                ><input v-model="lowerConfirmed" type="checkbox" />确认调低「{{
-                    editing?.[songLanguage]
-                }}」的成绩</label
+                ><input v-model="lowerConfirmed" type="checkbox" />{{
+                    t('editor.lowerConfirm', { title: editing?.[songLanguage] })
+                }}</label
             >
             <p v-if="saveError" class="error" role="alert">
                 {{ saveError }}
             </p>
-            <p v-if="!currentChart" class="error">该模式没有可选谱面。</p>
+            <p v-if="!currentChart" class="error">{{ t('editor.noChart') }}</p>
             <div class="dialog-actions">
                 <button
                     type="button"
                     class="button secondary"
                     @click="dialog?.close()"
                 >
-                    取消</button
+                    {{ t('common.cancel') }}</button
                 ><button
                     class="button primary"
                     :disabled="
@@ -391,7 +388,7 @@ defineExpose({ open, openChart })
                         (!!lowered && !lowerConfirmed)
                     "
                 >
-                    {{ pending ? '保存中…' : '保存成绩' }}
+                    {{ pending ? t('editor.saving') : t('editor.save') }}
                 </button>
             </div>
         </form>

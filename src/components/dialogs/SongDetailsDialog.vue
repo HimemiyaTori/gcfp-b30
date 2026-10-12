@@ -2,6 +2,7 @@
 import { liveQuery } from 'dexie'
 import { ChevronDown, History, X } from 'lucide-vue-next'
 import { computed, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useScoreHistory } from '../../composables/useScoreHistory'
 import { songLanguage } from '../../composables/useSettings'
 import type { Chart } from '../../core/song/models'
@@ -18,26 +19,12 @@ import type { ScoreRow } from '../../db/models'
 import ScoreTable from '../ScoreTable.vue'
 import SongCover from '../SongCover.vue'
 import ScoreDeleteDialog from './ScoreDeleteDialog.vue'
-const chartFields: { key: keyof Chart; label: string }[] = [
-    { key: 'note', label: 'note数' },
-    { key: 'special', label: '特殊note' },
-    { key: 'combo', label: '总连击' },
-    { key: 'circle', label: '圆圈' },
-    { key: 'goldCircle', label: '特殊圆圈' },
-    { key: 'hold', label: '长按' },
-    { key: 'goldHold', label: '特殊长按' },
-    { key: 'arrow', label: '滑动' },
-    { key: 'goldArrow', label: '特殊滑动' },
-    { key: 'square', label: '方块' },
-    { key: 'goldSquare', label: '特殊方块' },
-    { key: 'advNote', label: '进阶note' },
-    { key: 'blueCircle', label: '蓝色圆圈' },
-    { key: 'redCircle', label: '红色圆圈' },
-    { key: 'advHold', label: '进阶长按' },
-    { key: 'advArrow', label: '进阶滑动' },
-    { key: 'blueArrow', label: '蓝色滑动' },
-    { key: 'redArrow', label: '红色滑动' },
+const chartFields: (keyof Chart)[] = [
+    'note', 'special', 'combo', 'circle', 'goldCircle', 'hold', 'goldHold',
+    'arrow', 'goldArrow', 'square', 'goldSquare', 'advNote', 'blueCircle',
+    'redCircle', 'advHold', 'advArrow', 'blueArrow', 'redArrow',
 ]
+const { t } = useI18n()
 const props = defineProps<{ canWrite: boolean; scores: ScoreRow[] }>()
 const emit = defineEmits<{ notify: [message: string, title?: string] }>()
 const dialog = ref<HTMLDialogElement>(),
@@ -131,10 +118,10 @@ defineExpose({ open })
     >
         <template v-if="song && active">
             <div class="between">
-                <h2 id="song-details-title">歌曲信息</h2>
+                <h2 id="song-details-title">{{ t('song.title') }}</h2>
                 <button
                     class="icon-button"
-                    aria-label="关闭歌曲信息"
+                    :aria-label="t('song.close')"
                     @click="dialog?.close()"
                 >
                     <X :size="20" />
@@ -149,11 +136,11 @@ defineExpose({ open })
             </div>
             <dl class="song-metadata">
                 <div v-if="vocalName">
-                    <dt>歌手</dt>
+                    <dt>{{ t('song.vocal') }}</dt>
                     <dd>{{ vocalName }}</dd>
                 </div>
                 <div>
-                    <dt>分类</dt>
+                    <dt>{{ t('song.category') }}</dt>
                     <dd>
                         {{
                             songCategories.find(
@@ -172,16 +159,16 @@ defineExpose({ open })
                     </dd>
                 </div>
                 <div v-if="packName">
-                    <dt>曲包</dt>
+                    <dt>{{ t('song.pack') }}</dt>
                     <dd>{{ packName }}</dd>
                 </div>
             </dl>
             <div class="chart-heading">
-                <h3>谱面信息</h3>
+                <h3>{{ t('song.charts') }}</h3>
                 <div
                     class="segmented chart-mode"
                     role="group"
-                    aria-label="歌曲模式"
+                    :aria-label="t('song.mode')"
                 >
                     <button
                         v-for="item in ['BASIC', 'ADVANCED']"
@@ -216,7 +203,7 @@ defineExpose({ open })
                                         ?.score.toLocaleString('en-US') ?? '--'
                                 }}
                             </p>
-                            <span class="chart-caption">最高成绩</span>
+                            <span class="chart-caption">{{ t('song.best') }}</span>
                             <div class="chart-metrics">
                                 <div>
                                     <strong
@@ -242,7 +229,7 @@ defineExpose({ open })
                                             playCounts.get(chart.id) ?? 0
                                         }}</strong
                                     >
-                                    <span>游玩次数</span>
+                                    <span>{{ t('song.plays') }}</span>
                                 </div>
                             </div>
                             <button
@@ -251,7 +238,7 @@ defineExpose({ open })
                                 :aria-expanded="notesOpen"
                                 @click="notesOpen = !notesOpen"
                             >
-                                物量详情
+                                {{ t('song.notes') }}
                                 <ChevronDown :size="14" />
                             </button>
                         </div>
@@ -260,20 +247,20 @@ defineExpose({ open })
                         }}</span>
                     </div>
                     <dl v-if="notesOpen">
-                        <template v-for="field in chartFields" :key="field.key">
+                        <template v-for="field in chartFields" :key="field">
                             <dt
                                 :class="{
-                                    'is-empty': chart[field.key] == null,
+                                    'is-empty': chart[field] == null,
                                 }"
                             >
-                                {{ field.label }}
+                                {{ t(`song.fields.${field}`) }}
                             </dt>
                             <dd
                                 :class="{
-                                    'is-empty': chart[field.key] == null,
+                                    'is-empty': chart[field] == null,
                                 }"
                             >
-                                {{ chart[field.key] ?? '--' }}
+                                {{ chart[field] ?? '--' }}
                             </dd>
                         </template>
                     </dl>
@@ -283,10 +270,10 @@ defineExpose({ open })
                 <div class="section-title between">
                     <div class="row gap-2">
                         <History :size="18" />
-                        <h2>历史成绩</h2>
+                        <h2>{{ t('song.history') }}</h2>
                     </div>
                     <span class="count-badge"
-                        >共 {{ pagination.total }} 条</span
+                        >{{ t('table.entries', { count: pagination.total }, pagination.total) }}</span
                     >
                 </div>
                 <div class="history-table">
@@ -297,7 +284,7 @@ defineExpose({ open })
                         :error="error"
                         :loading="loading"
                         time-key="importedAt"
-                        empty-title="暂无历史成绩"
+                        :empty-title="t('table.noHistory')"
                         empty-description=""
                         deletable
                         :can-write="canWrite"

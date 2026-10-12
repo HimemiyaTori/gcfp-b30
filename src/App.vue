@@ -51,17 +51,17 @@ function notify(message: string, title?: string) {
 }
 function uploadFiles(files: File[]) {
     if (!canWrite.value) {
-        notify('本地数据库尚未就绪，请先重试。')
+        notify(t('common.databaseNotReady'))
         return
     }
     const workbooks = files.filter(file => /\.xlsx$/i.test(file.name))
     if (workbooks.length) {
         if (files.length !== 1) {
-            notify('Excel 请一次上传一个文件，成绩截图请单独上传。', '请选择文件')
+            notify(t('app.excelOneFile'), t('app.chooseFileTitle'))
             return
         }
         if (excel.value?.pending) {
-            notify('Excel 正在处理，请完成后再上传。', '请稍候')
+            notify(t('app.excelBusy'), t('app.waitTitle'))
             return
         }
         void excel.value?.importFile(workbooks[0]!)
@@ -101,35 +101,25 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
                         <h1>
                             {{
                                 page === 'home'
-                                    ? '让每一份成绩，都有迹可循。'
+                                    ? t('app.homeTitle')
                                     : t(`nav.${page}`)
                             }}
                         </h1>
-                        <p>
-                            {{
-                                page === 'home'
-                                    ? '记录热爱，收集进步。下一次，向更高的 Rating 出发。'
-                                    : page === 'b30'
-                                      ? 'BASIC 与 ADVANCED 各自记录最好的 30 张谱面，独立计算 Groove Rating。'
-                                      : page === 'scores'
-                                        ? '回顾每一次发挥，整理你的个人最佳成绩。'
-                                        : '调整外观与曲目信息，让这里更像你的空间。'
-                            }}
-                        </p>
+                        <p>{{ t(`app.intro.${page}`) }}</p>
                     </div>
                     <button
                         v-if="page === 'scores'"
                         class="button primary"
                         @click="editor?.open()"
                     >
-                        <Plus :size="17" /> 手动新增
+                        <Plus :size="17" /> {{ t('common.manualAdd') }}
                     </button>
                     <B30ExportButton v-show="page === 'b30'" :summary="selectedRating" :ready="canWrite" @notify="notify" />
                     <div
                         v-if="page === 'home'"
                         class="demo-label"
                     >
-                        LOCAL DATA <span>本机成绩</span>
+                        LOCAL DATA <span>{{ t('app.localData') }}</span>
                     </div>
                 </div>
                 <HomePage
@@ -169,23 +159,23 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
                     @export="excel?.download(false)"
                     @template="excel?.download(true)"
                 />
-                <p v-if="databaseLoading" role="status">正在加载本地成绩…</p>
+                <p v-if="databaseLoading" role="status">{{ t('app.loading') }}</p>
                 <div v-if="databaseError" class="panel error" role="alert">
                     {{ databaseError }}
                     <button class="button secondary" @click="reloadDatabase">
-                        重试
+                        {{ t('common.retry') }}
                     </button>
                 </div>
                 <footer class="page-footer between">
                     <span>
                         GROOVE ARCHIVE
                         <span class="footer-dot">·</span>
-                        为每一次热爱留个记录
+                        {{ t('app.footerTagline') }}
                     </span>
                     <span>
-                        本地成绩管理
+                        {{ t('app.footerLocal') }}
                         <span class="footer-dot">/</span>
-                        截图 OCR 本地识别
+                        {{ t('app.footerOcr') }}
                     </span>
                 </footer>
             </main>

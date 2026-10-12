@@ -1,6 +1,7 @@
 import { songCategories } from '../../data/categories'
 import rawSongs from '../../data/songs.json'
 import type { Chart, Song } from './models'
+import { t } from '../../i18n'
 export function validateLibrary(songs: Song[]) {
     const ids = new Set<string>(),
         chartIds = new Set<string>()
@@ -47,7 +48,7 @@ export function createSongService(songs: Song[]) {
         getChart(songId: string, chartId: string) {
             const result = charts.get(chartId)
             if (!result || result.song.id !== songId)
-                throw new Error('曲目与谱面不存在或不匹配，请检查曲库版本。')
+                throw new Error(t('errors.chartNotFound'))
             return result
         },
     }

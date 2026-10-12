@@ -1,15 +1,17 @@
 import { read, utils, type WorkBook } from 'xlsx'
 import { songService } from '../song/songService'
 import { workbookBytes } from './template'
-import { normalizeExcelHeader } from './headers'
+import { localizedHeaders, normalizeExcelHeader } from './headers'
 import { inputMessages, MAX_CHAIN } from './validation'
 export { createScoreWorkbook, workbookBytes } from './template'
 import { validateImportedScore, type ImportedScore } from '../score/import'
+import { currentLanguage, t } from '../../i18n'
 
 export const MAX_EXCEL_BYTES = 5 * 1024 * 1024
 export const MAX_EXCEL_ROWS = 5000
 const MAX_HEADER_ROWS = 10
 const required = ['Chart ID', 'Score']
+const UPDATED_AT = '更新时间'
 const inputHeaders = [
     'Song ID',
     'Chart ID',
@@ -17,8 +19,10 @@ const inputHeaders = [
     'FC',
     'AP',
     'Max Chain',
-    '更新时间',
+    UPDATED_AT,
 ]
+const label = (header: string) =>
+    header === UPDATED_AT ? localizedHeaders[currentLanguage()][10] : header
 const chartSongs = new Map(
     songService.songs.flatMap((song) =>
         song.charts.map((chart) => [chart.id, song.id] as const),
@@ -49,12 +53,10 @@ function number(
         empty(value) ||
         !/^\d+$/.test(String(value).trim())
     )
-        throw new Error(
-            `${label} 必须为非负整数${optional ? '，或留空' : ''}。`,
-        )
+        throw new Error(t(optional ? 'excel.errors.integerOptional' : 'excel.errors.integer', { label }))
     const result = Number(value)
     if (!Number.isSafeInteger(result))
-        throw new Error(`${label} 数值超出范围。`)
+        throw new Error(t('excel.errors.range', { label }))
     return result
 }
 function flag(value: unknown, label: string): boolean | undefined {
@@ -63,9 +65,7 @@ function flag(value: unknown, label: string): boolean | undefined {
     const text = String(value).trim().toLowerCase()
     if (['√', 'true', '1', '是'].includes(text)) return true
     if (['false', '0', '否'].includes(text)) return false
-    throw new Error(
-        `${label} 达成时填写 √，未达成时留空；也兼容 TRUE / FALSE、是 / 否或 1 / 0。`,
-    )
+    throw new Error(t('excel.errors.flag', { label }))
 }
 function time(value: unknown, label: string): number | undefined {
     if (empty(value)) return undefined
@@ -73,7 +73,7 @@ function time(value: unknown, label: string): number | undefined {
         typeof value !== 'string' ||
         !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(value.trim())
     )
-        throw new Error(`${label} 请保留导出的 UTC 时间文本，或留空。`)
+        throw new Error(t('excel.errors.timeFormat', { label }))
     const text = value.trim()
     const result = Date.parse(text)
     if (
@@ -81,13 +81,13 @@ function time(value: unknown, label: string): number | undefined {
         new Date(result).toISOString() !==
             text.replace(/Z$/, text.includes('.') ? 'Z' : '.000Z')
     )
-        throw new Error(`${label} 日期无效。`)
+        throw new Error(t('excel.errors.date', { label }))
     return result
 }
 
 export function parseScoreWorkbook(data: ArrayBuffer): ExcelPreview {
     if (data.byteLength > MAX_EXCEL_BYTES)
-        throw new Error('文件不能超过 5 MB。')
+        throw new Error(t('excel.tooLarge'))
     let book: WorkBook
     try {
         book = read(data, {
@@ -96,11 +96,11 @@ export function parseScoreWorkbook(data: ArrayBuffer): ExcelPreview {
             sheetRows: MAX_EXCEL_ROWS + MAX_HEADER_ROWS,
         })
     } catch {
-        throw new Error('无法读取工作簿，请选择未加密的 .xlsx 文件。')
+        throw new Error(t('excel.errors.unreadable'))
     }
     const names = ['BASIC', 'ADVANCED'].filter((name) => book.Sheets[name])
     if (!names.length)
-        throw new Error('缺少 BASIC / ADVANCED 工作表，请使用本站模板。')
+        throw new Error(t('excel.errors.sheets'))
     const result: ExcelPreview = { rows: [], issues: [], empty: 0 }
     for (const name of names) {
         const sheet = book.Sheets[name]!
@@ -108,7 +108,7 @@ export function parseScoreWorkbook(data: ArrayBuffer): ExcelPreview {
             sheet['!fullref'] || sheet['!ref'] || 'A1',
         )
         if (range.e.r >= MAX_EXCEL_ROWS + MAX_HEADER_ROWS || range.e.c >= 32)
-            throw new Error(`${name} 表最多支持 5000 行数据、32 列。`)
+            throw new Error(t('excel.errors.size', { sheet: name }))
         const table = utils.sheet_to_json<unknown[]>(sheet, {
             header: 1,
             raw: true,
@@ -126,25 +126,21 @@ export function parseScoreWorkbook(data: ArrayBuffer): ExcelPreview {
                 ),
             )
         if (headerRow < 0)
-            throw new Error(
-                `${name} 表缺少 Chart ID 或 Score 表头，请保留这两列。`,
-            )
+            throw new Error(t('excel.errors.requiredHeaders', { sheet: name }))
         if (range.e.r - headerRow > MAX_EXCEL_ROWS)
-            throw new Error(`${name} 表最多支持 5000 行数据。`)
+            throw new Error(t('excel.errors.rows', { sheet: name }))
         const headers = (table[headerRow] ?? []).map(normalizeExcelHeader)
         for (let c = 0; c <= range.e.c; c++) {
             const cell = sheet[utils.encode_cell({ r: headerRow, c })]
             if (cell?.f || cell?.t === 'e')
-                throw new Error(
-                    `${name} 表头必须为普通文本，不能包含公式或错误值。`,
-                )
+                throw new Error(t('excel.errors.headerFormula', { sheet: name }))
         }
         for (const header of required)
             if (!headers.includes(header))
-                throw new Error(`缺少必填列：${header}。`)
+                throw new Error(t('excel.errors.missingColumn', { header: label(header) }))
         for (const header of inputHeaders)
             if (headers.filter((value) => value === header).length > 1)
-                throw new Error(`列名重复：${header}。`)
+                throw new Error(t('excel.errors.duplicateColumn', { header: label(header) }))
         for (let index = headerRow + 1; index < table.length; index++) {
             const cells = table[index] ?? []
             const get = (header: string) => cells[headers.indexOf(header)]
@@ -172,11 +168,9 @@ export function parseScoreWorkbook(data: ArrayBuffer): ExcelPreview {
             }
             try {
                 if (hasFormula)
-                    throw new Error(
-                        '输入列不能包含公式，请粘贴为值；Rank / Rating 公式请勿修改。',
-                    )
+                    throw new Error(t('excel.errors.formula'))
                 if (hasError)
-                    throw new Error('输入列包含 Excel 错误值，请修正后再导入。')
+                    throw new Error(t('excel.errors.errorValue'))
                 const chartId = String(get('Chart ID') ?? '').trim()
                 // Song ID 列或单元格被删除时，按稳定的 Chart ID 从内置曲库恢复关联
                 const songId = empty(get('Song ID'))
@@ -184,7 +178,7 @@ export function parseScoreWorkbook(data: ArrayBuffer): ExcelPreview {
                     : String(get('Song ID')).trim()
                 const maxChain = number(get('Max Chain'), 'Max Chain', true)
                 if (maxChain !== undefined && maxChain > MAX_CHAIN)
-                    throw new Error(inputMessages['zh-CN'].chainError)
+                    throw new Error(inputMessages[currentLanguage()].chainError)
                 const row = validateImportedScore({
                     songId,
                     chartId,
@@ -192,14 +186,14 @@ export function parseScoreWorkbook(data: ArrayBuffer): ExcelPreview {
                     fc: headers.includes('FC') ? flag(get('FC'), 'FC') ?? false : undefined,
                     ap: flag(get('AP'), 'AP'),
                     maxChain,
-                    updatedAt: time(get('更新时间'), '更新时间'),
+                    updatedAt: time(get(UPDATED_AT), label(UPDATED_AT)),
                 })
                 if (
                     songService
                         .getChart(songId, chartId)
                         .chart.mode.toUpperCase() !== name
                 )
-                    throw new Error(`谱面模式与 ${name} 工作表不匹配。`)
+                    throw new Error(t('excel.errors.modeMismatch', { sheet: name }))
                 result.rows.push(row)
             } catch (error) {
                 result.issues.push({
@@ -208,7 +202,7 @@ export function parseScoreWorkbook(data: ArrayBuffer): ExcelPreview {
                     message:
                         error instanceof Error
                             ? error.message
-                            : '无法识别此行。',
+                            : t('excel.errors.row'),
                 })
             }
         }

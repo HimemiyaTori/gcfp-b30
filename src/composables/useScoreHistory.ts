@@ -5,6 +5,7 @@ import type { ScoreRow } from '../db/models'
 import { getScoreRow } from '../core/score/display'
 import { songService } from '../core/song/songService'
 import { createScoreComparator } from '../core/scoreSort'
+import { t } from '../i18n'
 import { songLanguage } from './useSettings'
 import { useScoreSort } from './useScoreTable'
 
@@ -17,7 +18,8 @@ export function useScoreHistory(options: {
     const rows = ref<ScoreRow[]>([])
     const count = ref(0)
     const page = ref(1)
-    const error = ref('')
+    const failed = ref(false)
+    const error = computed(() => failed.value ? t('errors.readHistory') : '')
     const loading = ref(false)
     const pageSize = options.pageSize ?? 10
     const { sort, toggleSort, resetSort } = useScoreSort('importedAt')
@@ -31,7 +33,7 @@ export function useScoreHistory(options: {
     function reload() {
         subscription?.unsubscribe()
         subscription = undefined
-        error.value = ''
+        failed.value = false
         if (!enabled()) {
             rows.value = []
             count.value = 0
@@ -75,7 +77,7 @@ export function useScoreHistory(options: {
             },
             error: () => {
                 loading.value = false
-                error.value = '无法读取历史成绩，请重试。'
+                failed.value = true
             },
         })
     }

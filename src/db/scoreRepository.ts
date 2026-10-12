@@ -4,6 +4,7 @@ import { getChartRating, getTotalRating } from '../core/rating/calculator'
 import { database, type ScoreDatabase } from './database'
 import type { ScoreAchievements, ScoreHistory, ScoreRecord } from './models'
 import Dexie from 'dexie'
+import { t } from '../i18n'
 import { validateScore, validateAchievements } from '../core/score/validation'
 import { mergeBest, scoreIdentity, selectExcelScores, type ImportedScore } from '../core/score/import'
 
@@ -80,7 +81,7 @@ export function createScoreRepository(db: ScoreDatabase, library = songService, 
         },
         async addManual(songId: string, chartId: string, score: number, achievements: ScoreAchievements = {}) {
             return db.transaction('rw', tables, async () => {
-                if (await db.scores.where('chartId').equals(chartId).count()) throw new Error('该谱面已有成绩，请从成绩列表编辑。')
+                if (await db.scores.where('chartId').equals(chartId).count()) throw new Error(t('errors.chartExists'))
                 const id = await append({ songId, chartId, score, ...achievements }, 'manual', crypto.randomUUID(), Date.now())
                 await rebuild()
                 return id!
@@ -105,8 +106,8 @@ export function createScoreRepository(db: ScoreDatabase, library = songService, 
             return db.transaction('rw', tables, async () => {
                 validateScore(score)
                 const record = await db.scores.get(id)
-                if (!record) throw new Error('成绩已不存在，请刷新列表。')
-                if (score < record.score && !allowLower) throw new Error('调低成绩需要确认。')
+                if (!record) throw new Error(t('errors.scoreMissing'))
+                if (score < record.score && !allowLower) throw new Error(t('errors.lowerUnconfirmed'))
                 const details = validateAchievements(achievements ?? record)
                 if (scoreIdentity({ ...record, ...details, score }) === scoreIdentity(record)) return
                 await db.scoreHistory.update(record.historyId, { score, ...details, updatedAt: Date.now(), correctedAt: Date.now() })

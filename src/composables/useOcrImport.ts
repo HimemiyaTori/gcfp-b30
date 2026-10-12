@@ -2,6 +2,7 @@ import { computed, onUnmounted, ref } from 'vue'
 import { createRecognizer } from '../core/ocr/recognizer'
 import { scoreRepository } from '../db/scoreRepository'
 import { scoreIdentity } from '../core/score/import'
+import { t } from '../i18n'
 
 export const MAX_IMPORT_FILES = 60
 
@@ -49,7 +50,7 @@ export function useOcrImport() {
         jobs.value = []
     }
     async function start(files: File[]) {
-        if (files.length > MAX_IMPORT_FILES) throw new Error(`每批最多选择 ${MAX_IMPORT_FILES} 张截图。`)
+        if (files.length > MAX_IMPORT_FILES) throw new Error(t('ocr.tooMany', { count: MAX_IMPORT_FILES }))
         cancel()
         if (!files.length) return
         const current = new AbortController()
@@ -78,9 +79,9 @@ export function useOcrImport() {
                             file.type,
                         )
                     )
-                        throw new Error('仅支持 PNG、JPG 或 WebP 图片。')
+                        throw new Error(t('ocr.errors.type'))
                     if (!file.size || file.size > 20 * 1024 * 1024)
-                        throw new Error('图片不能为空，且不得超过 20 MB。')
+                        throw new Error(t('ocr.errors.size'))
                     // 正常批次复用工作线程，超时或初始化失败后按需重建
                     if (!recognizer || recognizer.disposed)
                         recognizer = createRecognizer(undefined, {
@@ -100,7 +101,7 @@ export function useOcrImport() {
                         job.error = result.reason
                     } else {
                         const identity = scoreIdentity({ ...result, ...result.achievements })
-                        if (seen.has(identity)) { job.status = 'skipped'; job.error = '本批次重复成绩，已跳过。'; continue }
+                        if (seen.has(identity)) { job.status = 'skipped'; job.error = t('ocr.errors.batchDuplicate'); continue }
                         const saved = await scoreRepository.addOcr(
                             result.songId,
                             result.chartId,
@@ -112,7 +113,7 @@ export function useOcrImport() {
                         seen.add(identity)
                         job.status = saved.skipped ? 'skipped' : 'success'
                         job.error = saved.skipped
-                            ? '与最近一次记录重复，已跳过。'
+                            ? t('ocr.errors.recentDuplicate')
                             : ''
                     }
                 } catch (error) {
@@ -121,7 +122,7 @@ export function useOcrImport() {
                     job.error =
                         error instanceof Error
                             ? error.message
-                            : '识别或保存失败，请重试。'
+                            : t('ocr.errors.unknown')
                 } finally {
                     file = undefined
                 }

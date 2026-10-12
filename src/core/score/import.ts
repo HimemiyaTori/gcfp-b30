@@ -1,6 +1,7 @@
 import type { ScoreAchievements, ScoreRecord } from '../../db/models'
 import { songService } from '../song/songService'
 import { validateAchievements, validateScore } from './validation'
+import { t } from '../../i18n'
 
 export interface ImportedScore extends ScoreAchievements {
     songId: string
@@ -12,7 +13,7 @@ export function validateImportedScore(value: ImportedScore): ImportedScore {
     validateScore(value.score)
     songService.getChart(value.songId, value.chartId)
     if (value.updatedAt !== undefined && (!Number.isSafeInteger(value.updatedAt) || value.updatedAt < 0 || value.updatedAt > 8640000000000000))
-        throw new Error('时间必须为有效的日期时间。')
+        throw new Error(t('errors.time'))
     return { ...value, ...validateAchievements(value) }
 }
 export function scoreIdentity(value: ImportedScore) {

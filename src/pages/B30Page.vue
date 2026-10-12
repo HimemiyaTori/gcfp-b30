@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Activity, CircleHelp, Trophy } from 'lucide-vue-next'
 import { computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import ScoreFilters from '../components/ScoreFilters.vue'
 import ScoreTable from '../components/ScoreTable.vue'
 import { useScoreTable } from '../composables/useScoreTable'
@@ -16,12 +17,13 @@ const filteredB30 = computed(() => filterScores(b30.value, filters.value))
 const positions = computed(() => new Map(b30.value.map((row, index) => [row.id, index + 1])))
 const { rows, sort, toggleSort, resetSort } = useScoreTable(filteredB30, { sortKey: 'position', ascending: true, ranked: true })
 watch(b30Mode, resetSort)
+const { t } = useI18n()
 </script>
 
 <template>
     <section
         class="mode-rating-grid"
-        aria-label="各模式 Groove Rating"
+        :aria-label="t('b30.modes')"
     >
         <button
             v-for="summary in modeRatings"
@@ -39,7 +41,7 @@ watch(b30Mode, resetSort)
             :aria-pressed="
                 b30Mode === summary.mode
             "
-            :aria-label="`查看 ${summary.label} Best 30`"
+            :aria-label="t('b30.view', { mode: summary.label })"
             @click="b30Mode = summary.mode"
         >
             <div class="row gap-2">
@@ -71,13 +73,13 @@ watch(b30Mode, resetSort)
             <div class="metric-bottom">
                 <span>{{
                     summary.count
-                        ? `已收录 ${summary.count} 张谱面 · ${summary.items.length < 30 ? `还差 ${30 - summary.items.length} 张填满 B30` : '已填满 B30'}`
-                        : '暂无成绩 · 录入此模式成绩后自动计算'
+                        ? `${t('b30.collected', { count: summary.count }, summary.count)} · ${summary.items.length < 30 ? t('b30.remaining', { count: 30 - summary.items.length }, 30 - summary.items.length) : t('b30.full')}`
+                        : t('b30.empty')
                 }}</span>
                 <span>{{
                     b30Mode === summary.mode
-                        ? '当前榜单'
-                        : '查看榜单 →'
+                        ? t('b30.current')
+                        : t('b30.open')
                 }}</span>
             </div>
         </button>
@@ -92,8 +94,8 @@ watch(b30Mode, resetSort)
             </div>
             <span class="count-badge">{{
                 hasFilters
-                    ? `显示 ${filteredB30.length} / ${b30.length} 张谱面`
-                    : `共 ${b30.length} 张谱面`
+                    ? t('count.showing', { shown: filteredB30.length, total: b30.length }, b30.length)
+                    : t('count.total', { total: b30.length }, b30.length)
             }}</span>
         </div>
         <ScoreFilters
@@ -115,10 +117,6 @@ watch(b30Mode, resetSort)
         />
     </section>
     <p class="rating-explainer">
-        <CircleHelp :size="15" /> 每个模式独立取前 30
-        张谱面，Groove Rating = 该模式 B30 Rating 之和 ÷
-        30，不足 30 张按 0 补足。Floor
-        为该模式最后一张入选谱面的
-        Rating；搜索和筛选不改变入选结果。
+        <CircleHelp :size="15" /> {{ t('b30.explainer') }}
     </p>
 </template>

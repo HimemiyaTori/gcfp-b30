@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { Moon, Sun } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import { isDark, songLanguage, theme } from '../../composables/useSettings'
+const { t } = useI18n()
+const languageName = (language: 'ja' | 'en') => language === 'ja' ? '日本語' : 'English'
 </script>
 
 <template>
     <button
         class="song-language-compact"
         type="button"
-        :aria-label="`曲目信息语言：${songLanguage === 'ja' ? '日本語' : 'English'}。点击切换为${songLanguage === 'ja' ? 'English' : '日本語'}`"
-        :title="`曲目信息语言：${songLanguage === 'ja' ? '日本語' : 'English'}`"
+        :aria-label="t('display.songLanguageToggle', { current: languageName(songLanguage), next: languageName(songLanguage === 'ja' ? 'en' : 'ja') })"
+        :title="t('display.songLanguage', { current: languageName(songLanguage) })"
         @click="songLanguage = songLanguage === 'ja' ? 'en' : 'ja'"
     >
         {{ songLanguage === 'ja' ? '日' : 'EN' }}
@@ -16,10 +19,8 @@ import { isDark, songLanguage, theme } from '../../composables/useSettings'
     <button
         class="sidebar-theme-control"
         type="button"
-        :aria-label="
-            isDark ? '切换到浅色主题' : '切换到深色主题'
-        "
-        :title="isDark ? '切换到浅色主题' : '切换到深色主题'"
+        :aria-label="isDark ? t('display.toLight') : t('display.toDark')"
+        :title="isDark ? t('display.toLight') : t('display.toDark')"
         @click="theme = isDark ? 'light' : 'dark'"
     >
         <Sun v-if="isDark" :size="19" />

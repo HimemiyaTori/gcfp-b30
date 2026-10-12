@@ -7,6 +7,7 @@ const props = defineProps<{
     summary: ReturnType<typeof getModeB30>
     language: 'ja' | 'en'
     generatedAt: string
+    footnote: string
 }>()
 const asset = (name: string) => `${import.meta.env.BASE_URL}images/b30/${name}`
 const logo = `${import.meta.env.BASE_URL}images/gcfp-logo.png`
@@ -129,7 +130,7 @@ const averageConstant = computed(() => {
             <span
                 >GROOVE ARCHIVE · {{ summary.label }} ·
                 {{ summary.items.length }} / 30</span
-            ><span>{{ generatedAt }} · 不足 30 张按 0 计入总 Rating</span>
+            ><span>{{ generatedAt }} · {{ footnote }}</span>
         </footer>
     </article>
 </template>

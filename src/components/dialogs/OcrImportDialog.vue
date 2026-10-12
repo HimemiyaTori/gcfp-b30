@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { CircleHelp, LoaderCircle, X } from 'lucide-vue-next'
 import { computed, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import AnimatedProgress from '../common/AnimatedProgress.vue'
 import AnimatedSuccess from '../common/AnimatedSuccess.vue'
 import { motionTiming } from '../common/motion'
 import { useOcrImport, MAX_IMPORT_FILES } from '../../composables/useOcrImport'
 const props = defineProps<{ active: boolean; canWrite: boolean }>()
 const emit = defineEmits<{ notify: [message: string, title?: string]; manualAdd: [] }>()
+const { t } = useI18n()
 const importDialog = ref<HTMLDialogElement>()
 const importPhase = ref<'processing' | 'success'>('processing')
 const { jobs, completed, failures, skipped, importing, edgeSecurityHint,
@@ -27,11 +29,11 @@ function close() {
 async function start(files: File[]) {
     if (!props.active || !files.length) return
     if (!props.canWrite) {
-        emit('notify', '本地数据库尚未就绪，请先重试。')
+        emit('notify', t('common.databaseNotReady'))
         return
     }
     if (files.length > MAX_IMPORT_FILES) {
-        emit('notify', `每批最多选择 ${MAX_IMPORT_FILES} 张截图。`)
+        emit('notify', t('ocr.tooMany', { count: MAX_IMPORT_FILES }))
         return
     }
     resetPresentation()
@@ -45,7 +47,7 @@ async function start(files: File[]) {
             timer = setTimeout(() => {
                 const count = jobs.value.length
                 close()
-                emit('notify', `已处理 ${count} 张截图，历史已保存，最佳成绩保留最高分。`, '录入完成')
+                emit('notify', t('ocr.doneMessage', { count }, count), t('ocr.done'))
             }, motionTiming.successHold + motionTiming.successCircle + motionTiming.successCheck)
         }, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : motionTiming.progress)
     }
@@ -68,9 +70,9 @@ defineExpose({ start })
             role="status"
         >
             <AnimatedSuccess />
-            <h2 id="import-title">录入完成</h2>
-            <p>已处理全部 {{ jobs.length }} 张截图</p>
-            <small>历史已保存，最佳成绩保留最高分</small>
+            <h2 id="import-title">{{ t('ocr.done') }}</h2>
+            <p>{{ t('ocr.doneAll', { count: jobs.length }, jobs.length) }}</p>
+            <small>{{ t('ocr.doneNote') }}</small>
         </div>
         <template v-else>
             <div class="between">
@@ -79,23 +81,23 @@ defineExpose({ start })
                     <h2 id="import-title">
                         {{
                             importHasErrors
-                                ? '部分图片识别失败'
+                                ? t('ocr.partialFailed')
                                 : importing
-                                  ? '正在录入成绩'
-                                  : '处理完成'
+                                  ? t('ocr.importing')
+                                  : t('ocr.finished')
                         }}
                     </h2>
                 </div>
             </div>
             <p class="muted">
-                截图仅在本机处理；首次识别需要下载模型，关闭弹窗或切页可取消。
+                {{ t('ocr.localNote') }}
             </p>
             <div class="between import-counter" aria-live="polite">
                 <strong v-if="importHasErrors" class="error">
-                    识别错误：{{ failures.length }} / {{ jobs.length }}
+                    {{ t('ocr.failedCount', { failed: failures.length, total: jobs.length }) }}
                 </strong>
                 <span v-else
-                    >{{ completed }} / {{ jobs.length }} 已处理</span
+                    >{{ t('ocr.progress', { done: completed, total: jobs.length }) }}</span
                 >
             </div>
             <AnimatedProgress :value="completed" :max="jobs.length" />
@@ -106,30 +108,29 @@ defineExpose({ start })
             >
                 <div class="between">
                     <strong class="row gap-2"
-                        ><CircleHelp :size="16" />浏览器设置提示</strong
+                        ><CircleHelp :size="16" />{{ t('ocr.edgeTitle') }}</strong
                     >
                     <button
                         class="icon-button"
-                        aria-label="关闭识别速度提示"
+                        :aria-label="t('ocr.edgeClose')"
                         @click="dismissEdgeSecurityHint"
                     >
                         <X :size="16" />
                     </button>
                 </div>
                 <p>
-                    当前图片识别耗时较长，可能与 Edge 的“增强安全”设置有关。
+                    {{ t('ocr.edgeSlow') }}
                 </p>
                 <details>
-                    <summary>查看处理方法</summary>
+                    <summary>{{ t('ocr.edgeHow') }}</summary>
                     <p>
-                        点击地址栏左侧的站点信息图标，检查当前站点是否启用了增强安全。
-                        您可以将当前站点设为例外，刷新页面后重新录入成绩；也可以尝试换用其他浏览器。
+                        {{ t('ocr.edgeSteps') }}
                     </p>
                     <a
-                        href="https://learn.microsoft.com/zh-cn/deployedge/microsoft-edge-security-browse-safer"
+                        :href="t('ocr.edgeLink')"
                         target="_blank"
                         rel="noopener noreferrer"
-                        >查看 Microsoft 设置说明
+                        >{{ t('ocr.edgeDocs') }}
                     </a>
                 </details>
             </aside>
@@ -147,17 +148,7 @@ defineExpose({ start })
                                 v-if="job.status === 'running'"
                                 class="spin"
                                 :size="15"
-                            />{{
-                                job.status === 'queued'
-                                    ? '排队中'
-                                    : job.status === 'running'
-                                      ? '识别中'
-                                      : job.status === 'failed'
-                                        ? '识别错误'
-                                        : job.status === 'skipped'
-                                          ? '已跳过'
-                                          : '已处理'
-                            }}</span
+                            />{{ t(`ocr.status.${job.status}`) }}</span
                         >
                     </div>
                     <p v-if="job.error">{{ job.error }}</p>
@@ -166,19 +157,19 @@ defineExpose({ start })
             <p class="form-note">
                 {{
                     !importing
-                        ? `跳过 ${skipped.length} 张，失败 ${failures.length} 张。失败图片不会生成成绩，可以重新选择图片或手动新增。`
-                        : '关闭弹窗将取消未完成任务。'
+                        ? t('ocr.summary', { skipped: skipped.length, failed: failures.length })
+                        : t('ocr.closeCancels')
                 }}
             </p>
             <div class="dialog-actions">
                 <button class="button secondary" @click="close()">
-                    {{ importing ? '取消识别' : '关闭' }}</button
+                    {{ importing ? t('ocr.cancel') : t('common.close') }}</button
                 ><button
                     v-if="importHasErrors"
                     class="button primary"
                     @click="(close(), emit('manualAdd'))"
                 >
-                    手动新增
+                    {{ t('common.manualAdd') }}
                 </button>
             </div>
         </template>

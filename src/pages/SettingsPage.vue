@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Check, Monitor, Moon, Sun } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import {
     songLanguage,
     theme,
@@ -8,59 +9,49 @@ import {
 } from '../composables/useSettings'
 defineProps<{ count: number; historyCount: number; canWrite: boolean; excelBusy: boolean }>()
 const emit = defineEmits<{ clear: []; import: []; export: []; template: [] }>()
+const { t } = useI18n()
 </script>
 
 <template>
     <section class="panel settings-panel">
-        <div class="section-title"><h2>外观与显示</h2></div>
+        <div class="section-title"><h2>{{ t('settings.appearance') }}</h2></div>
         <div class="setting-row">
             <div>
-                <h3>界面主题</h3>
-                <p>为你的下一段音乐旅程，挑选合适的底色。</p>
+                <h3>{{ t('settings.theme') }}</h3>
+                <p>{{ t('settings.themeDescription') }}</p>
             </div>
             <div class="theme-options">
                 <button
                     v-for="option in [
-                        {
-                            id: 'light',
-                            label: '浅色',
-                            icon: Sun,
-                        },
-                        {
-                            id: 'dark',
-                            label: '深色',
-                            icon: Moon,
-                        },
-                        {
-                            id: 'system',
-                            label: '跟随系统',
-                            icon: Monitor,
-                        },
+                        { id: 'light', icon: Sun },
+                        { id: 'dark', icon: Moon },
+                        { id: 'system', icon: Monitor },
                     ] as const"
                     :key="option.id"
                     :class="{ selected: theme === option.id }"
                     @click="theme = option.id"
                 >
                     <component :is="option.icon" :size="21" />
-                    <span>{{ option.label }} </span>
+                    <span>{{ t(`settings.themes.${option.id}`) }} </span>
                     <Check v-if="theme === option.id" :size="13" />
                 </button>
             </div>
         </div>
         <div class="setting-row">
             <div>
-                <h3>界面语言</h3>
-                <p>用于 Excel 表头，并同步切换曲目信息语言；界面当前仍为简体中文。</p>
+                <h3>{{ t('settings.uiLanguage') }}</h3>
+                <p>{{ t('settings.uiLanguageDescription') }}</p>
             </div>
             <div
                 class="segmented ui-settings-options"
                 role="group"
-                aria-label="界面语言（预览选择）"
+                :aria-label="t('settings.uiLanguage')"
             >
                 <button
                     v-for="option in uiLanguages"
                     :key="option.id"
                     type="button"
+                    :lang="option.id"
                     :class="{
                         selected: uiLanguage === option.id,
                     }"
@@ -73,8 +64,8 @@ const emit = defineEmits<{ clear: []; import: []; export: []; template: [] }>()
         </div>
         <div class="setting-row">
             <div>
-                <h3>曲目信息语言</h3>
-                <p>切换曲名显示语言，不影响搜索与成绩关联。</p>
+                <h3>{{ t('settings.songLanguage') }}</h3>
+                <p>{{ t('settings.songLanguageDescription') }}</p>
             </div>
             <div class="segmented">
                 <button
@@ -93,21 +84,14 @@ const emit = defineEmits<{ clear: []; import: []; export: []; template: [] }>()
         </div>
     </section>
     <section class="panel settings-panel">
-        <div class="section-title"><h2>本地数据</h2></div>
+        <div class="section-title"><h2>{{ t('settings.localData') }}</h2></div>
         <div class="setting-row">
             <div>
-                <h3>Excel 导入与导出</h3>
-                <p>
-                    导出全部
-                    {{ count }}
-                    条成绩，或按模板批量导入。导入前会检查数据并显示合并预览。
-                </p>
-                <p>
-                    模板按 BASIC / ADVANCED 预填全部谱面，填写分数后自动计算
-                    Rank / Rating。FC / AP 达成时填写 √，未达成时留空。
-                </p>
+                <h3>{{ t('settings.excel') }}</h3>
+                <p>{{ t('settings.excelDescription', { count }) }}</p>
+                <p>{{ t('settings.excelTemplateDescription') }}</p>
                 <p v-if="excelBusy" role="status">
-                    正在处理文件，曲绘加载最多等待 20 秒…
+                    {{ t('settings.excelBusy') }}
                 </p>
             </div>
             <div class="excel-actions">
@@ -116,35 +100,35 @@ const emit = defineEmits<{ clear: []; import: []; export: []; template: [] }>()
                     :disabled="excelBusy"
                     @click="emit('template')"
                 >
-                    下载模板
+                    {{ t('settings.downloadTemplate') }}
                 </button>
                 <button
                     class="button secondary"
                     :disabled="excelBusy || !canWrite || !count"
                     @click="emit('export')"
                 >
-                    导出成绩
+                    {{ t('settings.exportScores') }}
                 </button>
                 <button
                     class="button secondary"
                     :disabled="excelBusy || !canWrite"
                     @click="emit('import')"
                 >
-                    导入成绩
+                    {{ t('settings.importScores') }}
                 </button>
             </div>
         </div>
         <div class="setting-row">
             <div>
-                <h3>清空成绩数据</h3>
-                <p>删除本机存储的全部成绩、{{ historyCount }} 条历史及 Rating 趋势。</p>
+                <h3>{{ t('settings.clear') }}</h3>
+                <p>{{ t('settings.clearDescription', { history: historyCount }) }}</p>
             </div>
             <button
                 class="button secondary danger-button"
                 :disabled="(!count && !historyCount) || !canWrite || excelBusy"
                 @click="emit('clear')"
             >
-                清空数据
+                {{ t('settings.clearButton') }}
             </button>
         </div>
     </section>

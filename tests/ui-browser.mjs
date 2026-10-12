@@ -4,10 +4,13 @@ import { mkdir } from 'node:fs/promises'
 
 const browser = await chromium.launch({ channel: process.env.OCR_BROWSER || 'msedge', headless: true })
 try {
-    const page = await browser.newPage({ viewport: { width: 1280, height: 900 } })
+    const url = process.env.OCR_URL || 'http://127.0.0.1:5173'
+    const songPrefixes = { 'zh-CN': '曲目信息语言：', 'zh-TW': '曲目資訊語言：', ja: '楽曲情報の言語：', en: 'Song info language: ' }
+    const songToggle = (target, ui, song) => target.getByRole('button', { name: new RegExp(`^${songPrefixes[ui]}${song === 'en' ? 'English' : '日本語'}`) })
+    const page = await browser.newPage({ viewport: { width: 1280, height: 900 }, locale: 'zh-CN' })
     const errors = []
     page.on('pageerror', error => errors.push(error.message))
-    await page.goto(process.env.OCR_URL || 'http://127.0.0.1:5173')
+    await page.goto(url)
     const headings = { home: '录入新成绩', scores: '成绩一览', b30: '我的 B30', settings: '偏好设置' }
     async function go(name) {
         await page.evaluate(value => { location.hash = `#${value}` }, name)
@@ -106,9 +109,10 @@ try {
     assert.equal(await page.getByRole('button', { name: /^排名：/ }).getAttribute('aria-label'), '排名：当前升序，点击降序')
 
     await go('settings')
-    for (const [ui, expected] of [['English', 'en'], ['繁體中文', 'ja'], ['English', 'en'], ['日本語', 'ja'], ['English', 'en'], ['简体中文', 'ja']]) {
-        await page.locator('.ui-settings-options').getByRole('button', { name: ui, exact: true }).click()
-        await page.getByRole('button', { name: new RegExp(`^曲目信息语言：${expected === 'en' ? 'English' : '日本語'}。`) }).waitFor()
+    for (const [label, ui, song] of [['English', 'en', 'en'], ['繁體中文', 'zh-TW', 'ja'], ['English', 'en', 'en'], ['日本語', 'ja', 'ja'], ['English', 'en', 'en'], ['简体中文', 'zh-CN', 'ja']]) {
+        await page.locator('.ui-settings-options').getByRole('button', { name: label, exact: true }).click()
+        await songToggle(page, ui, song).waitFor()
+        assert.equal(await page.evaluate(() => document.documentElement.lang), ui)
     }
 
     // 手机端仍能完成删除与清空操作，页面不产生横向溢出
@@ -133,6 +137,31 @@ try {
     await go('home')
     assert.equal(await page.locator('.stats-grid').count(), 0)
     assert.equal((await records()).length, 0)
+
+    // 首次访问按浏览器语言匹配界面，不支持的语言回退简体中文
+    const settingsHeadings = { 'zh-CN': '偏好设置', 'zh-TW': '偏好設定', ja: '設定', en: 'Settings' }
+    for (const [locale, ui, song] of [['ja-JP', 'ja', 'ja'], ['zh-HK', 'zh-TW', 'ja'], ['en-US', 'en', 'en'], ['fr-FR', 'zh-CN', 'ja']]) {
+        const context = await browser.newContext({ locale })
+        const fresh = await context.newPage()
+        fresh.on('pageerror', error => errors.push(error.message))
+        await fresh.goto(`${url}#settings`)
+        await fresh.getByRole('heading', { name: settingsHeadings[ui], exact: true }).waitFor()
+        await songToggle(fresh, ui, song).waitFor()
+        assert.equal(await fresh.evaluate(() => document.documentElement.lang), ui)
+        if (locale !== 'en-US') {
+            await context.close()
+            continue
+        }
+        // 已保存的界面语言优先于浏览器语言，单独切换的曲目信息语言在刷新后保留
+        await fresh.locator('.ui-settings-options').getByRole('button', { name: '日本語', exact: true }).click()
+        await songToggle(fresh, 'ja', 'ja').click()
+        await songToggle(fresh, 'ja', 'en').waitFor()
+        await fresh.reload()
+        await fresh.getByRole('heading', { name: settingsHeadings.ja, exact: true }).waitFor()
+        await songToggle(fresh, 'ja', 'en').waitFor()
+        assert.equal(await fresh.title(), 'Groove Archive · FP スコア管理')
+        await context.close()
+    }
     assert.deepEqual(errors, [])
     console.log('UI regression passed: CRUD, timestamps, filters, B30, language, empty state and responsive navigation')
 } finally {

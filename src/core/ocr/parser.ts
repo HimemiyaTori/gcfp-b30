@@ -3,6 +3,7 @@ import { songService } from '../song/songService'
 import { normalizeSongText, getSongSearchTitles } from '../search/songText'
 import { validateScore } from '../score/validation'
 import type { ScoreAchievements } from '../../db/models'
+import { t } from '../../i18n'
 
 export type Layout = 'result' | 'select'
 export interface OcrFields {
@@ -36,10 +37,10 @@ export function parseInteger(text: string, label: string) {
         .replace(/[Oo]/g, '0')
         .replace(/[Il|]/g, '1')
     if (formatted.includes(',') && !/^\d{1,3}(,\d{3})+$/.test(formatted))
-        throw new Error(`${label} 千位分隔不完整。`)
+        throw new Error(t('ocr.errors.separator', { label }))
     const value = formatted.replace(/,/g, '')
     if (!/^\d+$/.test(value) || !Number.isSafeInteger(Number(value)))
-        throw new Error(`无法识别 ${label}。`)
+        throw new Error(t('ocr.errors.number', { label }))
     return Number(value)
 }
 export function parseStatus(text: string) {
@@ -50,7 +51,7 @@ export function parseStatus(text: string) {
     if (value === 'CLEAR' || value === 'FAILED' || value === 'FAIL')
         return 'clear'
     if (!value) return 'empty'
-    throw new Error('无法确认结算状态，未保存成绩。')
+    throw new Error(t('ocr.errors.status'))
 }
 const entries = songService.songs.flatMap((song) =>
     getSongSearchTitles(song)
@@ -67,7 +68,7 @@ const fuse = new Fuse(entries, {
 })
 export function matchSong(title: string) {
     const term = normalizeSongText(title).replace(/\s/g, '')
-    if (!term) throw new Error('未识别到曲名。')
+    if (!term) throw new Error(t('ocr.errors.noTitle'))
     const exact = entries.filter((e) => e.title === term)
     if (new Set(exact.map((e) => e.song.id)).size === 1) return exact[0]!.song
     const matches = fuse.search(term)
@@ -85,7 +86,7 @@ export function matchSong(title: string) {
         best.score! > 0.2 ||
         (candidates[1] && candidates[1].score! - best.score! < 0.08)
     )
-        throw new Error('曲名匹配不明确，请使用清晰完整截图或手动新增。')
+        throw new Error(t('ocr.errors.ambiguousTitle'))
     return best.item.song
 }
 export function parseFields(fields: OcrFields): Recognition {
@@ -93,18 +94,18 @@ export function parseFields(fields: OcrFields): Recognition {
     if (status === 'mission')
         return {
             kind: 'skipped',
-            reason: '故事模式成绩不录入。',
+            reason: t('ocr.errors.story'),
         }
     const score = parseInteger(fields.score, 'Score')
     validateScore(score)
     if (fields.layout === 'select' && status === 'empty' && score === 0)
-        return { kind: 'skipped', reason: '该谱面尚未游玩。' }
-    if (status === 'empty') throw new Error('缺少成绩状态，未保存成绩。')
+        return { kind: 'skipped', reason: t('ocr.errors.unplayed') }
+    if (status === 'empty') throw new Error(t('ocr.errors.missingStatus'))
     const song = matchSong(fields.title)
     const mode = compact(fields.mode).toLowerCase()
     const difficulty = compact(fields.difficulty).toLowerCase()
     const level = fields.level.normalize('NFKC').replace(/\s/g, '')
-    if (!/^\d{1,2}\+?$/.test(level)) throw new Error('无法识别谱面等级。')
+    if (!/^\d{1,2}\+?$/.test(level)) throw new Error(t('ocr.errors.level'))
     const levelValue =
         Number(level.replace('+', '')) + (level.endsWith('+') ? 0.5 : 0)
     const charts = song.charts.filter(
@@ -114,7 +115,7 @@ export function parseFields(fields: OcrFields): Recognition {
             c.level === levelValue,
     )
     if (charts.length !== 1)
-        throw new Error('模式、难度或等级与曲库不符，未保存成绩。')
+        throw new Error(t('ocr.errors.chartMismatch'))
     return {
         kind: 'score',
         songId: song.id,

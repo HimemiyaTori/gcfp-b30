@@ -22,14 +22,14 @@ onUnmounted(() => narrowSidebar.removeEventListener('change', syncSidebarToViewp
         <a
             href="#home"
             class="brand row gap-3"
-            aria-label="Groove Archive 首页"
+            :aria-label="t('sidebar.home')"
             ><span class="brand-mark"><Activity :size="24" /></span>
             <div class="sidebar-copy">
                 <strong>GROOVE<span>ARCHIVE</span></strong
                 ><small>FUTURE PERFORMERS</small>
             </div></a
         >
-        <div class="sidebar-caption sidebar-copy">我的音乐旅程</div>
+        <div class="sidebar-caption sidebar-copy">{{ t('sidebar.caption') }}</div>
         <nav class="stack gap-2">
             <a
                 v-for="n in navigation"
@@ -55,7 +55,7 @@ onUnmounted(() => narrowSidebar.removeEventListener('change', syncSidebarToViewp
                 <div
                     class="ui-language-options"
                     role="group"
-                    aria-label="界面语言（预览选择）"
+                    :aria-label="t('settings.uiLanguage')"
                 >
                     <button
                         v-for="option in uiLanguages"
@@ -75,10 +75,10 @@ onUnmounted(() => narrowSidebar.removeEventListener('change', syncSidebarToViewp
                     class="sidebar-collapse-control"
                     type="button"
                     :aria-label="
-                        sidebarCollapsed ? '展开侧边栏' : '收起侧边栏'
+                        sidebarCollapsed ? t('sidebar.expand') : t('sidebar.collapse')
                     "
                     :aria-expanded="!sidebarCollapsed"
-                    :title="sidebarCollapsed ? '展开侧边栏' : '收起侧边栏'"
+                    :title="sidebarCollapsed ? t('sidebar.expand') : t('sidebar.collapse')"
                     @click="sidebarCollapsed = !sidebarCollapsed"
                 >
                     <ChevronsLeft :size="23" />

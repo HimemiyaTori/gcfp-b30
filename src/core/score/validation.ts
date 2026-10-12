@@ -1,4 +1,5 @@
 import type { ScoreAchievements } from '../../db/models'
+import { t } from '../../i18n'
 
 export const MAX_SCORE = 1050000
 export function isValidScore(score: unknown): score is number {
@@ -10,14 +11,14 @@ export function validateAchievements(
 ): ScoreAchievements {
     for (const flag of [value.fc, value.ap])
         if (flag !== undefined && typeof flag !== 'boolean')
-            throw new Error('FC / AP 必须为布尔值。')
+            throw new Error(t('errors.achievementType'))
     if (
         value.maxChain !== undefined &&
         (!Number.isSafeInteger(value.maxChain) || value.maxChain < 0)
     )
-        throw new Error('Max Chain 必须为非负整数，或留空。')
+        throw new Error(t('errors.maxChain'))
     if (value.ap && value.fc === false)
-        throw new Error('AP 成绩必须同时为 FC。')
+        throw new Error(t('errors.apWithoutFc'))
     return {
         fc: value.ap ? true : value.fc ?? false,
         ap: value.ap ?? false,
@@ -26,5 +27,5 @@ export function validateAchievements(
 }
 export function validateScore(score: number) {
     if (!isValidScore(score))
-        throw new Error('Score 必须为 0～1,050,000 范围内的整数。')
+        throw new Error(t('errors.score'))
 }

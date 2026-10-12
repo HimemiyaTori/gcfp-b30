@@ -5,6 +5,7 @@ import {
     type OcrFields,
     type Recognition,
 } from './parser'
+import { t } from '../../i18n'
 // 单次区域推理触发慢速提示的时间，单位为毫秒
 const SLOW_INFERENCE_MS = 8000
 // 每张图片的识别时限，包含模型下载和初始化，单位为毫秒
@@ -147,7 +148,7 @@ export function createRecognizer(
                     bitmap.width * bitmap.height > 16777216
                 )
                     throw new Error(
-                        '请使用至少 960px 宽、不超过 1600 万像素的完整 16:9 游戏截图。',
+                        t('ocr.errors.dimensions'),
                     )
                 const ocr = await initialize()
                 const read = async (area: Rect) => {
@@ -213,14 +214,14 @@ export function createRecognizer(
                 else
                     return {
                         kind: 'skipped',
-                        reason: '不是支持的结算页或选曲页。',
+                        reason: t('ocr.errors.layout'),
                     }
                 const roi = regions[layout]
                 const status = await read(roi.status)
                 if (parseStatus(status) === 'mission')
                     return {
                         kind: 'skipped',
-                        reason: '故事模式成绩不录入。',
+                        reason: t('ocr.errors.story'),
                     }
                 const score = await read(roi.score)
                 if (
@@ -228,7 +229,7 @@ export function createRecognizer(
                     parseStatus(status) === 'empty' &&
                     /^0$/.test(score.trim())
                 )
-                    return { kind: 'skipped', reason: '该谱面尚未游玩。' }
+                    return { kind: 'skipped', reason: t('ocr.errors.unplayed') }
                 let difficulty: string
                 if (layout === 'result')
                     difficulty = await read(regions.result.difficulty)
@@ -264,7 +265,7 @@ export function createRecognizer(
                         indexes[0]!.count < 25 ||
                         indexes[0]!.count - indexes[1]!.count < 20
                     )
-                        throw new Error('无法确认选中的难度。')
+                        throw new Error(t('ocr.errors.difficulty'))
                     difficulty = ['easy', 'normal', 'hard', 'master'][
                         indexes[0]!.i
                     ]!
@@ -284,7 +285,7 @@ export function createRecognizer(
             } catch (error) {
                 if (deadline.aborted)
                     throw new Error(
-                        '模型下载或识别超时，请检查网络后重新选择截图。',
+                        t('ocr.errors.timeout'),
                     )
                 throw error
             } finally {

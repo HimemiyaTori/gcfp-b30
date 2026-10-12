@@ -1,6 +1,7 @@
 import { createApp, nextTick } from 'vue'
 import { toBlob } from 'html-to-image'
 import B30Poster from '../../components/B30Poster.vue'
+import { currentLanguage, t } from '../../i18n'
 import type { getModeB30 } from '../rating/calculator'
 import { loadPosterFonts } from './fonts'
 
@@ -52,7 +53,12 @@ export async function exportB30(summary: ReturnType<typeof getModeB30>, language
     host.inert = true
     document.body.append(host)
     const now = new Date()
-    const app = createApp(B30Poster, { summary, language, generatedAt: now.toLocaleString('zh-CN', { hour12: false }) })
+    const app = createApp(B30Poster, {
+        summary,
+        language,
+        generatedAt: now.toLocaleString(currentLanguage(), { hour12: false }),
+        footnote: t('b30Export.footnote'),
+    })
     try {
         const fontEmbedCSS = await loadPosterFonts()
         app.mount(host)
@@ -65,7 +71,7 @@ export async function exportB30(summary: ReturnType<typeof getModeB30>, language
         }
         const missing = await embedImages(root)
         const blob = await toBlob(root, { pixelRatio: 1, fontEmbedCSS, backgroundColor: '#354c70' })
-        if (!blob) throw new Error('图片生成失败，请重试')
+        if (!blob) throw new Error(t('b30Export.failed'))
         const url = URL.createObjectURL(blob)
         const link = document.createElement('a')
         link.href = url

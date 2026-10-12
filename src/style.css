@@ -1951,7 +1951,7 @@ input::placeholder {
     flex-wrap: wrap;
 }
 @media (max-width: 680px) {
-    .filter-bar select[aria-label='筛选歌曲分类'] {
+    .filter-bar .category-select {
         flex-basis: calc(100% - 30px);
     }
 }

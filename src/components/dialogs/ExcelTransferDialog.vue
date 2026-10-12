@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { scoreRepository } from '../../db/scoreRepository'
 import { songLanguage, uiLanguage } from '../../composables/useSettings'
 import type { ExcelPreview } from '../../core/excel/workbook'
 
 const props = defineProps<{ canWrite: boolean }>()
 const emit = defineEmits<{ notify: [message: string, title?: string] }>()
+const { t } = useI18n()
 const picker = ref<HTMLInputElement>()
 const dialog = ref<HTMLDialogElement>()
 const pending = ref(false)
@@ -22,7 +24,7 @@ const ready = computed(
         !!summary.value,
 )
 const message = (cause: unknown) =>
-    cause instanceof Error ? cause.message : '操作失败，请重试。'
+    cause instanceof Error ? cause.message : t('excel.failed')
 function start() {
     if (!pending.value && props.canWrite) picker.value?.click()
 }
@@ -42,13 +44,12 @@ async function importFile(file: File) {
     dialog.value?.showModal()
     try {
         if (!/\.xlsx$/i.test(file.name))
-            throw new Error('请选择 .xlsx 文件，可先下载本站模板。')
-        if (file.size > 5 * 1024 * 1024) throw new Error('文件不能超过 5 MB。')
+            throw new Error(t('excel.notXlsx'))
+        if (file.size > 5 * 1024 * 1024) throw new Error(t('excel.tooLarge'))
         const { parseScoreWorkbook } = await import('../../core/excel/workbook')
         preview.value = parseScoreWorkbook(await file.arrayBuffer())
         if (!preview.value.rows.length && !preview.value.issues.length)
-            error.value =
-                '没有可导入的成绩，请在 BASIC / ADVANCED 表中填写 Score。'
+            error.value = t('excel.nothing')
         if (!preview.value.issues.length)
             summary.value = await scoreRepository.previewImport(
                 preview.value.rows,
@@ -67,13 +68,9 @@ async function confirm() {
         const result = await scoreRepository.importScores(preview.value.rows)
         dialog.value?.close()
         preview.value = undefined
-        emit(
-            'notify',
-            `录入 ${result.recorded} 条，重复跳过 ${result.skipped} 条，候选忽略 ${result.ignored} 条；最佳新增 ${result.added} 条，变化 ${result.updated} 条。`,
-            'Excel 导入完成',
-        )
+        emit('notify', t('excel.imported', result), t('excel.importedTitle'))
     } catch (cause) {
-        error.value = `导入失败，整批未写入。${message(cause)}`
+        error.value = t('excel.importFailed', { reason: message(cause) })
     } finally {
         pending.value = false
     }
@@ -88,25 +85,25 @@ async function download(template: boolean) {
             await import('../../core/excel/workbook')
         const records = template ? [] : await scoreRepository.list()
         const name = template
-            ? 'FP_B30_导入模板.xlsx'
-            : `FP_B30_成绩_${new Date().toISOString().replace(/[:.]/g, '-')}.xlsx`
+            ? `${t('excel.templateFile')}.xlsx`
+            : `${t('excel.exportFile')}_${new Date().toISOString().replace(/[:.]/g, '-')}.xlsx`
         const book = createScoreWorkbook(records, language, template, headerLanguage)
         const { addWorkbookCovers } = await import('../../core/excel/covers')
         const covers = await addWorkbookCovers(book)
         await downloadWorkbook(book, name)
         const coverMessage = covers.missing
-            ? ` ${covers.missing} 张曲绘未加载，已显示占位。`
+            ? ` ${t('excel.missingCovers', { count: covers.missing }, covers.missing)}`
             : ''
         emit(
             'notify',
             (template
-                ? '模板已生成，请在 BASIC / ADVANCED 表中填写成绩。'
-                : `已生成包含全部 ${records.length} 条成绩的 Excel 文件。`) +
+                ? t('excel.templateReady')
+                : t('excel.exportReady', { count: records.length }, records.length)) +
                 coverMessage,
-            '下载文件',
+            t('excel.downloadTitle'),
         )
     } catch (cause) {
-        emit('notify', message(cause), '下载失败')
+        emit('notify', message(cause), t('excel.downloadFailed'))
     } finally {
         pending.value = false
     }
@@ -124,7 +121,7 @@ defineExpose({ start, importFile, download, pending })
         type="file"
         accept=".xlsx"
         hidden
-        aria-label="选择 Excel 成绩文件"
+        :aria-label="t('excel.picker')"
         @change="selectFile"
     />
     <dialog
@@ -134,39 +131,31 @@ defineExpose({ start, importFile, download, pending })
         @cancel="pending && $event.preventDefault()"
         @close="close"
     >
-        <h2 id="excel-import-title">导入 Excel 成绩</h2>
+        <h2 id="excel-import-title">{{ t('excel.title') }}</h2>
         <p class="excel-filename">{{ filename }}</p>
-        <p class="muted">
-            每谱面选择文件最高分，同分选更新时间最新的一条。重复记录跳过，其余存入历史，当前最佳保留高分。
-        </p>
-        <p v-if="pending" role="status">正在处理，请稍候…</p>
+        <p class="muted">{{ t('excel.rules') }}</p>
+        <p v-if="pending" role="status">{{ t('excel.processing') }}</p>
         <p v-if="error" class="error" role="alert">{{ error }}</p>
         <template v-if="preview">
             <p>
-                有效 {{ preview.rows.length }} 行 · 错误
-                {{ preview.issues.length }} 行 · 未填写 {{ preview.empty }} 行
+                {{ t('excel.rows', { valid: preview.rows.length, invalid: preview.issues.length, empty: preview.empty }) }}
             </p>
             <div v-if="preview.issues.length" role="alert">
-                <p class="error">
-                    尚未写入任何成绩。请修正以下错误后重新选择文件。
-                </p>
+                <p class="error">{{ t('excel.blocked') }}</p>
                 <ul class="excel-errors">
                     <li
                         v-for="issue in preview.issues"
                         :key="`${issue.sheet}-${issue.row}`"
                     >
-                        {{ issue.sheet }} 第 {{ issue.row }} 行：{{
-                            issue.message
-                        }}
+                        {{ t('excel.issue', { sheet: issue.sheet, row: issue.row, message: issue.message }) }}
                     </li>
                 </ul>
             </div>
             <p v-else-if="summary" class="excel-summary">
-                预计录入 {{ summary.recorded }} 条 · 最佳新增 {{ summary.added }} 条 · 变化 {{ summary.updated }} 条
-                · 重复跳过 {{ summary.skipped }} 条 · 候选忽略 {{ summary.ignored }} 条
+                {{ t('excel.summary', summary) }}
             </p>
             <p v-if="summary && !preview.issues.length" class="muted">
-                确认时会按最新本地成绩重新比较，最终数量以完成提示为准。
+                {{ t('excel.recheck') }}
             </p>
         </template>
         <div class="dialog-actions">
@@ -175,10 +164,10 @@ defineExpose({ start, importFile, download, pending })
                 :disabled="pending"
                 @click="dialog?.close()"
             >
-                取消
+                {{ t('common.cancel') }}
             </button>
             <button class="button primary" :disabled="!ready" @click="confirm">
-                确认导入
+                {{ t('excel.confirm') }}
             </button>
         </div>
     </dialog>

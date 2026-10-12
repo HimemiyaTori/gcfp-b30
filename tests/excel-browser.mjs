@@ -68,6 +68,7 @@ try {
     await mkdir('.preview', { recursive: true })
     const page = await browser.newPage({
         viewport: { width: 1280, height: 950 },
+        locale: 'zh-CN',
     })
     const errors = []
     page.on('pageerror', (error) => errors.push(error.message))
@@ -214,7 +215,7 @@ try {
     assert.equal(await count(), 2)
 
     // 在独立浏览器上下文恢复真实下载的文件
-    const restored = await browser.newPage()
+    const restored = await browser.newPage({ locale: 'zh-CN' })
     await restored.goto(
         `${process.env.OCR_URL || 'http://127.0.0.1:5173'}/#settings`,
     )
@@ -243,18 +244,31 @@ try {
     await restored.close()
 
     // 切换界面语言后下载真实文件，跨语言重新导入并保留完成标记
-    const languageOptions = page.getByRole('main').getByRole('group', { name: '界面语言（预览选择）', exact: true })
+    const texts = {
+        简体中文: { group: '界面语言', template: '下载模板', export: '导出成绩', import: '导入成绩', dialog: '导入 Excel 成绩', cancel: '取消', skipped: /重复跳过 2 条/, files: ['FP_B30_导入模板', 'FP_B30_成绩'] },
+        繁體中文: { group: '介面語言', template: '下載範本', export: '匯出成績', import: '匯入成績', dialog: '匯入 Excel 成績', cancel: '取消', skipped: /重複略過 2 筆/, files: ['FP_B30_匯入範本', 'FP_B30_成績'] },
+        日本語: { group: '表示言語', template: 'テンプレートをダウンロード', export: 'スコアをエクスポート', import: 'スコアをインポート', dialog: 'Excel のスコアをインポート', cancel: 'キャンセル', skipped: /重複スキップ 2 件/, files: ['FP_B30_インポートテンプレート', 'FP_B30_スコア'] },
+        English: { group: 'Interface language', template: 'Download template', export: 'Export scores', import: 'Import scores', dialog: 'Import Excel scores', cancel: 'Cancel', skipped: /Duplicates skipped 2/, files: ['FP_B30_Import_Template', 'FP_B30_Scores'] },
+    }
+    let current = texts.简体中文
+    async function switchLanguage(label) {
+        await page.getByRole('main').getByRole('group', { name: current.group, exact: true }).getByRole('button', { name: label, exact: true }).click()
+        current = texts[label]
+        await page.getByRole('button', { name: current.import, exact: true }).waitFor()
+    }
     for (const [label, headers] of [
         ['繁體中文', ['曲繪', '曲名', '難度', '等級', '分數', '評級', 'Rating', 'FC', 'AP', 'Max Chain', '更新時間', '譜面 ID', '曲目 ID']],
         ['日本語', ['ジャケット', '曲名', '難易度', 'レベル', 'スコア', 'ランク', 'レーティング', 'FC', 'AP', 'Max Chain', '更新日時', '譜面 ID', '楽曲 ID']],
         ['English', ['Cover', 'Title', 'Difficulty', 'Level', 'Score', 'Rank', 'Rating', 'FC', 'AP', 'Max Chain', 'Updated At', 'Chart ID', 'Song ID']],
         ['简体中文', ['曲绘', '曲名', '难度', '等级', '分数', '评级', 'Rating', 'FC', 'AP', 'Max Chain', '更新时间', '谱面 ID', '曲目 ID']],
     ]) {
-        await languageOptions.getByRole('button', { name: label, exact: true }).click()
-        for (const button of ['下载模板', '导出成绩']) {
+        await switchLanguage(label)
+        for (const button of ['template', 'export']) {
             const event = page.waitForEvent('download')
-            await page.getByRole('button', { name: button, exact: true }).click()
+            await page.getByRole('button', { name: texts[label][button], exact: true }).click()
             const file = await event
+            if (button === 'template') assert.equal(file.suggestedFilename(), `${texts[label].files[0]}.xlsx`)
+            else assert.ok(file.suggestedFilename().startsWith(`${texts[label].files[1]}_`))
             const path = join(downloads, `${label}-${button}.xlsx`)
             await file.saveAs(path)
             const bytes = await readFile(path)
@@ -270,20 +284,21 @@ try {
             }
             const preview = parseScoreWorkbook(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength))
             assert.deepEqual(preview.issues, [])
-            assert.equal(preview.rows.length, button === '下载模板' ? 0 : 2)
-            if (button === '导出成绩') {
+            assert.equal(preview.rows.length, button === 'template' ? 0 : 2)
+            if (button === 'export') {
                 assert.equal(saved.Sheets.BASIC.H3.v, '√')
                 assert.equal(saved.Sheets.BASIC.I3.v, '√')
-                await languageOptions.getByRole('button', { name: label === 'English' ? '简体中文' : 'English', exact: true }).click()
+                await switchLanguage(label === 'English' ? '简体中文' : 'English')
                 const chooser = page.waitForEvent('filechooser')
-                await importButton.click()
+                await page.getByRole('button', { name: current.import, exact: true }).click()
                 await (await chooser).setFiles(path)
-                await dialog.getByText(/重复跳过 2 条/).waitFor()
-                await dialog.getByRole('button', { name: '取消', exact: true }).click()
+                const localizedDialog = page.getByRole('dialog', { name: current.dialog, exact: true })
+                await localizedDialog.getByText(current.skipped).waitFor()
+                await localizedDialog.getByRole('button', { name: current.cancel, exact: true }).click()
             }
         }
     }
-    await languageOptions.getByRole('button', { name: '简体中文', exact: true }).click()
+    await switchLanguage('简体中文')
 
     await page.setViewportSize({ width: 390, height: 844 })
     await page.screenshot({

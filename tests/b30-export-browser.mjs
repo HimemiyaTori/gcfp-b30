@@ -14,6 +14,7 @@ try {
     const page = await browser.newPage({
         viewport: { width: 1280, height: 900 },
         deviceScaleFactor: 3,
+        locale: 'zh-CN',
     })
     const errors = []
     page.on('pageerror', (error) => errors.push(error.message))
