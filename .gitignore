@@ -11,6 +11,5 @@ dist/
 !.yarn/versions
 .pnp.*
 
-src/data/test/
 public/covers/
 public/ocr/

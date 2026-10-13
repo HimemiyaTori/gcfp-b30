@@ -19,10 +19,14 @@ import type { ScoreRow } from '../../db/models'
 import ScoreTable from '../ScoreTable.vue'
 import SongCover from '../SongCover.vue'
 import ScoreDeleteDialog from './ScoreDeleteDialog.vue'
-const chartFields: (keyof Chart)[] = [
+const basicChartFields: (keyof Chart)[] = [
     'note', 'special', 'combo', 'circle', 'goldCircle', 'hold', 'goldHold',
-    'arrow', 'goldArrow', 'square', 'goldSquare', 'advNote', 'blueCircle',
-    'redCircle', 'advHold', 'advArrow', 'blueArrow', 'redArrow',
+    'arrow', 'goldArrow', 'square', 'goldSquare',
+]
+const advancedChartFields: (keyof Chart)[] = [
+    ...basicChartFields,
+    'advNote', 'blueCircle', 'redCircle', 'advHold', 'advArrow', 'blueArrow',
+    'redArrow',
 ]
 const { t } = useI18n()
 const props = defineProps<{ canWrite: boolean; scores: ScoreRow[] }>()
@@ -38,6 +42,9 @@ let playSubscription: { unsubscribe(): void } | undefined
 const { rows, sort, toggleSort, page, pagination, error, loading, reload } =
     useScoreHistory({ songId, mode, pageSize: 30, enabled: active })
 const song = computed(() => songService.getSong(songId.value))
+const chartFields = computed(() =>
+    mode.value.toUpperCase() === 'BASIC' ? basicChartFields : advancedChartFields,
+)
 const charts = computed(
     () =>
         song.value?.charts.filter(
