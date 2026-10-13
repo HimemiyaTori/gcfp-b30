@@ -13,7 +13,14 @@
         "test:history": "node tests/history-browser.mjs",
         "test:excel": "tsx tests/excel-browser.mjs",
         "test:covers": "tsx tests/covers-browser.mjs",
-        "test:b30-export": "node tests/b30-export-browser.mjs"
+        "test:b30-export": "node tests/b30-export-browser.mjs",
+        "build:server": "node scripts/build-server.mjs",
+        "dev:server": "wrangler dev --local",
+        "check:worker": "tsc -p worker/tsconfig.json",
+        "test:album": "node tests/album-browser.mjs",
+        "test:album-worker": "tsx tests/album-worker.mjs",
+        "test:album-runtime": "tsx tests/album-worker.mjs --runtime",
+        "test:album-modes": "node tests/album-modes-browser.mjs"
     },
     "dependencies": {
         "@paddleocr/paddleocr-js": "0.4.2",
@@ -33,13 +40,16 @@
     "devDependencies": {
         "@types/node": "^22",
         "@vitejs/plugin-vue": "^5.2.4",
+        "esbuild": "0.25.12",
+        "miniflare": "5.20261006.1-alpha",
         "playwright": "1.63.0",
         "sharp": "0.34.4",
         "tsx": "4.20.6",
         "typescript": "~5.8.3",
         "unocss": "^66.5.2",
         "vite": "^6.3.6",
-        "vue-tsc": "^2.2.12"
+        "vue-tsc": "^2.2.12",
+        "wrangler": "4"
     },
     "dependenciesMeta": {
         "esbuild": {

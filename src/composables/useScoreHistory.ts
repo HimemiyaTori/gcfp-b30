@@ -47,13 +47,13 @@ export function useScoreHistory(options: {
         const currentMode = mode()
         const language = songLanguage.value
         subscription = liveQuery(() => database.transaction('r', database.scoreHistory, async () => {
-            let collection = database.scoreHistory.orderBy('importedAt')
+            let collection = database.scoreHistory.orderBy('playedAt')
             if (!ascending || key !== 'importedAt') collection = collection.reverse()
             collection = collection.filter(record => (!currentSongId || record.songId === currentSongId)
                 && (!currentMode || songService.getChart(record.songId, record.chartId).chart.mode.toUpperCase() === currentMode))
             const total = await collection.clone().count()
             const offset = (currentPage - 1) * pageSize
-            // 导入时间排序直接读取当前页，其他列在全部匹配历史中排序
+            // 成绩时间排序直接读取当前页，其他列在全部匹配历史中排序
             if (key === 'importedAt') {
                 const records = await collection.offset(offset).limit(pageSize).toArray()
                 return { total, items: records.map(record => getScoreRow(record, language)) }

@@ -4,7 +4,7 @@
 >
 > 调研日期：2026-09-29；修订日期：2026-09-30、2026-10-13
 >
-> 状态：方案设计，尚未实现或连接真实 Nintendo 账号验证
+> 状态：3A 本地实现已接入，尚未连接真实 Nintendo 账号或验证实际 Cloudflare 出口；3B / 3C 未开放
 >
 > 目标：未登录、未绑定时保持纯前端；Cloudflare 部署上可选绑定 Nintendo 账号，经同源 Worker 无状态中转读取相册，前端下载截图并 OCR；站内账号与多设备同步后续再做
 
@@ -44,8 +44,8 @@ nxapi 作为认证及协议参考，NSO-Album-Sync 作为授权、下载与去�
 
 | 事项 | 当前状态 |
 | --- | --- |
-| GitHub Pages 版的 Nintendo 相册入口 | 完全隐藏，或显示说明并引导到 Cloudflare 站点，待定 |
-| 会话 Cookie 有效期 | 建议 30～90 天，PoC 后确定 |
+| GitHub Pages 版的 Nintendo 相册入口 | 3A 暂时隐藏；是否引导到 Cloudflare 站点留待真实联调后决定 |
+| 会话 Cookie 有效期 | 本地实现暂用 30 天，PoC 后复核 |
 | 截图下载方式 | 由 PoC 的 CDN 跨域结果决定前端直连或 Worker 中转 |
 | 3C 后端选型 | Workers + D1，或 v3.1 的 Node.js + SQLite，3C 开工前评估 |
 
@@ -101,7 +101,7 @@ NSO-Album-Sync 值得参考的是：缓存凭据、校验下载地址与长度�
 
 当前源码包含第三方 `f` 生成，以及 Coral 请求加密和响应解密。NSO-Album-Sync 的 README 明确披露，相关服务会处理 Nintendo 身份信息、Coral token 和 API 请求/响应。不能只告诉用户“第三方收到一个临时签名参数”，也不能声称凭据始终只在用户设备或本项目服务器内。[数据披露](https://github.com/Dycool/NSO-Album-Sync/blob/4fc49154aa984b85e0c5d3f67a977021a81274b7/README.md#-nintendo-account--nxapi)、[nxapi 加密请求实现](https://github.com/samuelthomas2774/nxapi/blob/47c9d35d9d51d33e62dd6d3733b616e0ad31b02b/src/api/coral.ts#L828)
 
-nxapi 文档要求库调用者注册自己的 nxapi-auth client，常见作用域为 `ca:gf ca:er ca:dr`；该凭据属于本项目接入第三方认证服务的身份，与 Nintendo 客户端 ID、站内用户会话不同。不可复制其他应用的 client 身份或依赖其私人代理。文档给出只用 client id 的公开客户端，以及使用 secret 或 client assertion 的机密客户端；采用 Worker 后使用机密客户端，secret 存于 Worker secret，不进入前端包。[nxapi 认证说明](https://github.com/samuelthomas2774/nxapi#nxapi-auth-authentication)
+nxapi 文档要求库调用者注册自己的 nxapi-auth client，常见作用域为 `ca:gf ca:er ca:dr`；该凭据属于本项目接入第三方认证服务的身份，与 Nintendo 客户端 ID、站内用户会话不同。不可复制其他应用的 client 身份或依赖其私人代理。上游支持只用 client id 的公开客户端，以及使用 secret 或 client assertion 的机密客户端。本项目默认支持仅 Client ID 的方式，不把 Secret 作为必备项；若服务方实际提供 Secret，则通过 Worker secret 配置。作用域由程序在申请 token 时发送，注册页无需提供输入框；实际是否授权及额度仍需联调确认。[nxapi 认证说明](https://github.com/samuelthomas2774/nxapi#nxapi-auth-authentication)
 
 nxapi 要求调用 imink、flapg 等非 Nintendo 接口时，在 User-Agent 中写明本项目名称和版本；未开源或不易查找的项目还需附联系方式。浏览器 fetch 不能可靠设置 User-Agent，Worker 可以设置，本项目附仓库地址。[User-Agent 要求](https://github.com/samuelthomas2774/nxapi/tree/47c9d35d9d51d33e62dd6d3733b616e0ad31b02b#user-agent-strings)
 
@@ -256,7 +256,7 @@ GitHub Pages 与 Cloudflare 部署是不同 Origin，IndexedDB 各自独立。�
 
 | Cookie | 内容 | 有效期 |
 | --- | --- | --- |
-| 会话 | session token、Nintendo 账号 ID、bindingId、昵称、keyVersion、签发与过期时间 | 建议 30～90 天，待定 |
+| 会话 | session token、Nintendo 账号 ID、bindingId、昵称、keyVersion、签发与过期时间 | 3A 暂用 30 天，PoC 后复核 |
 | Coral 缓存 | Nintendo 账号 ID、bindingId、Coral 短期 token 与到期时间 | 按上游 expiresIn |
 | 绑定流程 | state、PKCE verifier、过期时间 | 10 分钟，完成后清除；重放边界见第 6.1 节 |
 
@@ -283,7 +283,7 @@ GitHub Pages 与 Cloudflare 部署是不同 Origin，IndexedDB 各自独立。�
 
 - **协议移植**：nxapi 的 Coral、Nintendo Account 与加解密实现依赖 `undici`、`node:crypto` 等 Node 接口，在 Worker 中改写为基于 fetch 与 WebCrypto 的实现，不直接导入 nxapi 全库；固定参考提交，协议变化时对照更新
 - **协议参数**：Nintendo Switch App 更新后，旧版本号请求可能被拒绝。版本号等协议参数放在 Worker 环境变量或远程配置中，不发版也能更新
-- **nxapi-auth**：使用本项目注册的机密客户端，secret 存于 Worker secret；User-Agent 带本项目名称、版本和仓库地址
+- **nxapi-auth**：使用本项目注册的 Client ID，支持公开客户端；可选 client secret 存于 Worker secret。Worker 申请 token 时发送作用域 `ca:gf ca:er ca:dr`；User-Agent 带本项目名称、版本和仓库地址
 - **共用出口与额度**：所有用户的请求从 Cloudflare 出口 IP 发出，并共用本项目 nxapi-auth client 的额度。Nintendo 是否限制数据中心 IP、第三方额度多少，须 PoC 实测并向服务方确认
 - **限流**：客户端冷却见第 7.1 节。Worker 用 Rate Limiting 绑定按 Nintendo 账号 ID 与 IP 做整体限制；该绑定按单个 Cloudflare 节点计数，周期只能为 10 或 60 秒，只用于防滥用，不作精确额度。[Rate Limiting 绑定](https://developers.cloudflare.com/workers/runtime-apis/bindings/rate-limit/)
 - **日志**：Worker 日志与错误信息不得包含 Cookie、token、授权码、生日和签名 URL；上游错误响应先脱敏再记录，不整包输出
@@ -423,7 +423,7 @@ Worker 的目标是让页面可继续操作，不是保证浏览器后台常驻�
 | `albumItems` | 主键 Nintendo 账号 ID + mediaId；applicationId、capturedAt、contentHash、datasetEpoch、bindingGeneration、阶段、重试次数与时间、识别版本、候选、原因或错误码、终态 |
 | `chartProtections` | chartId 唯一；autoImportBlocked、设置原因与时间 |
 
-本地 metadata 扩展相册设置与任务代次记录（当前 Nintendo 账号 ID、datasetEpoch、bindingGeneration、访问时自动更新开关、暂停状态、最近成功检查时间、冷却截止），不随清空成绩删除；清空时递增代次并关闭自动更新。截图只在浏览器内存中处理，不持久化到 IndexedDB。`capturedAt` 是上游拍摄时间；`lastCheckedAt` 与 `lastImportedAt` 分开，后者仅在成绩事务提交成功后更新，表示最近实际入库时刻。
+本地以独立 `albumState` 表保存相册设置与任务代次记录（当前 Nintendo 账号 ID、bindingId、datasetEpoch、bindingGeneration、访问时自动更新开关、最近成功检查时间、冷却截止），不随清空成绩删除；清空时递增代次并关闭自动更新。截图只在浏览器内存中处理，不持久化到 IndexedDB。`capturedAt` 是上游拍摄时间；`lastCheckedAt` 与 `lastImportedAt` 分开，后者仅在成绩事务提交成功后更新，表示最近实际入库时刻。
 
 同次 version(2) 迁移为 `scoreHistory` 增加 `playedAt` 及排序索引，既有记录回填 importedAt；Rating 快照以 playedAt 作为横轴并重建，历史查询同步调整。处理耗时、重试和同步版本时间仍使用实际发生时刻，与截图业务时间区分。
 
@@ -544,7 +544,7 @@ Worker 的目标是让页面可继续操作，不是保证浏览器后台常驻�
 
 ### 12.2 凭据与个人数据
 
-Worker 主密钥由部署 secret 提供，按 keyVersion 轮换；nxapi-auth client secret 同样存于 Worker secret，不打包进前端。前端不持有 Nintendo 凭据；签名 URL 与下载票据只在页面内存中使用。对授权码、Cookie、token、生日和签名 URL 脱敏，前端日志和错误上报同样适用，不能把上游原始响应整包上报。
+Worker 主密钥由部署 secret 提供，按 keyVersion 轮换；若使用 nxapi-auth client secret，同样存于 Worker secret，不打包进前端。前端不持有 Nintendo 凭据；签名 URL 与下载票据只在页面内存中使用。对授权码、Cookie、token、生日和签名 URL 脱敏，前端日志和错误上报同样适用，不能把上游原始响应整包上报。
 
 3C 起后端长期 Nintendo 认证数据采用有认证加密存库并保存 keyVersion，主密钥与备份分开。删除账号先撤销会话、更新 generation 并清理租约，再清理成绩、绑定和处理元数据；用户设备的候选与队列同时清理。
 
@@ -587,7 +587,7 @@ src/
 | 协议移植 | Worker 运行时以 fetch 与 WebCrypto 完成完整链路 | 不直接导入 nxapi 全库 |
 | 绑定和续期 | 回调复制、state、重放、Coral 缓存、过期恢复正确 | 不开启自动触发 |
 | Cookie 体积 | 会话与 Coral 缓存 Cookie 均低于 4 KB | 调整内容拆分 |
-| 第三方条件 | 确认 nxapi-auth 机密客户端、额度和 User-Agent 要求 | 调整冷却与限流 |
+| 第三方条件 | 确认本项目 nxapi-auth Client ID 可申请所需作用域、额度和 User-Agent 要求；Secret 可选 | 调整接入配置、冷却与限流 |
 | 移动端与页面恢复 | 冷启动/热模型/多图可接受，切页继续，关页后重试不重复 | 调整队列及支持范围 |
 | 许可与服务条件 | 明确源码提供方式、依赖通知和第三方接入权限 | 调整适配方案 |
 
@@ -643,4 +643,12 @@ PoC 可先用 Node 脚本以真实账号确认 applicationId 与 CDN 响应头�
 - 切换账号时旧回调和 outbox 不写入新账号；未登录时的绑定迁入账号后会话 Cookie 被清除
 - 退出/解绑取消前端批次，旧 generation 的提交被拒绝
 
-2026-10-13 修订仅涉及设计和 README 入口描述，未实现 Worker、未绑定真实账号、未执行部署。后续以 PoC 实测补充本文。
+### 14.4 当前实现状态（2026-10-13）
+
+3A 本地实现已接入：独立 Worker 编译与构建开关、授权回调、加密 Cookie、Coral 登录和一次过期恢复、媒体白名单和下载票据、浏览器串行 OCR、预览修改与逐张确认、本地媒体去重与拒绝记录、拍摄时间排序和趋势重建、谱面保护及跨标签页代次拦截。GitHub Pages 相册入口暂时隐藏；完整备份迁移不做。
+
+用户尚未准备 nxapi-auth 客户端与 Cloudflare 部署，故游戏 ID 和媒体主机配置保持空白，不假设真实授权已成功。默认使用 Worker 原图中转，CDN 直连须实测后启用。当前验收以模拟外部账号服务、真实本地 HTTP、浏览器操作、真实截图 OCR 和持久化为主；不替代第 14.1 节的真实账号 PoC，未执行实际部署。
+
+3B 严格自动候选、自动入库与首次开启基线选择，3C 账号及跨设备同步尚未实现。3A 的列表失败显示错误并允许用户重试；逐图临时失败采用两次重试，候选始终要求人工确认。优先观察完整手动链路能否在真实账号跑通，再开放后续阶段。
+
+本地已通过前端与 Worker 类型检查、两种生产构建、Worker dry-run 打包及本地 workerd 启动；相册 HTTP 验收、真实图片浏览器 OCR（Bibbidiba BASIC HARD，1027499，FC）、过期票据恢复、预览与低分入库、拒绝恢复、跨标签页清空拦截、纯前端无 API 请求、schema 1 升级验收均通过。现有历史浏览器回归与 10 项 XLSX 文件验收通过。既有 21 张 OCR 标注样本未在当前工作区提供，未宣称完成该组回归。

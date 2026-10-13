@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Plus } from 'lucide-vue-next'
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppHeader from './components/app/AppHeader.vue'
 import AppNavigation from './components/app/AppNavigation.vue'
@@ -24,6 +24,9 @@ import B30Page from './pages/B30Page.vue'
 import HomePage from './pages/HomePage.vue'
 import ScoresPage from './pages/ScoresPage.vue'
 import SettingsPage from './pages/SettingsPage.vue'
+const NintendoAlbum = import.meta.env.VITE_SERVER === '1' ? defineAsyncComponent(() => import('./components/album/NintendoAlbum.vue')) : undefined
+const AlbumProgress = import.meta.env.VITE_SERVER === '1' ? defineAsyncComponent(() => import('./components/album/AlbumProgress.vue')) : undefined
+if (import.meta.env.VITE_SERVER === '1') void import('./core/album/controller').then(module => module.initializeAlbum())
 const { t } = useI18n()
 const page = ref<Page>('home')
 const sidebarCollapsed = ref(false)
@@ -147,6 +150,7 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
                     v-model:grain="ratingGrain"
                     @song="songDetails?.open($event)"
                 />
+                <component :is="AlbumProgress" v-if="AlbumProgress && page !== 'settings'" />
                 <ScoresPage
                     v-if="page === 'scores'"
                     :scores="scores"
@@ -177,6 +181,7 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
                 <p v-if="databaseLoading" role="status">
                     {{ t('app.loading') }}
                 </p>
+                <component :is="NintendoAlbum" v-if="NintendoAlbum && page === 'settings'" :can-write="canWrite" />
                 <div v-if="databaseError" class="panel error" role="alert">
                     {{ databaseError }}
                     <button class="button secondary" @click="reloadDatabase">

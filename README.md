@@ -4,7 +4,7 @@
 
 后续开发以 [二期设计文档](docs/FP_B30_二期设计文档.md) 为主；共同业务规则和已完成的验收记录见 [一期设计与验收归档](docs/FP_B30_一期设计文档.md)。
 
-Nintendo 相册自动录入、账号登录与多设备同步的后续方案见 [三期设计文档](docs/FP_B30_三期设计文档.md)：未登录、未绑定时保持纯前端；Cloudflare 部署上可选绑定 Nintendo 账号，由同源 Worker 无状态中转读取相册，前端下载截图并执行 OCR。先做相册同步，站内账号与成绩同步后续再加。当前处于设计阶段，尚未实现。
+Nintendo 相册方案见 [三期设计文档](docs/FP_B30_三期设计文档.md)。3A 已实现本地可联调版本：Cloudflare 版通过同源 Worker 绑定、读取相册，前端 OCR 后逐张预览确认入库。尚未连接真实 Nintendo 账号或验证 Cloudflare 出口；3B 自动入库和 3C 站内账号、多设备同步未开放。默认构建保持纯前端。
 
 ## 运行
 
@@ -61,7 +61,7 @@ OCR 真实样本验证：将 `tests/ocr-samples.json` 对应的 21 张本地样�
 - `src/core/score/` 提供统一校验与筛选，`src/core/search/songText.ts` 提供共用曲名归一化；特殊别名只维护在曲库的 searchAliases
 - 仓储提供 `addManual(songId, chartId, score, achievements?)` 和 `addOcr(songId, chartId, score, achievements?, signal?)`，前者返回 ID，后者返回 `{ id, skipped }`；`edit/list/remove/clear` 保留原职责
 
-不引入 Pinia、后台队列、路由库或新的成绩缓存；新数据库 groove-archive-fp-history 使用初始 schema，不读取或迁移旧库。历史为事实来源，当前最佳和 Rating 快照为可重建数据。
+不引入 Pinia、服务器后台队列、路由库或新的成绩缓存；数据库 groove-archive-fp-history 从 schema 1 升级到 2，保留既有历史并补充成绩时间、相册处理记录、绑定代次和谱面保护。历史为事实来源，当前最佳和 Rating 快照为可重建数据。
 
 启动开发服务后运行 `yarn test:ui`，验证表单、更新时间、筛选保留、B30 排序、界面语言切换、浏览器语言匹配、语言偏好刷新后保留、首页空状态及 390px 下的操作。浏览器测试固定以简体中文环境启动。`yarn test:ocr` 同时验证重复上传、切页后继续上传、进行中取消，以及模拟初始化失败和超时后的恢复。`yarn test:b30-export` 验证实际 PNG 下载、尺寸、榜单内容、生成期间切换模式、缺曲绘及不足 30 条的导出。浏览器测试默认使用独立 Edge 上下文；可通过 `OCR_URL` 指定开发服务地址，通过 `OCR_BROWSER` 指定浏览器通道。
 
@@ -83,7 +83,7 @@ Windows 下先完成 `yarn build`，再启动 `yarn dev` 执行浏览器回归�
 
 ## 历史成绩与 Rating 趋势
 
-- 首页“最近成绩”默认按实际导入时间倒序，每页 10 条，支持排序和分页。同一谱面可保留多条不同历史
+- 首页“最近成绩”默认按成绩时间倒序，每页 10 条，支持排序和分页。相册使用拍摄时间，既有历史及手动导入保留原录入时间口径。同一谱面可保留多条不同历史
 - 点击首页、成绩管理或 B30 的曲名／封面查看歌曲信息；按模式显示全部谱面和历史，每页 30 条。缺失资料显示 `--`
 - 成绩管理只提供编辑和歌曲信息。删除只在歌曲详情逐条操作；删除后从剩余历史重算最佳成绩及历史曲线，删光后该谱面退出 B30
 - 编辑修正最佳成绩所关联的历史，不新增记录，也不改变导入时间；降分后其他历史可能成为最佳
@@ -92,4 +92,38 @@ Windows 下先完成 `yarn build`，再启动 `yarn dev` 执行浏览器回归�
 - 首页 SVG Rating 折线图提供日／月／年粒度，默认日，切页保留选择。每周期取末值，无导入周期延续上一值；使用浏览器本地日历，不将 Excel 旧更新时间回填到过去
 - 曲库／规则版本变化时，按当前规则重算全部派生 Rating；历史删除或修正也会修正曲线。历史默认长期保留，Excel 不作为历史备份
 
+相册截图的历史与趋势使用拍摄时间，旧图晚上传会重算后续趋势。非重复低分截图可记入历史，不降低最佳成绩；FC/AP 未知统一为 false，同分仅补未记录的 Max Chain。相册历史人工纠错保留拍摄时间；仅修改 Max Chain 不改成绩更新时间。完整备份迁移暂不提供，GitHub Pages 与 Cloudflare 的本地数据不互通，Excel 只迁移当前成绩。
+
 `yarn test:history` 使用独立 Edge 上下文，验收真实 XLSX 导入、去重、候选选择、回滚、双标签并发、编辑回退、逐条删除、历史分页、跨年月曲线、刷新持久化及手机布局。数据准备可使用 IndexedDB，所测写入、编辑、删除和清空通过真实页面执行。未新增内部逻辑单元测试。
+
+## Nintendo 相册本地联调（3A）
+
+1. `yarn build:server` 构建包含相册入口的前端，并检查 Worker 类型
+2. 将 `.dev.vars.example` 复制为 `.dev.vars`，把注册页给出的 Client ID 填入 `NXAPI_CLIENT_ID`。支持只有 Client ID 的公开客户端；`NXAPI_CLIENT_SECRET` 可留空或删除，仅服务方实际提供 Secret 的机密客户端才填写。Worker 请求 `ca:gf ca:er ca:dr`，客户端必须获准这些权限；在客户端详情的 Scope 表单中配置，若显示 Requires approval 则按服务方提示申请批准，不使用其他应用的身份
+3. 为 `COOKIE_KEY` 生成随机 32 字节 base64url 密钥，例如 `node -e "console.log(require('node:crypto').randomBytes(32).toString('base64url'))"`；不要提交或发送该密钥
+4. 从真实媒体确认 `wrangler.jsonc` 的 `GCFP_APPLICATION_IDS` 和 `MEDIA_HOSTS`，分别填逗号分隔的准确游戏 ID 和 HTTPS 主机名，禁止通配符。默认留空并禁用绑定，避免把猜测当成验证结果
+5. `yarn dev:server` 启动本地 Worker，在同源页面的「偏好设置 → Nintendo 相册」完成授权和手动读取。Cookie 使用 Secure / HttpOnly，正式部署必须 HTTPS；本地使用浏览器认可的 localhost 环境
+
+若本地 `workerd` 出站连接失败，可在 Wrangler 已登录的情况下运行 `yarn wrangler dev --remote --ip 127.0.0.1 --port 8787 --upstream-protocol http`，将 Worker 运行于 Cloudflare 临时预览环境。远程代理会改写 Worker 收到的请求 URL，因此需在 `.dev.vars` 中添加 `APP_ORIGIN="http://127.0.0.1:8787"`，并用该地址打开页面。来源必须精确匹配协议、主机和端口，`localhost` 与 `127.0.0.1` 不能混用。该配置只指定可信来源，不启用跨域访问；正式直连部署可留空，默认仍校验实际请求 URL 的来源。远程模式使用 Cloudflare 上的远程绑定。
+
+原图默认经 Worker 有界流式中转；真实浏览器验证 CDN 可跨域读取后可设 `MEDIA_DIRECT=1`。Nintendo App 协议版本由 `NINTENDO_APP_VERSION` 配置。会话暂用 30 天，Coral 缓存按上游有效期；更换 Cookie 主密钥或版本会要求重新绑定。绑定页提供第三方处理说明和源码链接，协议来源见 [worker/NOTICE.md](worker/NOTICE.md)。上线修改版需把源码链接改为实际部署版本。
+
+普通 `yarn build` / `yarn dev` 不启用相册。GitHub Pages 构建剔除相册前端模块；Cloudflare 未绑定用户日常浏览不发 API 请求，主动展开相册设置才查询绑定状态。绑定状态标记不含凭据。服务器故障不会影响本地成绩与手动导入。
+
+验收命令：
+
+```sh
+yarn check:worker
+yarn test:album-worker
+yarn test:album-runtime
+# 浏览器验收使用 Vite 开发服务，并在测试中模拟上游 API
+# PowerShell: $env:VITE_SERVER='1'; yarn dev --port 5175
+# sh: VITE_SERVER=1 yarn dev --port 5175
+yarn test:album
+```
+
+`test:album-worker` 通过真实本地 HTTP 请求验收公开接口，Nintendo 和第三方服务为模拟依赖。`test:album-runtime` 在实际 Workerd 中运行同一套 HTTP 验收，覆盖声明 JSON 类型的加密响应、Base64/Base64url、登录单独加密、令牌失效恢复、限流、原图重定向和下载限制。加密请求的响应必须先解密，不能根据 Content-Type 判断为明文。上游错误会记录固定阶段、HTTP 状态或 Coral 错误码，不记录响应正文和凭据。`test:album` 使用仓库里的真实截图、浏览器 OCR 和 IndexedDB，验收预览入库、拍摄时间、低分历史、拒绝恢复及跨标签清空拦截；可通过 `ALBUM_URL` 指定带服务端开关的 Vite 地址。上述结果不代替真实授权、上游重放限制、媒体 ID、CDN 跨域和 Cloudflare 出口验证。21 张旧 OCR 标注样本仍需另行准备。
+
+`yarn test:album-modes` 另验收纯前端产物无相册入口及无 API 请求，以及旧 schema 1 数据升级后保留成绩。使用 `PURE_URL` 指向默认构建的预览服务（默认 5176），`ALBUM_URL` 指向开启服务端功能的 Vite 服务（默认 5175）；先完成构建再启动服务。
+
+真实账号 PoC 尚未完成，因此不会自动扫描新增图片或自动入库。页面切换保留进行中的相册队列；页面隐藏时暂停，未完成任务下次可见或访问时恢复并遵守冷却。失败项可手动重试，临时下载或 OCR 超时最多自动重试两次；所有有效识别结果必须用户确认。

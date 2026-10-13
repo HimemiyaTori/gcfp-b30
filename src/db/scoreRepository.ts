@@ -7,28 +7,31 @@ import Dexie from 'dexie'
 import { t } from '../i18n'
 import { validateScore, validateAchievements } from '../core/score/validation'
 import { mergeBest, scoreIdentity, selectExcelScores, type ImportedScore } from '../core/score/import'
+import { initialAlbumState } from './albumModels'
 
 export function createScoreRepository(db: ScoreDatabase, library = songService, version = versions) {
-    const tables = [db.scores, db.scoreHistory, db.ratingSnapshots, db.metadata]
+    const tables = [db.scores, db.scoreHistory, db.ratingSnapshots, db.metadata, db.albumItems, db.albumState, db.chartProtections]
     const rating = (row: ImportedScore) => {
         validateScore(row.score)
         return getChartRating(row.score, library.getChart(row.songId, row.chartId).chart.level)
     }
     async function rebuild() {
-        const history = (await db.scoreHistory.toArray()).sort((a, b) => a.importedAt - b.importedAt || a.id! - b.id!)
+        const history = (await db.scoreHistory.toArray()).sort((a, b) => (a.playedAt ?? a.importedAt) - (b.playedAt ?? b.importedAt) || a.id! - b.id!)
         const best = new Map<string, ScoreRecord>()
-        const snapshots: { importedAt: number; basic: number; advanced: number }[] = []
+        const snapshots: { playedAt: number; basic: number; advanced: number }[] = []
         for (let i = 0; i < history.length; i++) {
             const entry = history[i]!
+            const playedAt = entry.playedAt ?? entry.importedAt
+            if (entry.playedAt === undefined) await db.scoreHistory.update(entry.id!, { playedAt })
             const value = rating(entry)
             if (entry.rating !== value) await db.scoreHistory.update(entry.id!, { rating: value })
             const next: ScoreRecord = { id: entry.id, historyId: entry.id!, songId: entry.songId, chartId: entry.chartId, score: entry.score, rating: value, source: entry.source, updatedAt: entry.updatedAt, ...validateAchievements(entry) }
             best.set(entry.chartId, mergeBest(best.get(entry.chartId), next))
-            if (history[i + 1]?.batchId === entry.batchId) continue
+            if ((history[i + 1]?.playedAt ?? history[i + 1]?.importedAt) === playedAt) continue
             const total = (mode: 'basic' | 'advanced') => getTotalRating([...best.values()]
                 .filter(record => library.getChart(record.songId, record.chartId).chart.mode === mode)
                 .map(record => record.rating))
-            snapshots.push({ importedAt: entry.importedAt, basic: total('basic'), advanced: total('advanced') })
+            snapshots.push({ playedAt, basic: total('basic'), advanced: total('advanced') })
         }
         await db.scores.clear()
         await db.ratingSnapshots.clear()
@@ -39,7 +42,7 @@ export function createScoreRepository(db: ScoreDatabase, library = songService, 
         const details = validateAchievements(input)
         const latest = await db.scoreHistory.where('[chartId+importedAt]').between([input.chartId, Dexie.minKey], [input.chartId, Dexie.maxKey]).reverse().first()
         if (latest && scoreIdentity(latest) === scoreIdentity(input)) return undefined
-        return db.scoreHistory.add({ songId: input.songId, chartId: input.chartId, score: input.score, ...details, rating: rating(input), source, importedAt: now, updatedAt: input.updatedAt ?? now, batchId })
+        return db.scoreHistory.add({ songId: input.songId, chartId: input.chartId, score: input.score, ...details, rating: rating(input), source, importedAt: now, playedAt: source === 'nso_ocr' ? input.updatedAt : now, updatedAt: input.updatedAt ?? now, batchId })
     }
     async function excelPlan(rows: ImportedScore[]) {
         const chosen = selectExcelScores(rows)
@@ -67,8 +70,8 @@ export function createScoreRepository(db: ScoreDatabase, library = songService, 
             })
         },
         list: () => db.scores.orderBy('updatedAt').reverse().toArray(),
-        history: () => db.scoreHistory.orderBy('importedAt').reverse().toArray(),
-        snapshots: () => db.ratingSnapshots.orderBy('importedAt').toArray(),
+        history: () => db.scoreHistory.orderBy('playedAt').reverse().toArray(),
+        snapshots: () => db.ratingSnapshots.orderBy('playedAt').toArray(),
         async previewImport(rows: ImportedScore[]) { return db.transaction('r', tables, async () => (await excelPlan(rows)).summary) },
         async importScores(rows: ImportedScore[]) {
             return db.transaction('rw', tables, async () => {
@@ -110,21 +113,48 @@ export function createScoreRepository(db: ScoreDatabase, library = songService, 
                 if (score < record.score && !allowLower) throw new Error(t('errors.lowerUnconfirmed'))
                 const details = validateAchievements(achievements ?? record)
                 if (scoreIdentity({ ...record, ...details, score }) === scoreIdentity(record)) return
-                await db.scoreHistory.update(record.historyId, { score, ...details, updatedAt: Date.now(), correctedAt: Date.now() })
+                const onlyChain = record.score === score && record.fc === details.fc && record.ap === details.ap
+                await db.scoreHistory.update(record.historyId, { score, ...details, updatedAt: record.source === 'nso_ocr' || onlyChain ? record.updatedAt : Date.now(), correctedAt: Date.now() })
+                await db.chartProtections.put({ chartId: record.chartId, reason: 'edit', updatedAt: Date.now() })
                 await rebuild()
             })
         },
         async removeHistory(id: number) {
             await db.transaction('rw', tables, async () => {
+                const record = await db.scoreHistory.get(id)
+                if (record) await db.chartProtections.put({ chartId: record.chartId, reason: 'delete', updatedAt: Date.now() })
                 await db.scoreHistory.delete(id)
                 await rebuild()
             })
         },
         async clear() {
             await db.transaction('rw', tables, async () => {
+                const state = await db.albumState.get('album') ?? initialAlbumState()
+                await db.albumState.put({ ...state, datasetEpoch: state.datasetEpoch + 1, autoImport: false })
                 await db.scores.clear()
                 await db.scoreHistory.clear()
                 await db.ratingSnapshots.clear()
+            })
+        },
+        async commitAlbum(accountId: string, mediaId: string, candidate: ImportedScore, reviewedProtectionAt: number) {
+            return db.transaction('rw', tables, async () => {
+                const item = await db.albumItems.get([accountId, mediaId])
+                const state = await db.albumState.get('album')
+                if (!item || !state || state.accountId !== accountId || item.datasetEpoch !== state.datasetEpoch || item.bindingGeneration !== state.bindingGeneration) throw new Error(t('album.stale'))
+                if (item.stage === 'imported' || item.stage === 'skipped') return { recorded: false, updated: false }
+                if (item.stage !== 'needs_review' && item.stage !== 'pending_commit') throw new Error(t('album.stale'))
+                const protection = await db.chartProtections.get(candidate.chartId)
+                if ((protection?.updatedAt ?? 0) !== reviewedProtectionAt) throw new Error(t('album.protected'))
+                const time = candidate.updatedAt
+                if (!Number.isSafeInteger(time) || time! < Date.UTC(2017, 0, 1) || time! > Date.now() + 86400000) throw new Error(t('album.invalidTime'))
+                const details = validateAchievements(candidate)
+                rating(candidate)
+                const old = await db.scores.where('chartId').equals(candidate.chartId).first()
+                const id = await append({ ...candidate, ...details }, 'nso_ocr', crypto.randomUUID(), Date.now())
+                if (id !== undefined) await rebuild()
+                await db.albumItems.put({ ...item, candidate: { ...candidate, ...details }, capturedAt: time!, stage: id === undefined ? 'skipped' : 'imported', historyId: id, reason: undefined })
+                if (id !== undefined) await db.albumState.put({ ...state, lastImportedAt: Date.now() })
+                return { recorded: id !== undefined, updated: id !== undefined && (!old || candidate.score > old.score || (candidate.score === old.score && old.maxChain === undefined && details.maxChain !== undefined)) }
             })
         },
     }
