@@ -1,6 +1,6 @@
 # Groove Archive · FP 成绩管理三期设计文档
 
-> 版本：v3.2 草案
+> 版本：v3.3 草案
 >
 > 调研日期：2026-09-29；修订日期：2026-09-30、2026-10-13
 >
@@ -10,17 +10,19 @@
 
 ## 1. 结论与实施建议
 
-v3.2 按用户 2026-10-13 的决定修订三项：
+v3.2 按用户 2026-10-13 的决定确定三项架构选择：
 
 1. 普通网页直连 Nintendo 接口已用正式站点 Origin 复测不可行（第 2.5 节），改为同源 Cloudflare Worker 无状态中转，撤销 v3.1 中“不新增后端相册代理”的约束
 2. 实施顺序改为先做 Nintendo 相册同步，站内账号与云端数据库后续再加；未登录时绑定的 Nintendo 账号由加密 Cookie 保存，成绩仍写入本地库
 3. 未登录且未绑定时保持纯前端，GitHub Pages 部署和不愿登录、绑定的用户照常使用现有功能
 
+v3.3 根据同日审阅确认：FC/AP 未知统一为 false；非重复的低分截图保留本地历史，但不降低最佳成绩；相册截图的成绩、历史排序与趋势统一按拍摄时间；目前不做完整备份迁移。3A 即加入本地旧任务拦截，失败与拒绝仅采用第 7.5 节的简单恢复规则，当前优先验证真实账号取图、OCR、预览确认入库能否跑通。
+
 执行链路为：**用户访问页面 → 前端请求同源 `/api` → Worker 用加密 Cookie 中的凭据读取相册，按 applicationId 筛选 GCFP 截图 → 前端取得原图（截图 CDN 允许跨域时直连，否则经 Worker 中转）→ 前端 OCR → 写入本地成绩库**。
 
 | 使用形态 | 部署 | 成绩数据 | 网络 |
 | --- | --- | --- | --- |
-| 纯前端 | GitHub Pages；Cloudflare 部署上未绑定的用户 | 本地 IndexedDB | 不请求 `/api` |
+| 纯前端 | GitHub Pages；Cloudflare 部署上未绑定的用户 | 本地 IndexedDB | 日常浏览不请求 `/api`；Cloudflare 用户主动进入相册设置时可查询绑定状态 |
 | 绑定 Nintendo、未登录 | 仅 Cloudflare 部署 | 本地 IndexedDB | 相册读取经 Worker，成绩不上传 |
 | 站内账号（3C） | 仅 Cloudflare 部署 | 账号本地库与云端 | 成绩同步经后端 |
 
@@ -43,9 +45,7 @@ nxapi 作为认证及协议参考，NSO-Album-Sync 作为授权、下载与去�
 | 事项 | 当前状态 |
 | --- | --- |
 | GitHub Pages 版的 Nintendo 相册入口 | 完全隐藏，或显示说明并引导到 Cloudflare 站点，待定 |
-| 完整备份导出 / 导入 | 两个部署数据不互通，Excel 不带历史；是否补充包含历史与相册处理记录的备份，待定 |
 | 会话 Cookie 有效期 | 建议 30～90 天，PoC 后确定 |
-| 趋势图时间口径 | 相册导入以拍摄时间作为成绩更新时间；趋势仍按录入时间，首次绑定时旧截图集中在当天；是否改用拍摄时间，待定 |
 | 截图下载方式 | 由 PoC 的 CDN 跨域结果决定前端直连或 Worker 中转 |
 | 3C 后端选型 | Workers + D1，或 v3.1 的 Node.js + SQLite，3C 开工前评估 |
 
@@ -162,7 +162,9 @@ nxapi 声明 `AGPL-3.0-or-later`，NSO-Album-Sync 为 MIT。正式采用前确�
 | `src/composables/useOcrImport.ts` | 页面任务取消、前台入库 | 复用识别能力；相册队列由应用级前端控制器维护 |
 | `src/core/rating/`、`src/core/song/` | 本地规则和稳定曲库 ID | 3C 前后端共用版本；服务端校验并重算派生字段 |
 
-继续遵守：Score 为 0～1,050,000 整数；FC / AP / Max Chain 可未知；AP 成立时 FC 成立；每用户每谱面一条当前成绩；BASIC / ADVANCED 独立 B30。只改 Max Chain 不改变业务 `updatedAt`，但必须触发同步版本变化。
+继续遵守：Score 为 0～1,050,000 整数；FC/AP 未知或缺失统一为 false，不引入三态；Max Chain 可未知；AP 成立时 FC 成立；每用户每谱面一条当前成绩；BASIC / ADVANCED 独立 B30。同分自动合并仅补未知的 Max Chain，不自动改写 FC/AP。
+
+三期需调整现有时间处理：相册截图按第 7.4 节使用拍摄时间；只改 Max Chain 不改变业务 `updatedAt`，3C 中仍须触发同步版本变化。当前 `edit()` 会更新 `updatedAt`，历史与趋势按 `importedAt` 排序，不能视为上述规则已经实现。
 
 3C 起，现有 `rating` 为派生值，不能信任客户端上传结果。现有数字 `id` 仅用于设备内部，不作为跨设备主键。后端验证字段合法性、归属和合并规则，不证明前端识别结果来自真实 Nintendo 截图；三期是个人成绩管理，来源标签不承担排行榜认证。
 
@@ -219,15 +221,15 @@ flowchart LR
 
 前端放在 GitHub Pages、Worker 放在 workers.dev 的跨站组合不可用：HttpOnly Cookie 会成为第三方 Cookie，Safari、Firefox 默认拦截。Nintendo 相册功能只在 Cloudflare 部署提供。
 
-### 5.3 未绑定时不请求 API
+### 5.3 未绑定时日常浏览不请求 API
 
 HttpOnly Cookie 前端读不到，前端无法自行判断是否已绑定。localStorage 保存不含凭据的“已绑定”标记：有标记才请求绑定状态与相册；接口返回未绑定或 Cookie 已过期时清除标记。Cloudflare 部署上从未绑定的用户不访问 Worker，行为与 GitHub Pages 版一致。
 
-用户打开设置页的 Nintendo 相册区域时查询一次绑定状态，用于在标记丢失时恢复。
+用户主动打开设置页的 Nintendo 相册区域时查询一次绑定状态，用于在标记丢失时恢复。这是未绑定用户不请求 API 的明确例外；仅访问普通设置页面而未进入相册区域不查询。
 
 ### 5.4 两个部署的数据不互通
 
-GitHub Pages 与 Cloudflare 部署是不同 Origin，IndexedDB 各自独立。用户从 GitHub Pages 转到 Cloudflare 部署只能经 Excel 迁移，而 Excel 只交换当前最佳成绩，历史与 Rating 趋势会丢失（二期第 9 节）。是否补充完整备份，以及 GitHub Pages 版的入口形式，见第 1.1 节待定事项。
+GitHub Pages 与 Cloudflare 部署是不同 Origin，IndexedDB 各自独立。用户从 GitHub Pages 转到 Cloudflare 部署只能经 Excel 迁移，而 Excel 只交换当前最佳成绩，历史与 Rating 趋势不会迁入（二期第 9 节），原站点数据仍保留。目前不做完整备份导出、导入或迁移，迁移说明明确此限制。GitHub Pages 版的入口形式见第 1.1 节待定事项。
 
 ### 5.5 降级
 
@@ -240,26 +242,29 @@ GitHub Pages 与 Cloudflare 部署是不同 Origin，IndexedDB 各自独立。�
 两个参考项目使用原生应用认证流程：Nintendo 客户端为 `71b963c1b7b6d119`，回调为 `npf71b963c1b7b6d119://auth`，结果是 session_token_code，配合 state 与 S256 challenge。不能直接替换为本站 HTTPS callback。[授权实现](https://github.com/Dycool/NSO-Album-Sync/blob/4fc49154aa984b85e0c5d3f67a977021a81274b7/src/nintendo_auth.cpp)
 
 1. 用户阅读并同意第三方处理说明（第 6.4 节）与封禁风险说明
-2. Worker 生成 state 与 PKCE verifier，加密写入 10 分钟有效、一次使用的流程 Cookie，返回授权链接
+2. Worker 生成 state 与 PKCE verifier，加密写入 10 分钟有效的流程 Cookie，返回授权链接
 3. 用户在 Nintendo 官网登录，按实测可用的方式复制原生回调链接并粘贴提交
 4. Worker 校验 scheme、host、state 与期限，交换 session token，读取 Nintendo 账号 ID 与昵称
-5. Worker 写入会话 Cookie 并清除流程 Cookie；前端写入已绑定标记
+5. Worker 写入带新 bindingId 的会话 Cookie，清除流程 Cookie 与旧 Coral 缓存；前端写入已绑定标记
 6. 前端发起第一次相册读取；空相册是合法结果
 
 登录回调能否复制，以及手机是否被官方 App 接管，仍须实测；不要求用户上传其他软件的凭据文件。
+
+流程完成后清除 Cookie 不等于服务端具备一次性消费记录。无状态方案依赖上游拒绝重复兑换 session_token_code，PoC 必须实测重放及并发兑换，不能仅凭清 Cookie 宣称防重放已通过；不满足时先调整方案再开放绑定。
 
 ### 6.2 加密 Cookie
 
 | Cookie | 内容 | 有效期 |
 | --- | --- | --- |
-| 会话 | session token、Nintendo 账号 ID、昵称、keyVersion、签发与过期时间 | 建议 30～90 天，待定 |
-| Coral 缓存 | Coral 短期 token 与到期时间 | 按上游 expiresIn |
-| 绑定流程 | state、PKCE verifier、过期时间 | 10 分钟，一次使用 |
+| 会话 | session token、Nintendo 账号 ID、bindingId、昵称、keyVersion、签发与过期时间 | 建议 30～90 天，待定 |
+| Coral 缓存 | Nintendo 账号 ID、bindingId、Coral 短期 token 与到期时间 | 按上游 expiresIn |
+| 绑定流程 | state、PKCE verifier、过期时间 | 10 分钟，完成后清除；重放边界见第 6.1 节 |
 
 - 全部使用 `__Host-` 前缀与 `HttpOnly; Secure; SameSite=Strict; Path=/`，不设 Domain
 - 内容使用 AES-GCM 加密，主密钥来自 Worker secret，按 keyVersion 轮换；Cookie 名称作为附加认证数据，不同 Cookie 的密文不能互换
 - 单个 Cookie 按 4 KB 上限设计，会话与 Coral 缓存分开保存；PoC 记录实际体积
 - Coral 缓存避免每次检查都重新执行账号 token、f 生成和 Coral 登录，减少耗时与第三方额度消耗
+- 使用 Coral 缓存前必须核对 Nintendo 账号 ID 与 bindingId 均匹配当前会话；不匹配则丢弃缓存，不能跨账号或跨次绑定复用
 
 无状态的代价是服务端无法吊销已签发的 Cookie。解绑只清除当前浏览器的 Cookie；Cookie 被复制时在过期或密钥轮换前一直可用，因此会话 Cookie 必须带过期时间。轮换主密钥会使全部绑定失效，用户需重新绑定。
 
@@ -290,6 +295,7 @@ GitHub Pages 与 Cloudflare 部署是不同 Origin，IndexedDB 各自独立。�
 - session token 失效时返回 `reauth_required`，前端停止读取并提示重新绑定
 - 未登录阶段状态为 `unbound / active / paused / reauth_required / error`；`paused` 由前端本地保存，表示关闭访问时自动更新
 - 解绑清除会话、Coral 缓存 Cookie 与本地标记，取消当前批次并释放图片；已导入成绩保留，相册处理记录保留，避免重新绑定同一账号后重复导入
+- 绑定、解绑与可能续期的相册请求共用跨标签页凭据操作锁；解绑或换绑先阻止新请求并等待已发出的凭据请求结束，再执行清 Cookie 或新绑定。不能只依赖 AbortSignal，因为忽略旧响应的业务结果不能撤销浏览器处理的 Set-Cookie。相册请求只更新 Coral 缓存，不重写长期会话 Cookie；旧 bindingId 的缓存不能恢复绑定或用于新账号
 - 3C 登录时，Worker 读取会话 Cookie，将认证数据加密写入账号绑定表后清除 Cookie；会话 Cookie 保留 Nintendo 账号 ID 供迁移使用
 
 ## 7. 访问触发、取图与 OCR
@@ -341,16 +347,34 @@ Worker 的目标是让页面可继续操作，不是保证浏览器后台常驻�
 - **谱面保护**：人工降分、纠正完成标记或删除历史后，为该谱面设置 `autoImportBlocked`，后续自动候选进入待确认，用户可明确解除保护。编辑后的不同图片可能绕过 hash，所以保护作用于谱面，不只作用于文件。保护记录放在独立表，因为 `scores` 每次重建都会整表清空重写
 - **拒绝记录**：已处理或用户拒绝的 mediaId 持续记录；hash 命中原人工拒绝记录时仍进入待确认
 - **清空成绩**：`clear()` 不清相册处理记录、谱面保护与绑定，同时关闭访问时自动导入；用户重新开启时选择从当前可见列表建立基线，还是重新审核历史截图
-- **时间**：按拍摄时间从早到晚入库，拍摄时间作为成绩 `updatedAt`；`importedAt` 维持录入时刻语义。趋势图口径见第 1.1 节
+- **低分与同分**：非重复低分截图保留本地历史，但不降低最佳成绩；同分只补最佳成绩中未知的 Max Chain，不把 false 当成可补的未知 FC/AP。进度分别统计“新增历史”和“更新最佳成绩”，不能把低分已记录误报为未入库
+- **时间**：相册截图以 `capturedAt` 作为业务时间，统一用于成绩 `updatedAt`、历史展示与排序、Rating 趋势。历史新增 `playedAt` 保存该时间，`importedAt` 仅保留实际入库时刻供处理记录使用，不作为截图成绩日期。既有历史及无法取得可靠拍摄时间的手动导入以原 `importedAt` 作为 `playedAt`，不猜测文件拍摄时间；相册候选缺失或含非法 `capturedAt` 时进入待确认，补正时间后才能入库
 - **来源**：`source` 增加 `nso_ocr`，类型定义、Excel 导出与历史展示同步支持
 
 清除站点数据后，成绩、处理记录与保护一起丢失，下次访问按当前可见截图重新导入；设置页说明该取舍。
+
+历史重建与趋势按 `playedAt` 排序，同一时刻以本地历史 ID 稳定排序；旧截图晚上传时重新计算后续趋势，不追加到今天，也不按同次导入的 batchId 把不同拍摄时间合为一个点。对相册历史的人工纠错保留拍摄时间，另记 `correctedAt`；不改写为纠错时刻。
+
+3A 起在 IndexedDB 持久化本地 `datasetEpoch` 与 `bindingGeneration`。创建任务或候选时记录两者及 Nintendo 账号 ID；清空成绩递增 datasetEpoch，解绑、换绑递增 bindingGeneration。最终写成绩与处理终态的同一事务中核对代次、当前账号和谱面保护，不匹配则取消旧任务，不能靠组件内 AbortSignal 保证安全。删除历史或人工纠错时同步设置谱面保护，使旧候选不能直接提交；重新审核须基于当前数据重新确认。跨标签页共用这些记录，3C 再扩展服务端校验。
 
 ### 7.5 候选判定与状态
 
 自动候选要求白名单匹配、支持的完整页面、唯一谱面、合法分数和完成标记。非唯一曲名、疑似数字误读、未知谱面、关键字段冲突或谱面保护进入 needs_review。3A 先预览确认，真实样本验证后 3B 开放访问时自动写入。MISSION CLEAR / MISSON CLEAR、游玩中和未游玩占位继续跳过。
 
-本地状态为 `discovered → downloading → recognizing → pending_commit → imported / skipped / needs_review`，另有 retry_wait、failed、expired、canceled。仅媒体已发现、已下载或 OCR 已结束不能标记 imported，必须在成绩事务提交成功后标记。
+3A 所有有效候选先进入 needs_review。3B 初始仅允许规范化后精确匹配唯一曲名、谱面一致且关键字段无冲突的结果自动入库；曲名模糊匹配、数字 O/0 或 I/1 等修正、缺失或无法确认的完成标记均待确认。FC/AP 最终按 false 默认值保存不等于识别证据充分。候选保留原始字段文本、规范化结果和待确认原因即可，首版不引入复杂置信度评分。
+
+本地状态为 `discovered → downloading → recognizing → needs_review / pending_commit`；确认或符合 3B 自动规则后提交，得到 imported / skipped，另有 retry_wait、failed、expired、canceled、rejected。仅媒体已发现、已下载或 OCR 已结束不能标记 imported，必须在成绩事务提交成功后标记；写入低分历史也算 imported。
+
+首版恢复仅采用以下规则，不做复杂的自动重处理策略：
+
+| 状态 / 场景 | 恢复规则 |
+| --- | --- |
+| retry_wait | 网络、5xx 或 OCR 超时自动重试最多 2 次，分别至少等待 1、5 分钟；仅在页面可见且再次触发时执行，429 以 Retry-After 为下限，达到上限转 failed |
+| failed | 显示阶段和原因，用户点“重试”后重置次数；有效的已识别候选优先重试提交，否则重新取图识别 |
+| needs_review / rejected | 待确认由用户修改、确认或拒绝；拒绝记为 rejected，同一 mediaId 不自动重试，仅明确重新审核后恢复；新 mediaId 的 hash 命中拒绝记录仍进入待确认 |
+| expired | 未识别媒体已不可见时停止下载重试；已保存候选可显示原图不可用并供手动审核，不因图片消失丢弃候选 |
+| canceled / 页面中断 | 显式取消不自动恢复，可手动重试；刷新或关闭留下的未完成任务下次访问恢复，先检查代次，过期代次不得复用 |
+| imported / skipped | 自动扫描不重复处理；识别版本更新不自动翻查终态，必要时由用户明确重新审核 |
 
 3C 起提交携带 mutationId、mediaId、hash、候选版本、epoch 和 generation，服务端在同一事务内记录回执、合并成绩和更新媒体终态；跨设备处理租约在 3C 引入。不能因前端标记“已校验”跳过服务端校验。
 
@@ -396,10 +420,12 @@ Worker 的目标是让页面可继续操作，不是保证浏览器后台常驻�
 
 | 本地表 | 关键字段 |
 | --- | --- |
-| `albumItems` | 主键 Nintendo 账号 ID + mediaId；applicationId、capturedAt、contentHash、阶段、重试时间、识别版本、候选、原因或错误码、终态 |
+| `albumItems` | 主键 Nintendo 账号 ID + mediaId；applicationId、capturedAt、contentHash、datasetEpoch、bindingGeneration、阶段、重试次数与时间、识别版本、候选、原因或错误码、终态 |
 | `chartProtections` | chartId 唯一；autoImportBlocked、设置原因与时间 |
 
-相册设置（访问时自动更新开关、暂停状态、最近成功检查时间、冷却截止）单独保存，不随清空成绩删除。截图只在浏览器内存中处理，不持久化到 IndexedDB。`capturedAt` 是上游拍摄时间；`lastCheckedAt` 与 `lastImportedAt` 分开，后者仅在成绩事务提交成功后更新。
+本地 metadata 扩展相册设置与任务代次记录（当前 Nintendo 账号 ID、datasetEpoch、bindingGeneration、访问时自动更新开关、暂停状态、最近成功检查时间、冷却截止），不随清空成绩删除；清空时递增代次并关闭自动更新。截图只在浏览器内存中处理，不持久化到 IndexedDB。`capturedAt` 是上游拍摄时间；`lastCheckedAt` 与 `lastImportedAt` 分开，后者仅在成绩事务提交成功后更新，表示最近实际入库时刻。
+
+同次 version(2) 迁移为 `scoreHistory` 增加 `playedAt` 及排序索引，既有记录回填 importedAt；Rating 快照以 playedAt 作为横轴并重建，历史查询同步调整。处理耗时、重试和同步版本时间仍使用实际发生时刻，与截图业务时间区分。
 
 首版每个浏览器只绑定一个 Nintendo Account。重新绑定同一 Nintendo Account 复用处理记录。
 
@@ -411,7 +437,7 @@ Worker 的目标是让页面可继续操作，不是保证浏览器后台常驻�
 | --- | --- |
 | `users` | id、规范化唯一邮箱、createdAt、datasetEpoch、nextChangeSeq |
 | `login_codes / sessions` | 验证码/会话摘要、过期时间、失败计数、所属 userId |
-| `scores` | userId + chartId 唯一；score、nullable fc/ap/maxChain、source、业务时间、revision、deletedAt、autoImportBlocked |
+| `scores` | userId + chartId 唯一；score、boolean fc/ap（默认 false）、nullable maxChain、source、业务时间、revision、deletedAt、autoImportBlocked |
 | `score_changes` | 用户内单调 seq、chartId、规范结果、revision、epoch、服务端变更时间 |
 | `mutation_receipts` | userId + mutationId 唯一、请求摘要和结果；相同 ID 不同载荷拒绝 |
 | `nintendo_bindings` | userId、NintendoAccountId、显示名、状态、同意版本、从会话 Cookie 迁入的加密认证数据、keyVersion、generation |
@@ -420,7 +446,7 @@ Worker 的目标是让页面可继续操作，不是保证浏览器后台常驻�
 
 登录后本地 `albumItems` 与 `chartProtections` 随游客迁移上报合并。后端不保存 contentUri、thumbnailUri、图片字节或图片文件引用；`album_items` 仅用于个人导入协调和去重。
 
-`source` 扩充 `nso_ocr`。JSON 用 `null` 表示未知，不能将 false、0 当空值。编辑中字段缺失表示不修改，显式 null 表示清空。
+`source` 扩充 `nso_ocr`。FC/AP 只存布尔值，完整导入中未知或缺失统一为 false；Max Chain 在 JSON 中用 `null` 表示未知，不能将 false、0 当空值。局部编辑中字段缺失表示不修改，FC/AP 用 false 清除标记，Max Chain 用显式 null 清空。
 
 首版每站内账号只绑定一个 Nintendo Account；同一个 Nintendo Account 不同时绑定多个站内账号。
 
@@ -440,7 +466,7 @@ Worker 的目标是让页面可继续操作，不是保证浏览器后台常驻�
 
 | 操作                                | 规则                                                                       |
 | ----------------------------------- | -------------------------------------------------------------------------- |
-| 本地 OCR、Excel、游客迁移、相册 OCR | 高分更新、低分跳过；同分只补未知信息；不把低分 FC/AP 套在高分上            |
+| 本地 OCR、Excel、游客迁移、相册 OCR | 最佳成绩高分更新、低分不覆盖；同分只补未知 Max Chain，不自动改写 FC/AP；本地相册非重复低分历史按第 7.4 节保留 |
 | 手动新增已有谱面                    | 延续当前提示，引导编辑；多设备并发新增返回冲突                             |
 | 手动编辑，包括降分和清空字段        | 必须匹配 `baseRevision`，降分还需明确确认；冲突时显示当前云端值和本机提案  |
 | 删除                                | 匹配 revision 后生成墓碑，不能物理删除后让离线旧设备重新插回               |
@@ -505,14 +531,14 @@ Worker 的目标是让页面可继续操作，不是保证浏览器后台常驻�
 | 情况 | 行为 |
 | --- | --- |
 | 页面刷新、关闭或后台挂起 | 保存处理记录与候选，不承诺继续执行；下次访问恢复 |
-| 网络超时或 5xx | 保存退避时间，建议 1、5、15、60 分钟加抖动；只有可见页面和新触发才重试 |
+| 网络超时或 5xx | 按第 7.5 节保存重试次数与退避时间，最多自动重试 2 次；只有可见页面和新触发才重试，相册列表请求同样适用 |
 | 上游 429 | 尊重 Retry-After，冷却跨标签页共享 |
 | Coral 过期 | Worker 续期一次；session token 失效提示重新绑定 |
 | Worker 不可用或 Cookie 失效 | 显示相册阶段错误，本地功能不受影响 |
-| OCR 超时 | 释放图片/模型，有限重试；不重复成功项 |
+| OCR 超时 | 释放图片/模型，按第 7.5 节有限重试；不重复成功项 |
 | 上游结构变化或 CDN 跨域失败 | 显示具体阶段失败，不当作空相册 |
 | 多标签页 | `navigator.locks` 保证单标签页扫描；未登录阶段不做跨设备协调 |
-| 解绑或清空 | 取消本地工作，丢弃晚到回调 |
+| 解绑或清空 | 取消本地工作，事务校验本地代次；凭据请求按第 6.5 节协调，防止晚到响应影响解绑或新绑定 |
 
 3C 引入服务端租约、epoch/generation 与回执后，再处理跨设备重复处理和回执丢失。
 
@@ -571,7 +597,7 @@ PoC 可先用 Node 脚本以真实账号确认 applicationId 与 CDN 响应头�
 
 | 阶段 | 实现内容 | 完成标准 |
 | --- | --- | --- |
-| 3A | 构建开关、同源 Worker、绑定、加密 Cookie、相册读取与取图、前端 OCR、预览确认 | 真实浏览器完整链路通过；GitHub Pages 构建与未绑定用户无 `/api` 请求 |
+| 3A | 构建开关、同源 Worker、绑定、加密 Cookie、相册读取与取图、前端 OCR、预览确认、本地代次与保护、拍摄时间入库 | 真实浏览器完整链路通过；GitHub Pages 无 `/api` 请求，Cloudflare 未绑定用户日常浏览无 `/api` 请求 |
 | 3B | 访问时触发、模型复用、严格自动入库、谱面保护、待确认、恢复 | 打开页面自动更新；关页后停止，下次恢复不重复 |
 | 3C | 账号登录、游客迁移、增量同步、冲突、绑定迁入账号 | 两设备/离线验证，删除清空不复活 |
 
@@ -582,7 +608,7 @@ PoC 可先用 Node 脚本以真实账号确认 applicationId 与 CDN 响应头�
 纯前端：
 
 - GitHub Pages 构建产物不含 Nintendo 模块，运行时无 `/api` 请求
-- Cloudflare 部署上从未绑定的用户无 `/api` 请求；本地成绩、Excel、B30、手动 OCR 与 GitHub Pages 版一致
+- Cloudflare 部署上从未绑定的用户日常浏览无 `/api` 请求，主动进入相册设置时允许查询绑定状态；本地成绩、Excel、B30、手动 OCR 与 GitHub Pages 版一致
 - Worker 不可用、Cookie 过期时本地功能完整可用
 
 凭据与接口：
@@ -598,7 +624,10 @@ PoC 可先用 Node 脚本以真实账号确认 applicationId 与 CDN 响应头�
 - 页面内导航不重复扫描且批次继续；页面重新可见遵守冷却
 - 多标签页同时打开只有一个在扫描；连续点击立即更新不重复处理
 - 重复 mediaId、同图重传、旧图晚上传和乱序正确去重；重复访问不新增历史
+- 非重复低分截图新增历史但不降低最佳成绩；FC/AP 未知保存为 false，同分自动合并只补未知 Max Chain
+- 相册截图的成绩日期、历史排序和趋势使用拍摄时间；旧图晚上传重算趋势，不集中到导入当天
 - 人工纠错后的旧图不再次覆盖；清空成绩后旧截图不重新导入
+- 3A 即验证跨标签页清空、解绑和换绑后旧任务或候选不能提交；旧 Coral 缓存不能用于新绑定
 - 非 GCFP、视频、MISSION CLEAR、游玩中和未游玩占位跳过
 - CDN 跨域失败、空相册、Cookie 失效、URL 过期、超大图和 OCR 错误可区分
 - 刷新/关闭/挂起在下载、OCR、入库各阶段均能下次恢复
@@ -613,6 +642,5 @@ PoC 可先用 Node 脚本以真实账号确认 applicationId 与 CDN 响应头�
 - 删除/清空后旧设备、旧 epoch、旧候选和旧批次不能恢复成绩
 - 切换账号时旧回调和 outbox 不写入新账号；未登录时的绑定迁入账号后会话 Cookie 被清除
 - 退出/解绑取消前端批次，旧 generation 的提交被拒绝
-- 备份恢复后成绩可用
 
 2026-10-13 修订仅涉及设计和 README 入口描述，未实现 Worker、未绑定真实账号、未执行部署。后续以 PoC 实测补充本文。
