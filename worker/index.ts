@@ -74,7 +74,7 @@ export default {
             if (!env.API_LIMIT) throw new ApiError('not_configured', 503)
             if (!(await env.API_LIMIT.limit({ key: `ip:${request.headers.get('cf-connecting-ip') || 'local'}` })).success) throw new ApiError('rate_limited', 429, 60)
             const session = await readCookie<Session>(request, env, SESSION)
-            if (route === 'GET /api/nintendo/binding') return reply({ configured: configured(env), status: session ? 'active' : 'unbound', ...(session ? { accountId: session.accountId, nickname: session.nickname, bindingId: session.bindingId } : {}) })
+            if (route === 'GET /api/nintendo/binding') return reply({ configured: configured(env), status: session ? 'active' : 'unbound', ...(session ? { accountId: session.accountId, nickname: session.nickname, avatarUrl: session.avatarUrl, bindingId: session.bindingId } : {}) })
             if (!configured(env)) throw new ApiError('not_configured', 503)
             if (route === 'POST /api/nintendo/auth/start') {
                 const body = await jsonBody(request)
@@ -91,7 +91,7 @@ export default {
                 const bound = await completeAuth(body.callback, flow)
                 await setCookie(headers, env, SESSION, bound, 30 * 86400)
                 clearCookie(headers, FLOW); clearCookie(headers, CORAL)
-                return reply({ status: 'active', configured: true, accountId: bound.accountId, nickname: bound.nickname, bindingId: bound.bindingId })
+                return reply({ status: 'active', configured: true, accountId: bound.accountId, nickname: bound.nickname, avatarUrl: bound.avatarUrl, bindingId: bound.bindingId })
             }
             if (!session) throw new ApiError('reauth_required', 401)
             if (!(await env.API_LIMIT.limit({ key: `account:${session.accountId}` })).success) throw new ApiError('rate_limited', 429, 60)
@@ -110,7 +110,11 @@ export default {
                     selected.push({ mediaId: item.id, applicationId: item.applicationId, capturedAt: Number.isFinite(item.capturedAt) ? item.capturedAt * 1000 : null, contentLength: item.contentLength, expiresAt, ...(env.MEDIA_DIRECT === '1' ? { contentUri: item.contentUri } : {}), ticket })
                 }
                 await setCookie(headers, env, CORAL, cache, Math.max(1, Math.floor((cache.expiresAt - Date.now()) / 1000)))
-                return reply({ accountId: session.accountId, bindingId: session.bindingId, media: selected })
+                const avatarUrl = cache.avatarUrl || session.avatarUrl
+                if (avatarUrl && avatarUrl !== session.avatarUrl) {
+                    await setCookie(headers, env, SESSION, { ...session, avatarUrl }, Math.max(1, Math.floor((session.expiresAt - Date.now()) / 1000)))
+                }
+                return reply({ accountId: session.accountId, bindingId: session.bindingId, avatarUrl, media: selected })
             }
             if (route === 'POST /api/album/content') {
                 const body = await jsonBody(request)

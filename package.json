@@ -18,6 +18,7 @@
         "dev:server": "wrangler dev --local",
         "check:worker": "tsc -p worker/tsconfig.json",
         "test:album": "node tests/album-browser.mjs",
+        "test:avatar": "node tests/avatar-browser.mjs",
         "test:album-worker": "tsx tests/album-worker.mjs",
         "test:album-runtime": "tsx tests/album-worker.mjs --runtime",
         "test:album-modes": "node tests/album-modes-browser.mjs"

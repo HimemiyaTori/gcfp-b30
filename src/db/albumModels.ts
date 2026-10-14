@@ -5,6 +5,7 @@ export interface AlbumState {
     accountId?: string
     bindingId?: string
     nickname?: string
+    avatarUrl?: string
     datasetEpoch: number
     bindingGeneration: number
     nextAllowedAt: number

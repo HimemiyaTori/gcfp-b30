@@ -42,8 +42,8 @@ async function localBinding(binding: Omit<Binding, 'configured'> & { configured?
         const changed = state.accountId !== binding.accountId || state.bindingId !== binding.bindingId
         // 换绑或解绑后清除旧账号的更新记录，新绑定可立即更新
         await database.albumState.put(changed
-            ? { ...state, accountId: binding.accountId, bindingId: binding.bindingId, nickname: binding.nickname, bindingGeneration: state.bindingGeneration + 1, nextAllowedAt: 0, lastCheckedAt: undefined, lastImportedAt: undefined, mediaCount: undefined }
-            : { ...state, nickname: binding.nickname })
+            ? { ...state, accountId: binding.accountId, bindingId: binding.bindingId, nickname: binding.nickname, avatarUrl: binding.avatarUrl, bindingGeneration: state.bindingGeneration + 1, nextAllowedAt: 0, lastCheckedAt: undefined, lastImportedAt: undefined, mediaCount: undefined }
+            : { ...state, nickname: binding.nickname, avatarUrl: binding.avatarUrl })
     })
     if (binding.configured !== undefined) album.configured = binding.configured
     marker(binding.status === 'active')
@@ -124,7 +124,7 @@ async function fetchMedia(manual: boolean, signal: AbortSignal) {
     await database.transaction('rw', database.albumState, async () => {
         const latest = await database.albumState.get('album')
         if (!latest || latest.datasetEpoch !== state.datasetEpoch || latest.bindingGeneration !== state.bindingGeneration) throw new Error(t('album.stale'))
-        await database.albumState.put({ ...latest, lastCheckedAt: Date.now(), mediaCount: result.media.length })
+        await database.albumState.put({ ...latest, avatarUrl: result.avatarUrl ?? latest.avatarUrl, lastCheckedAt: Date.now(), mediaCount: result.media.length })
     })
     return { result, state }
 }

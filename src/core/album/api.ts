@@ -1,7 +1,7 @@
 import { i18n, t } from '../../i18n'
-export interface Binding { status: 'active' | 'unbound'; configured: boolean; accountId?: string; bindingId?: string; nickname?: string }
+export interface Binding { status: 'active' | 'unbound'; configured: boolean; accountId?: string; bindingId?: string; nickname?: string; avatarUrl?: string }
 export interface AlbumMedia { mediaId: string; applicationId: string; capturedAt: number | null; contentLength: number; expiresAt: number; contentUri?: string; ticket: string }
-export interface MediaResponse { accountId: string; bindingId: string; media: AlbumMedia[] }
+export interface MediaResponse { accountId: string; bindingId: string; avatarUrl?: string; media: AlbumMedia[] }
 export class AlbumError extends Error {
     constructor(public code: string, public retryAt = 0) { super(i18n.global.te(`album.errors.${code}`) ? t(`album.errors.${code}`) : t('album.apiError', { code })) }
 }

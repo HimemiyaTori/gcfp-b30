@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { computed } from 'vue'
+import type { AlbumState } from '../../db/albumModels'
+import AccountAvatar from '../common/AccountAvatar.vue'
 import DisplayControls from './DisplayControls.vue'
+const props = defineProps<{ account?: Pick<AlbumState, 'accountId' | 'nickname' | 'avatarUrl'> }>()
 const { t } = useI18n()
+const name = computed(() => props.account?.accountId ? props.account.nickname || t('account.nintendo') : '')
+const initial = computed(() => name.value ? Array.from(name.value)[0]?.toUpperCase() ?? 'N' : 'FP')
 </script>
 
 <template>
@@ -24,7 +30,12 @@ const { t } = useI18n()
             <div class="topbar-mobile-controls">
                 <DisplayControls />
             </div>
-            <div class="avatar">FP</div>
+            <AccountAvatar
+                class="avatar"
+                :src="account?.accountId ? account.avatarUrl : undefined"
+                :fallback="initial"
+                :title="name || undefined"
+            />
         </div>
     </header>
 </template>

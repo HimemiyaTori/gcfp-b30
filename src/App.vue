@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Plus } from 'lucide-vue-next'
-import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppHeader from './components/app/AppHeader.vue'
 import AppNavigation from './components/app/AppNavigation.vue'
@@ -24,10 +24,15 @@ import B30Page from './pages/B30Page.vue'
 import HomePage from './pages/HomePage.vue'
 import ScoresPage from './pages/ScoresPage.vue'
 import SettingsPage from './pages/SettingsPage.vue'
+import type { AlbumState } from './db/albumModels'
+const nintendoAccount = shallowRef<{ state: AlbumState }>()
 const NintendoAccount = import.meta.env.VITE_SERVER === '1' ? defineAsyncComponent(() => import('./components/album/NintendoAccount.vue')) : undefined
 const AlbumProgress = import.meta.env.VITE_SERVER === '1' ? defineAsyncComponent(() => import('./components/album/AlbumProgress.vue')) : undefined
 const AlbumSync = import.meta.env.VITE_SERVER === '1' ? defineAsyncComponent(() => import('./components/album/AlbumSync.vue')) : undefined
-if (import.meta.env.VITE_SERVER === '1') void import('./core/album/controller').then(module => module.initializeAlbum())
+if (import.meta.env.VITE_SERVER === '1') void import('./core/album/controller').then(module => {
+    nintendoAccount.value = module.album
+    module.initializeAlbum()
+})
 const { t } = useI18n()
 const page = ref<Page>('home')
 const pageInfo = computed(() => navigation.find((item) => item.id === page.value)!)
@@ -100,7 +105,7 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
             :count="scores.length"
         />
         <div class="workspace">
-            <AppHeader />
+            <AppHeader :account="nintendoAccount?.state" />
             <main>
                 <div class="page-heading between">
                     <div>

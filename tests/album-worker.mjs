@@ -20,6 +20,7 @@ let badDecryptedResponse = false
 let badEncryptedResponse = false
 let invalidThirdPartyToken = false
 let rateLimitedMedia = false
+let noAccountAvatar = false
 let downloadMode = ''
 const json = (value) =>
     new Response(JSON.stringify(value), {
@@ -71,6 +72,7 @@ const mockFetch = async (url, init) => {
         return json({
             id: 'test-account-id',
             nickname: '测试账号',
+            iconUri: noAccountAvatar ? null : 'https://avatars.example.test/account.png',
             language: 'ja-JP',
         })
     if (address.endsWith('/znca/f')) {
@@ -127,6 +129,8 @@ const mockFetch = async (url, init) => {
         return encrypted({
             status: 0,
             result: {
+                naUser: { iconUri: noAccountAvatar ? null : 'https://avatars.example.test/updated.png' },
+                user: { imageUri: 'https://avatars.example.test/switch.png' },
                 webApiServerCredential: {
                     accessToken: 'test-coral',
                     expiresIn: 3600,
@@ -348,11 +352,16 @@ try {
         callback: `npf71b963c1b7b6d119://auth#state=${state}&session_token_code=test-code`,
     })
     assert.equal(linked.status, 200)
-    assert.equal((await linked.json()).accountId, 'test-account-id')
+    const binding = await linked.json()
+    assert.equal(binding.accountId, 'test-account-id')
+    assert.equal(binding.avatarUrl, 'https://avatars.example.test/account.png')
+    assert.equal((await (await api('/api/nintendo/binding')).json()).avatarUrl, binding.avatarUrl)
     assert.ok(![...jar.values()].join('').includes('test-session'))
     const listing = await api('/api/album/media', 'POST', {})
     assert.equal(listing.headers.get('cache-control'), 'no-store')
     const album = await listing.json()
+    assert.equal(album.avatarUrl, 'https://avatars.example.test/updated.png')
+    assert.equal((await (await api('/api/nintendo/binding')).json()).avatarUrl, album.avatarUrl)
     assert.equal(album.media.length, 1)
     assert.equal(album.media[0].capturedAt, 1780000000000)
     assert.equal(album.media[0].contentUri, undefined)
@@ -475,6 +484,7 @@ try {
     }
     // 远程代理场景下，仅 Client ID 的公开客户端也能完成绑定、读取相册及下载原图
     for (const optionalSecret of [undefined, '']) {
+        noAccountAvatar = optionalSecret === ''
         omitCombinedLogin = optionalSecret === ''
         encryptedContentType =
             optionalSecret === ''
@@ -501,6 +511,8 @@ try {
         const publicListing = await api('/api/album/media', 'POST', {})
         assert.equal(publicListing.status, 200)
         const publicAlbum = await publicListing.json()
+        assert.equal(publicAlbum.avatarUrl, noAccountAvatar ? 'https://avatars.example.test/switch.png' : 'https://avatars.example.test/updated.png')
+        assert.equal((await (await api('/api/nintendo/binding')).json()).avatarUrl, publicAlbum.avatarUrl)
         assert.equal(publicAlbum.media.length, 1)
         const publicImage = await api('/api/album/content', 'POST', {
             ticket: publicAlbum.media[0].ticket,
@@ -510,7 +522,7 @@ try {
         await api('/api/nintendo/binding', 'DELETE')
     }
     console.log(
-        `Album ${runtimeMode ? 'Workerd' : 'Node'} HTTP acceptance passed: encrypted JSON-labelled responses, separate login encryption, malformed payload diagnostics, token recovery, rate limits, confidential/public clients, remote proxy origins, filtered album, original image, expiry, invalid tickets, size limit and unlink`,
+        `Album ${runtimeMode ? 'Workerd' : 'Node'} HTTP acceptance passed: account avatar persistence and Switch icon fallback, encrypted JSON-labelled responses, separate login encryption, malformed payload diagnostics, token recovery, rate limits, confidential/public clients, remote proxy origins, filtered album, original image, expiry, invalid tickets, size limit and unlink`,
     )
 } finally {
     globalThis.fetch = realFetch

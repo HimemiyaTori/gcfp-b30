@@ -3,6 +3,7 @@ import { Check, CircleAlert, Gamepad2, Info, LoaderCircle, RefreshCw } from 'luc
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AnimatedProgress from '../common/AnimatedProgress.vue'
+import AccountAvatar from '../common/AccountAvatar.vue'
 import NintendoBindDialog from './NintendoBindDialog.vue'
 import { album, retryable, retryFailed, scan, unbind } from '../../core/album/controller'
 const emit = defineEmits<{ notify: [message: string, title?: string] }>()
@@ -78,7 +79,7 @@ async function confirmUnbind() {
         </div>
         <template v-else>
             <div class="account-intro">
-                <span class="account-avatar" aria-hidden="true">{{ initial }}</span>
+                <AccountAvatar class="account-avatar" :src="album.state.avatarUrl" :fallback="initial" />
                 <div class="account-copy">
                     <h3 class="row gap-2">
                         <span class="account-name">{{ name }}</span>

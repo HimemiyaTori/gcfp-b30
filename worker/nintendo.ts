@@ -11,6 +11,7 @@ export interface Session {
     token: string
     accountId: string
     nickname: string
+    avatarUrl?: string
     bindingId: string
 }
 export interface CoralCache {
@@ -18,6 +19,8 @@ export interface CoralCache {
     accountId: string
     bindingId: string
     expiresAt: number
+    // null 表示资料中没有可用头像，缺少字段的旧缓存需补取一次
+    avatarUrl?: string | null
 }
 interface AccountToken {
     access_token: string
@@ -27,6 +30,16 @@ interface AccountUser {
     id: string
     nickname: string
     language: string
+    iconUri?: string | null
+}
+function profileAvatar(...values: unknown[]) {
+    for (const value of values) {
+        if (typeof value !== 'string' || !value || value.length > 1024) continue
+        try {
+            const url = new URL(value)
+            if (url.protocol === 'https:' && !url.username && !url.password && !url.port && url.href.length <= 1024) return url.href
+        } catch {}
+    }
 }
 export interface Media {
     id: string
@@ -240,6 +253,7 @@ export async function completeAuth(
         token: result.session_token,
         accountId: profile.id,
         nickname: profile.nickname || '',
+        avatarUrl: profileAvatar(profile.iconUri),
         bindingId: crypto.randomUUID(),
     }
 }
@@ -419,6 +433,8 @@ export class Nintendo {
         }
         const result = await this.coral<{
             webApiServerCredential: { accessToken: string; expiresIn: number }
+            naUser?: { iconUri?: string | null }
+            user?: { imageUri?: string; image2Uri?: string }
         }>('/v4/Account/Login', loginData)
         const credential = result.webApiServerCredential
         if (
@@ -432,6 +448,7 @@ export class Nintendo {
             accountId: session.accountId,
             bindingId: session.bindingId,
             expiresAt: Date.now() + credential.expiresIn * 1000,
+            avatarUrl: profileAvatar(result.naUser?.iconUri, profile.iconUri, result.user?.imageUri, result.user?.image2Uri, session.avatarUrl) ?? null,
         }
     }
     async media(session: Session, cached?: CoralCache) {
@@ -439,6 +456,7 @@ export class Nintendo {
             cached &&
             cached.accountId === session.accountId &&
             cached.bindingId === session.bindingId &&
+            cached.avatarUrl !== undefined &&
             cached.expiresAt > Date.now() + 30000
                 ? cached
                 : await this.login(session)
