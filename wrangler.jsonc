@@ -12,12 +12,13 @@
         "NINTENDO_APP_VERSION": "3.5.0",
         "GCFP_APPLICATION_IDS": "01003f80212d8000",
         "MEDIA_HOSTS": "media-dl.wc.lp1.nega.srv.nintendo.net",
-        "MEDIA_DIRECT": "0"
+        "MEDIA_DIRECT": "0",
+        "NXAPI_CLIENT_ID": "iHSLjtzf3_pYvqNUYFIWZA"
     },
     "ratelimits": [
         {
             "name": "API_LIMIT",
-            "namespace_id": "1001",
+            "namespace_id": "7891",
             "simple": { "limit": 120, "period": 60 }
         }
     ],
@@ -43,7 +44,8 @@
             "NINTENDO_APP_VERSION": "3.5.0",
             "GCFP_APPLICATION_IDS": "01003f80212d8000",
             "MEDIA_HOSTS": "media-dl.wc.lp1.nega.srv.nintendo.net",
-            "MEDIA_DIRECT": "0"
+            "MEDIA_DIRECT": "0",
+            "NXAPI_CLIENT_ID": "iHSLjtzf3_pYvqNUYFIWZA"
         },
         "ratelimits": [
             {
