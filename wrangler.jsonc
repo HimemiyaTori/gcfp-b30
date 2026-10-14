@@ -5,20 +5,20 @@
     "assets": {
         "directory": "./dist",
         "binding": "ASSETS",
-        "run_worker_first": ["/api/*"],
+        "run_worker_first": ["/api/*"]
     },
     "vars": {
         "COOKIE_KEY_VERSION": "1",
         "NINTENDO_APP_VERSION": "3.5.0",
         "GCFP_APPLICATION_IDS": "01003f80212d8000",
         "MEDIA_HOSTS": "media-dl.wc.lp1.nega.srv.nintendo.net",
-        "MEDIA_DIRECT": "0",
+        "MEDIA_DIRECT": "0"
     },
     "ratelimits": [
         {
             "name": "API_LIMIT",
             "namespace_id": "1001",
-            "simple": { "limit": 120, "period": 60 },
-        },
-    ],
+            "simple": { "limit": 120, "period": 60 }
+        }
+    ]
 }

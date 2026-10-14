@@ -40,7 +40,9 @@ try {
     await dialog.getByLabel('Max Chain（可选）', { exact: true }).fill('190')
     await dialog.getByRole('button', { name: '保存成绩', exact: true }).click()
     await saved()
-    assert.ok((await records())[0].updatedAt > before.updatedAt)
+    const afterChainEdit = (await records())[0]
+    assert.equal(afterChainEdit.maxChain, 190)
+    assert.equal(afterChainEdit.updatedAt, before.updatedAt)
     await page.getByRole('button', { name: '编辑成绩' }).first().click()
     await dialog.getByLabel('Score', { exact: true }).fill('1000000')
     assert.equal(await dialog.getByRole('button', { name: '保存成绩', exact: true }).isDisabled(), true)
