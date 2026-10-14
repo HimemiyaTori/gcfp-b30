@@ -1,12 +1,15 @@
-import { t } from '../../i18n'
+import { i18n, t } from '../../i18n'
 export interface Binding { status: 'active' | 'unbound'; configured: boolean; accountId?: string; bindingId?: string; nickname?: string }
 export interface AlbumMedia { mediaId: string; applicationId: string; capturedAt: number | null; contentLength: number; expiresAt: number; contentUri?: string; ticket: string }
 export interface MediaResponse { accountId: string; bindingId: string; media: AlbumMedia[] }
 export class AlbumError extends Error {
-    constructor(public code: string, public retryAt = 0) { super(t('album.apiError', { code })) }
+    constructor(public code: string, public retryAt = 0) { super(i18n.global.te(`album.errors.${code}`) ? t(`album.errors.${code}`) : t('album.apiError', { code })) }
 }
 export async function request<T>(path: string, method = 'GET', body?: object): Promise<T> {
-    const response = await fetch(`/api/${path}`, { method, credentials: 'same-origin', cache: 'no-store', headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined, signal: AbortSignal.timeout(120000) })
+    let response: Response
+    try {
+        response = await fetch(`/api/${path}`, { method, credentials: 'same-origin', cache: 'no-store', headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined, signal: AbortSignal.timeout(120000) })
+    } catch { throw new AlbumError('network_error') }
     if (!response.ok) {
         const result = await response.json().catch(() => ({}))
         const code = typeof result.error === 'string' && /^[a-z_]+$/.test(result.error) ? result.error : 'request_failed'

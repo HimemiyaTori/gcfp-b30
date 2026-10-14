@@ -10,7 +10,7 @@ import { mergeBest, scoreIdentity, selectExcelScores, type ImportedScore } from 
 import { initialAlbumState } from './albumModels'
 
 export function createScoreRepository(db: ScoreDatabase, library = songService, version = versions) {
-    const tables = [db.scores, db.scoreHistory, db.ratingSnapshots, db.metadata, db.albumItems, db.albumState, db.chartProtections]
+    const tables = [db.scores, db.scoreHistory, db.ratingSnapshots, db.metadata, db.albumItems, db.albumState]
     const rating = (row: ImportedScore) => {
         validateScore(row.score)
         return getChartRating(row.score, library.getChart(row.songId, row.chartId).chart.level)
@@ -115,14 +115,11 @@ export function createScoreRepository(db: ScoreDatabase, library = songService, 
                 if (scoreIdentity({ ...record, ...details, score }) === scoreIdentity(record)) return
                 const onlyChain = record.score === score && record.fc === details.fc && record.ap === details.ap
                 await db.scoreHistory.update(record.historyId, { score, ...details, updatedAt: record.source === 'nso_ocr' || onlyChain ? record.updatedAt : Date.now(), correctedAt: Date.now() })
-                await db.chartProtections.put({ chartId: record.chartId, reason: 'edit', updatedAt: Date.now() })
                 await rebuild()
             })
         },
         async removeHistory(id: number) {
             await db.transaction('rw', tables, async () => {
-                const record = await db.scoreHistory.get(id)
-                if (record) await db.chartProtections.put({ chartId: record.chartId, reason: 'delete', updatedAt: Date.now() })
                 await db.scoreHistory.delete(id)
                 await rebuild()
             })
@@ -136,15 +133,13 @@ export function createScoreRepository(db: ScoreDatabase, library = songService, 
                 await db.ratingSnapshots.clear()
             })
         },
-        async commitAlbum(accountId: string, mediaId: string, candidate: ImportedScore, reviewedProtectionAt: number) {
+        async commitAlbum(accountId: string, mediaId: string, candidate: ImportedScore) {
             return db.transaction('rw', tables, async () => {
                 const item = await db.albumItems.get([accountId, mediaId])
                 const state = await db.albumState.get('album')
                 if (!item || !state || state.accountId !== accountId || item.datasetEpoch !== state.datasetEpoch || item.bindingGeneration !== state.bindingGeneration) throw new Error(t('album.stale'))
                 if (item.stage === 'imported' || item.stage === 'skipped') return { recorded: false, updated: false }
                 if (item.stage !== 'needs_review' && item.stage !== 'pending_commit') throw new Error(t('album.stale'))
-                const protection = await db.chartProtections.get(candidate.chartId)
-                if ((protection?.updatedAt ?? 0) !== reviewedProtectionAt) throw new Error(t('album.protected'))
                 const time = candidate.updatedAt
                 if (!Number.isSafeInteger(time) || time! < Date.UTC(2017, 0, 1) || time! > Date.now() + 86400000) throw new Error(t('album.invalidTime'))
                 const details = validateAchievements(candidate)

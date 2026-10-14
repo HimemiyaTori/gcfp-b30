@@ -13,6 +13,7 @@ const { t } = useI18n()
 </script>
 
 <template>
+    <slot name="account" />
     <section class="panel settings-panel">
         <div class="section-title"><h2>{{ t('settings.appearance') }}</h2></div>
         <div class="setting-row">

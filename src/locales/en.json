@@ -5,7 +5,8 @@
         "home": "Add Scores",
         "scores": "Scores",
         "b30": "My B30",
-        "settings": "Settings"
+        "settings": "Settings",
+        "account": "Account & Settings"
     },
     "common": {
         "cancel": "Cancel",
@@ -23,7 +24,8 @@
             "home": "Record what you love, collect your progress. Next stop: a higher Rating.",
             "b30": "BASIC and ADVANCED each keep their best 30 charts and calculate Groove Rating separately.",
             "scores": "Look back on every play and organize your personal bests.",
-            "settings": "Adjust the look and song info to make this space your own."
+            "settings": "Adjust the look and song info to make this space your own.",
+            "account": "Link a Nintendo Account to sync scores automatically, and adjust the look and song info to make this space your own."
         },
         "localData": "On this device",
         "loading": "Loading local scores…",
@@ -390,64 +392,142 @@
         "chartNotFound": "The song or chart doesn't exist or doesn't match. Check the song library version."
     },
     "album": {
-        "title": "Nintendo album",
-        "open": "Open album settings",
-        "collapse": "Collapse",
-        "description": "Read GCFP screenshots uploaded from Switch 2 to Nintendo Switch App. Recognition runs on this device; each result needs confirmation. Processing stops when the page closes. Expired cloud images cannot be recovered.",
-        "notConfigured": "The album service is not configured. Local scores and manual imports remain available.",
-        "bound": "Linked: {name}",
-        "read": "Read screenshots",
-        "unbind": "Unlink",
-        "bind": "Link or relink Nintendo Account",
-        "disclosure": "This is an unofficial integration. APIs may stop working and account risk cannot be ruled out. Cloudflare handles credentials, album data and proxied images. nxapi-znca-api processes Nintendo identity tokens, Coral tokens, requests and responses. This project does not store these on the server.",
-        "consent": "I understand and agree to this processing",
-        "authorize": "Create authorization link",
-        "authorizeLink": "Sign in on Nintendo’s website",
-        "callbackHelp": "After signing in, copy the link address of the account selection button and paste the full npf callback below. Do not share this link. The official app may intercept it on mobile.",
-        "callback": "Authorization callback link",
-        "finishBind": "Complete linking",
-        "lastCheck": "Last checked",
-        "lastImport": "Last imported",
-        "working": "Processing screenshot",
-        "pending": "Pending records ({count})",
-        "review": "Preview and review",
-        "retry": "Retry / review again",
-        "reject": "Reject",
-        "original": "Original Nintendo screenshot",
-        "chart": "Chart",
-        "captureTime": "Captured at",
-        "protectionNotice": "This chart was edited or had history deleted. Review this candidate carefully. Confirmation approves only this screenshot and keeps future protection.",
-        "evidence": "Recognized text",
-        "confirm": "Confirm import",
-        "phase": "3A manual confirmation. Automatic import is not enabled.",
-        "source": "Source and licenses",
         "failed": "Album processing failed. Please retry.",
         "stale": "Data was cleared or the binding changed. This old task cannot be committed.",
-        "protected": "The chart changed. Close and review the candidate again.",
-        "invalidTime": "Invalid capture time. Please correct it before importing.",
+        "invalidTime": "Invalid capture time.",
         "apiError": "Album request failed: {code}",
         "locksRequired": "This browser needs Web Locks support to coordinate album tasks.",
-        "otherTab": "Another tab is reading the album.",
+        "otherTab": "Another tab is updating the album.",
         "bindFirst": "Link a Nintendo Account first.",
-        "cooldown": "Please retry in {seconds} seconds.",
-        "duplicate": "This image has already been processed.",
-        "scanned": "Processed {count} screenshots. Please review the candidates.",
-        "saved": "Added {recorded} history entries; updated {updated} best scores.",
-        "imageUnavailable": "Original image unavailable. You can review the saved candidate manually.",
-        "invalidChart": "Select a valid chart.",
-        "stages": {
-            "discovered": "Queued",
-            "downloading": "Downloading",
-            "recognizing": "Recognizing",
-            "needs_review": "Needs review",
-            "pending_commit": "Pending import",
-            "imported": "Imported",
-            "skipped": "Skipped",
-            "rejected": "Rejected",
-            "retry_wait": "Waiting to retry",
-            "failed": "Failed",
-            "expired": "Image expired",
-            "canceled": "Canceled"
+        "cooldown": "Please update again in {seconds} seconds.",
+        "duplicate": "This screenshot was already processed. Skipped.",
+        "imageUnavailable": "The original image is no longer in the cloud album.",
+        "unknownTime": "Unknown capture time",
+        "deferred": "Not processed this time. It will continue on the next update.",
+        "errors": {
+            "network_error": "Unable to reach the album service. Check your connection and retry.",
+            "request_failed": "The album service is temporarily unavailable. Please retry later.",
+            "not_configured": "The album service is not configured yet.",
+            "origin_rejected": "The request origin could not be verified. Reload the page and retry.",
+            "consent_required": "Please confirm the risks and data handling first.",
+            "auth_expired": "The sign-in link has expired. Select “Generate new link” and sign in again.",
+            "invalid_callback": "The link is invalid or already used. Sign in again, copy the link of the account selection button and paste it in full.",
+            "reauth_required": "Your Nintendo sign-in has expired. Please link your account again.",
+            "rate_limited": "Too many requests. Please try again later.",
+            "upstream_unavailable": "Unable to reach Nintendo services. Please retry later.",
+            "download_failed": "Screenshot download failed. It will be retried on the next update.",
+            "invalid_image": "Unsupported screenshot format.",
+            "too_large": "The screenshot exceeds 20 MB."
+        }
+    },
+    "account": {
+        "section": "Account",
+        "nintendo": "Nintendo Account",
+        "unboundDescription": "Once linked, every visit automatically reads the GCFP screenshots uploaded from Switch 2 to Nintendo Switch App, recognizes them on this device and records the scores.",
+        "features": {
+            "auto": "Updates when you open the site",
+            "local": "Recognition runs on this device",
+            "private": "Scores stay on this device"
+        },
+        "bind": "Link Nintendo Account",
+        "notConfigured": "The album service is not configured, so linking and updates are unavailable. Local scores and manual imports are unaffected.",
+        "bound": "Linked",
+        "boundDescription": "Nintendo Account · New album screenshots sync when you open the site",
+        "update": "Update scores",
+        "updating": "Updating…",
+        "cooldown": "Update in {seconds}s",
+        "unbind": "Unlink",
+        "stats": {
+            "media": "GCFP screenshots in album",
+            "imported": "Album scores recorded",
+            "lastUpdate": "Last update"
+        },
+        "never": "Not yet",
+        "failures": "{count} screenshot could not be imported | {count} screenshots could not be imported",
+        "retry": "Retry",
+        "note": "Opening the site checks the album for new screenshots, except within 3 minutes of the last update. Updates are at least 10 seconds apart. The cloud album keeps at most 100 files for 30 days, so open the site regularly to sync.",
+        "source": "Source and licenses",
+        "unbindTitle": "Unlink Nintendo Account?",
+        "unbindDescription": "This removes the Nintendo sign-in saved in this browser and stops automatic updates. Recorded scores are kept, and screenshots that were already processed will not be imported again if you link later.",
+        "unbindConfirm": "Unlink",
+        "unbindPending": "Unlinking…",
+        "unbound": "Nintendo Account unlinked. Recorded scores are kept."
+    },
+    "bind": {
+        "title": "Link Nintendo Account",
+        "steps": {
+            "notice": "Review notice",
+            "login": "Sign in & link"
+        },
+        "noticeIntro": "Once linked, opening this site automatically reads GCFP screenshots from your Nintendo Switch App album, recognizes them on this device and records the scores. Please read the following before linking.",
+        "notices": {
+            "unofficial": {
+                "title": "Unofficial integration",
+                "text": "The album is read through unofficial APIs that may stop working after Nintendo updates. We cannot guarantee that your account is free of risk. Decide for yourself whether to link."
+            },
+            "thirdParty": {
+                "title": "Who handles your data",
+                "text": "Cloudflare handles sign-in credentials, the album list and screenshots in transit. The third-party service nxapi-znca-api processes Nintendo identity tokens, Coral tokens and request contents before and after encryption. This site does not store them on its server."
+            },
+            "storage": {
+                "title": "Credentials and scores",
+                "text": "Sign-in credentials are encrypted and stored in a cookie in this browser for 30 days, unreadable by page scripts. Recognized scores are saved only on this device."
+            },
+            "scope": {
+                "title": "What is read",
+                "text": "Only GCFP screenshots uploaded from Switch 2 to Nintendo Switch App are read. The cloud album keeps at most 100 files for 30 days; expired or unuploaded screenshots cannot be read."
+            }
+        },
+        "consent": "I have read and understand the risks and data handling above",
+        "agree": "Agree and continue",
+        "loginIntro": "Finish linking in three steps. The sign-in link is valid for 10 minutes and can be regenerated.",
+        "guide": {
+            "login": {
+                "title": "Sign in to Nintendo",
+                "text": "Select “Go to sign-in” and sign in to the Nintendo Account you want to link on the page that opens."
+            },
+            "copy": {
+                "title": "Copy the link",
+                "text": "After signing in, an account selection button (such as “Select this person”) appears. Do not click it. Right-click it (long-press on mobile) and choose “Copy link address”."
+            },
+            "paste": {
+                "title": "Paste it here",
+                "text": "Come back to this page, paste the copied link below and select “Finish linking”."
+            }
+        },
+        "openLogin": "Go to sign-in",
+        "preparing": "Generating sign-in link…",
+        "regenerate": "Generate new link",
+        "callback": "Account link",
+        "paste": "Paste",
+        "pasteFailed": "Unable to read the clipboard. Paste the link manually.",
+        "invalidLink": "The link should start with npf. Copy the link of the account selection button.",
+        "safety": "This link can be used to sign in to your account. Do not share it. On mobile the button may open Nintendo Switch App, so linking on a computer is recommended.",
+        "back": "Back",
+        "finish": "Finish linking",
+        "finishing": "Linking…",
+        "success": "Account linked",
+        "successNote": "GCFP screenshots in your album will be read and recorded shortly",
+        "done": "Done"
+    },
+    "sync": {
+        "note": "Screenshots are read from your Nintendo album and recognized only on this device. Closing the dialog keeps the update running in the background.",
+        "running": "Closing the dialog will not stop the update. Check progress in Account & Settings.",
+        "summary": "Skipped {skipped}, failed {failed}. Retry failed screenshots in Account & Settings, or add the scores manually.",
+        "background": "Run in background",
+        "cancel": "Stop update",
+        "done": "Processed {found} screenshots: {recorded} history entries added, {updated} best scores updated.",
+        "doneIssues": "Processed {found} screenshots: {recorded} history entries added, {updated} best scores updated; {skipped} skipped, {failed} failed.",
+        "doneTitle": "Album synced",
+        "upToDate": "Up to date",
+        "noNew": "No new GCFP screenshots in your Nintendo album.",
+        "failedTitle": "Album update failed",
+        "canceledTitle": "Update stopped",
+        "canceled": "Recorded scores are kept. Remaining screenshots will continue on the next update.",
+        "banner": {
+            "checking": "Checking Nintendo album…",
+            "importing": "Importing album screenshots",
+            "view": "Details"
         }
     }
 }

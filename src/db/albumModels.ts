@@ -4,11 +4,14 @@ export interface AlbumState {
     key: 'album'
     accountId?: string
     bindingId?: string
+    nickname?: string
     datasetEpoch: number
     bindingGeneration: number
     nextAllowedAt: number
     lastCheckedAt?: number
     lastImportedAt?: number
+    // 最近一次更新时云端可见的 GCFP 截图数
+    mediaCount?: number
     autoImport: boolean
 }
 export interface AlbumItem {
@@ -23,7 +26,6 @@ export interface AlbumItem {
     attempts: number
     retryAt?: number
     candidate?: ImportedScore
-    evidence?: string[]
     reason?: string
     recognitionVersion: string
     historyId?: number

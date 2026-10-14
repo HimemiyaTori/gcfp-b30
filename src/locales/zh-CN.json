@@ -5,7 +5,8 @@
         "home": "成绩录入",
         "scores": "成绩管理",
         "b30": "我的 B30",
-        "settings": "偏好设置"
+        "settings": "偏好设置",
+        "account": "账号与设置"
     },
     "common": {
         "cancel": "取消",
@@ -23,7 +24,8 @@
             "home": "记录热爱，收集进步。下一次，向更高的 Rating 出发。",
             "b30": "BASIC 与 ADVANCED 各自记录最好的 30 张谱面，独立计算 Groove Rating。",
             "scores": "回顾每一次发挥，整理你的个人最佳成绩。",
-            "settings": "调整外观与曲目信息，让这里更像你的空间。"
+            "settings": "调整外观与曲目信息，让这里更像你的空间。",
+            "account": "绑定 Nintendo 账号自动同步成绩，调整外观与曲目信息，让这里更像你的空间。"
         },
         "localData": "本机成绩",
         "loading": "正在加载本地成绩…",
@@ -390,64 +392,142 @@
         "chartNotFound": "曲目与谱面不存在或不匹配，请检查曲库版本。"
     },
     "album": {
-        "title": "Nintendo 相册",
-        "open": "打开相册设置",
-        "collapse": "收起",
-        "description": "读取 Switch 2 已上传到 Nintendo Switch App 的 GCFP 截图，在本机识别并逐张确认入库。关页后不继续处理，云端已过期的图片无法补回。",
-        "notConfigured": "相册服务尚未配置。现有本地成绩和手动导入仍可正常使用。",
-        "bound": "已绑定：{name}",
-        "read": "读取截图",
-        "unbind": "解除绑定",
-        "bind": "绑定或重新绑定 Nintendo 账号",
-        "disclosure": "这是非官方接入，接口可能失效，不能保证账号使用无风险。Cloudflare 会经手凭据、相册和中转图片；nxapi-znca-api 会处理 Nintendo 身份 token、Coral token 及请求和响应。本项目不在服务器保存这些数据。",
-        "consent": "我已了解并同意上述处理方式",
-        "authorize": "生成授权链接",
-        "authorizeLink": "前往 Nintendo 官网登录",
-        "callbackHelp": "在 Nintendo 登录完成页复制“选择此账号”等按钮的链接地址，将 npf 开头的完整回调链接粘贴到下方。请勿把链接发给他人；手机可能由官方 App 接管。",
-        "callback": "授权回调链接",
-        "finishBind": "完成绑定",
-        "lastCheck": "最近检查",
-        "lastImport": "最近入库",
-        "working": "正在处理截图",
-        "pending": "待处理记录（{count}）",
-        "review": "预览与确认",
-        "retry": "重试 / 重新审核",
-        "reject": "拒绝",
-        "original": "Nintendo 原始截图",
-        "chart": "谱面",
-        "captureTime": "拍摄时间",
-        "protectionNotice": "该谱面经过人工修改或删除。请核对当前候选；本次确认仅批准这张截图，不解除后续保护。",
-        "evidence": "识别原始文本",
-        "confirm": "确认入库",
-        "phase": "当前为 3A 手动确认阶段，尚未开放自动入库。",
-        "source": "源码与许可",
         "failed": "相册处理失败，请重试",
         "stale": "数据已清空或绑定已改变，旧任务不能提交",
-        "protected": "谱面已被修改，请关闭并重新审核候选",
-        "invalidTime": "拍摄时间无效，请手动确认并补正",
+        "invalidTime": "拍摄时间无效",
         "apiError": "相册请求失败：{code}",
         "locksRequired": "当前浏览器不支持任务协调，请使用支持 Web Locks 的浏览器",
-        "otherTab": "另一个标签页正在读取相册",
+        "otherTab": "另一个标签页正在更新相册",
         "bindFirst": "请先绑定 Nintendo 账号",
-        "cooldown": "请在 {seconds} 秒后重试",
-        "duplicate": "相同图片已处理",
-        "scanned": "本次处理 {count} 张截图，请确认待审核结果",
-        "saved": "新增历史 {recorded} 条，更新最佳成绩 {updated} 条",
-        "imageUnavailable": "原图已不可用，可依据候选手动确认",
-        "invalidChart": "请选择有效谱面",
-        "stages": {
-            "discovered": "待下载",
-            "downloading": "下载中",
-            "recognizing": "识别中",
-            "needs_review": "待确认",
-            "pending_commit": "待入库",
-            "imported": "已入库",
-            "skipped": "已跳过",
-            "rejected": "已拒绝",
-            "retry_wait": "等待重试",
-            "failed": "失败",
-            "expired": "原图过期",
-            "canceled": "已取消"
+        "cooldown": "请在 {seconds} 秒后再更新",
+        "duplicate": "相同截图已处理过，已跳过",
+        "imageUnavailable": "原图已从云端相册消失，无法读取",
+        "unknownTime": "拍摄时间未知",
+        "deferred": "本次未处理，下次更新时继续",
+        "errors": {
+            "network_error": "无法连接相册服务，请检查网络后重试",
+            "request_failed": "相册服务暂时不可用，请稍后重试",
+            "not_configured": "相册服务尚未配置，暂时无法使用",
+            "origin_rejected": "请求来源校验失败，请刷新页面后重试",
+            "consent_required": "请先确认风险与数据处理说明",
+            "auth_expired": "登录链接已过期，请点击「重新生成链接」后再次登录",
+            "invalid_callback": "链接无效或已使用。请重新登录，复制账号选择按钮的链接地址后完整粘贴",
+            "reauth_required": "Nintendo 登录已失效，请重新绑定账号",
+            "rate_limited": "请求过于频繁，请稍后再试",
+            "upstream_unavailable": "暂时无法连接 Nintendo 服务，请稍后重试",
+            "download_failed": "截图下载失败，将在下次更新时重试",
+            "invalid_image": "截图格式不受支持",
+            "too_large": "截图超过 20 MB"
+        }
+    },
+    "account": {
+        "section": "账号",
+        "nintendo": "Nintendo 账号",
+        "unboundDescription": "绑定后，每次打开本站都会自动读取 Switch 2 上传到 Nintendo Switch App 的 GCFP 截图，在本机识别并录入成绩。",
+        "features": {
+            "auto": "打开网页自动更新",
+            "local": "截图仅在本机识别",
+            "private": "成绩只保存在本机"
+        },
+        "bind": "绑定 Nintendo 账号",
+        "notConfigured": "相册服务尚未配置，暂时无法绑定或更新。本地成绩与手动录入不受影响。",
+        "bound": "已绑定",
+        "boundDescription": "Nintendo 账号 · 打开本站时自动同步相册中的新截图",
+        "update": "更新成绩",
+        "updating": "更新中…",
+        "cooldown": "{seconds} 秒后可更新",
+        "unbind": "解除绑定",
+        "stats": {
+            "media": "相册中的 GCFP 截图",
+            "imported": "已录入的相册成绩",
+            "lastUpdate": "最近更新"
+        },
+        "never": "尚未更新",
+        "failures": "{count} 张截图未能录入",
+        "retry": "重试",
+        "note": "打开本站时会自动检查相册中的新截图，距上次更新不足 3 分钟时不再检查；两次更新至少间隔 10 秒。云端相册只保留最近 30 天、最多 100 个文件，请定期打开本站同步。",
+        "source": "源码与许可",
+        "unbindTitle": "解除 Nintendo 账号绑定？",
+        "unbindDescription": "将清除此浏览器保存的 Nintendo 登录凭据，并停止自动更新。已录入的成绩会保留；之后重新绑定时，已处理过的截图不会重复录入。",
+        "unbindConfirm": "确认解除",
+        "unbindPending": "正在解除…",
+        "unbound": "已解除 Nintendo 账号绑定，已录入的成绩仍然保留。"
+    },
+    "bind": {
+        "title": "绑定 Nintendo 账号",
+        "steps": {
+            "notice": "确认须知",
+            "login": "登录绑定"
+        },
+        "noticeIntro": "绑定后，打开本站时会自动读取 Nintendo Switch App 相册中的 GCFP 截图，在本机识别并录入成绩。绑定前请仔细阅读以下说明。",
+        "notices": {
+            "unofficial": {
+                "title": "非官方接入",
+                "text": "本功能通过非官方接口读取相册，任天堂更新后可能随时失效。我们无法保证使用后账号完全没有风险，请自行判断是否绑定。"
+            },
+            "thirdParty": {
+                "title": "数据经手方",
+                "text": "Cloudflare 会在传输中经手登录凭据、相册列表和截图；第三方服务 nxapi-znca-api 会处理 Nintendo 身份令牌、Coral 令牌及加密前后的请求内容。本站服务器不保存这些数据。"
+            },
+            "storage": {
+                "title": "凭据与成绩保存",
+                "text": "登录凭据加密后保存在本浏览器的 Cookie 中，30 天内有效，网页脚本无法读取；识别出的成绩只保存在本机。"
+            },
+            "scope": {
+                "title": "读取范围",
+                "text": "仅读取 Switch 2 已上传到 Nintendo Switch App 的 GCFP 截图。云端相册最多保存 100 个文件、30 天，过期或未上传的截图无法读取。"
+            }
+        },
+        "consent": "我已阅读并了解上述风险与数据处理方式",
+        "agree": "同意并继续",
+        "loginIntro": "按以下三步完成绑定。登录链接 10 分钟内有效，过期后可重新生成。",
+        "guide": {
+            "login": {
+                "title": "登录 Nintendo 账号",
+                "text": "点击「前往登录」，在新打开的页面登录要绑定的 Nintendo 账号。"
+            },
+            "copy": {
+                "title": "复制链接",
+                "text": "登录后页面会显示账号选择按钮（如「选择此人」）。请不要直接点击，在按钮上点击右键（手机上长按），选择「复制链接地址」。"
+            },
+            "paste": {
+                "title": "回来粘贴",
+                "text": "回到本页面，把复制的链接粘贴到下方，点击「完成绑定」。"
+            }
+        },
+        "openLogin": "前往登录",
+        "preparing": "正在生成登录链接…",
+        "regenerate": "重新生成链接",
+        "callback": "账号链接",
+        "paste": "粘贴",
+        "pasteFailed": "无法读取剪贴板，请手动粘贴链接",
+        "invalidLink": "链接应以 npf 开头，请复制账号选择按钮的链接地址。",
+        "safety": "该链接可用于登录你的账号，请勿发送给他人。手机上点击按钮可能会跳转到 Nintendo Switch App，建议在电脑上完成绑定。",
+        "back": "上一步",
+        "finish": "完成绑定",
+        "finishing": "正在绑定…",
+        "success": "绑定成功",
+        "successNote": "即将读取相册中的 GCFP 截图并录入成绩",
+        "done": "完成"
+    },
+    "sync": {
+        "note": "截图从 Nintendo 相册读取，仅在本机识别；关闭弹窗后会在后台继续更新。",
+        "running": "关闭弹窗不会中断更新，可在账号与设置中查看进度。",
+        "summary": "跳过 {skipped} 张，失败 {failed} 张。失败的截图可在账号与设置中重试，也可以手动新增成绩。",
+        "background": "后台更新",
+        "cancel": "停止更新",
+        "done": "已处理 {found} 张截图，新增历史 {recorded} 条，更新最佳成绩 {updated} 条。",
+        "doneIssues": "已处理 {found} 张截图，新增历史 {recorded} 条，更新最佳成绩 {updated} 条；跳过 {skipped} 张，失败 {failed} 张。",
+        "doneTitle": "相册已同步",
+        "upToDate": "已是最新",
+        "noNew": "Nintendo 相册中没有新的 GCFP 截图。",
+        "failedTitle": "相册更新失败",
+        "canceledTitle": "已停止更新",
+        "canceled": "已录入的成绩会保留，剩余截图将在下次更新时继续。",
+        "banner": {
+            "checking": "正在检查 Nintendo 相册…",
+            "importing": "正在录入相册截图",
+            "view": "查看详情"
         }
     }
 }

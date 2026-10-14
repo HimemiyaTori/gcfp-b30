@@ -24,11 +24,13 @@ import B30Page from './pages/B30Page.vue'
 import HomePage from './pages/HomePage.vue'
 import ScoresPage from './pages/ScoresPage.vue'
 import SettingsPage from './pages/SettingsPage.vue'
-const NintendoAlbum = import.meta.env.VITE_SERVER === '1' ? defineAsyncComponent(() => import('./components/album/NintendoAlbum.vue')) : undefined
+const NintendoAccount = import.meta.env.VITE_SERVER === '1' ? defineAsyncComponent(() => import('./components/album/NintendoAccount.vue')) : undefined
 const AlbumProgress = import.meta.env.VITE_SERVER === '1' ? defineAsyncComponent(() => import('./components/album/AlbumProgress.vue')) : undefined
+const AlbumSync = import.meta.env.VITE_SERVER === '1' ? defineAsyncComponent(() => import('./components/album/AlbumSync.vue')) : undefined
 if (import.meta.env.VITE_SERVER === '1') void import('./core/album/controller').then(module => module.initializeAlbum())
 const { t } = useI18n()
 const page = ref<Page>('home')
+const pageInfo = computed(() => navigation.find((item) => item.id === page.value)!)
 const sidebarCollapsed = ref(false)
 const {
     scores,
@@ -117,10 +119,10 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
                             {{
                                 page === 'home'
                                     ? t('app.homeTitle')
-                                    : t(`nav.${page}`)
+                                    : t(pageInfo.label)
                             }}
                         </h1>
-                        <p>{{ t(`app.intro.${page}`) }}</p>
+                        <p>{{ t(pageInfo.intro) }}</p>
                     </div>
                     <button
                         v-if="page === 'scores'"
@@ -139,6 +141,7 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
                         LOCAL DATA <span>{{ t('app.localData') }}</span>
                     </div>
                 </div>
+                <component :is="AlbumProgress" v-if="AlbumProgress && page !== 'settings'" />
                 <HomePage
                     v-if="page === 'home'"
                     :scores="scores"
@@ -150,7 +153,6 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
                     v-model:grain="ratingGrain"
                     @song="songDetails?.open($event)"
                 />
-                <component :is="AlbumProgress" v-if="AlbumProgress && page !== 'settings'" />
                 <ScoresPage
                     v-if="page === 'scores'"
                     :scores="scores"
@@ -177,11 +179,14 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
                     @import="excel?.start()"
                     @export="excel?.download(false)"
                     @template="excel?.download(true)"
-                />
+                >
+                    <template v-if="NintendoAccount" #account>
+                        <component :is="NintendoAccount" @notify="notify" />
+                    </template>
+                </SettingsPage>
                 <p v-if="databaseLoading" role="status">
                     {{ t('app.loading') }}
                 </p>
-                <component :is="NintendoAlbum" v-if="NintendoAlbum && page === 'settings'" :can-write="canWrite" />
                 <div v-if="databaseError" class="panel error" role="alert">
                     {{ databaseError }}
                     <button class="button secondary" @click="reloadDatabase">
@@ -227,6 +232,12 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
             ref="excel"
             :can-write="canWrite"
             @notify="notify"
+        />
+        <component
+            :is="AlbumSync"
+            v-if="AlbumSync"
+            @notify="notify"
+            @manual-add="editor?.open()"
         />
     </div>
 </template>
