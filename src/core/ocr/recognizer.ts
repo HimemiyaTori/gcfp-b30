@@ -52,7 +52,7 @@ export const regions = {
         maxChain: rect(470, 473, 91, 41),
         mode: rect(824, 136, 127, 26),
         difficulty: rect(619, 109, 96, 32),
-        level: rect(720, 102, 74, 52),
+        level: rect(700, 102, 100, 52),
     },
     select: {
         title: rect(57, 309, 453, 43),
@@ -182,13 +182,27 @@ export function createRecognizer(
                                   options.onSlowInference?.()
                               })
                             : undefined
-                    const [result] = await prediction
+                    const [first] = await prediction
                         .catch((error) => {
                             dispose()
                             throw error
                         })
                         .finally(stopWatching)
                     signal.throwIfAborted()
+                    // 选曲页细笔画等级可能一次检不出，空结果时放宽检测再试
+                    let result = first
+                    if (area === regions.select.level && !first?.items?.length) {
+                        const retried = ocr.predict(canvas, {
+                            textRecScoreThresh: 0.65,
+                            textDetThresh: 0.2,
+                            textDetBoxThresh: 0.3,
+                        })
+                        ;[result] = await retried.catch((error) => {
+                            dispose()
+                            throw error
+                        })
+                        signal.throwIfAborted()
+                    }
                     const text =
                         result?.items
                             .sort((a, b) => {

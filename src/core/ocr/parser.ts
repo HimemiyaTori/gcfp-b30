@@ -1,9 +1,9 @@
 import Fuse from 'fuse.js'
-import { songService } from '../song/songService'
-import { normalizeSongText, getSongSearchTitles } from '../search/songText'
-import { validateScore } from '../score/validation'
 import type { ScoreAchievements } from '../../db/models'
 import { t } from '../../i18n'
+import { validateScore } from '../score/validation'
+import { getSongSearchTitles, normalizeSongText } from '../search/songText'
+import { songService } from '../song/songService'
 
 export type Layout = 'result' | 'select'
 export interface OcrFields {
@@ -43,6 +43,36 @@ export function parseInteger(text: string, label: string) {
         throw new Error(t('ocr.errors.number', { label }))
     return Number(value)
 }
+function editDistance(a: string, b: string) {
+    const row = Array.from({ length: b.length + 1 }, (_, index) => index)
+    for (let i = 1; i <= a.length; i++) {
+        let previous = row[0]!
+        row[0] = i
+        for (let j = 1; j <= b.length; j++) {
+            const current = row[j]!
+            row[j] =
+                a[i - 1] === b[j - 1]
+                    ? previous
+                    : Math.min(previous, row[j]!, row[j - 1]!) + 1
+            previous = current
+        }
+    }
+    return row[b.length]!
+}
+function nearLongStatus(value: string) {
+    const words = [
+        ['FULLCHAIN', 'fc'],
+        ['ALLPERFECT', 'ap'],
+        ['MISSIONCLEAR', 'mission'],
+    ] as const
+
+    // 长状态词允许2字符容错
+    return words.find(
+        ([word]) =>
+            Math.abs(word.length - value.length) <= 2 &&
+            editDistance(word, value) <= 2,
+    )?.[1]
+}
 export function parseStatus(text: string) {
     const value = compact(text)
     if (/^MISSI?ONCLEAR$/.test(value)) return 'mission'
@@ -50,15 +80,16 @@ export function parseStatus(text: string) {
     if (value === 'FULLCHAIN' || value === 'FC') return 'fc'
     if (value === 'CLEAR' || value === 'FAILED' || value === 'FAIL')
         return 'clear'
+    const near = nearLongStatus(value)
+    if (near) return near
     if (!value) return 'empty'
     throw new Error(t('ocr.errors.status'))
 }
 const entries = songService.songs.flatMap((song) =>
-    getSongSearchTitles(song)
-        .map((title) => ({
-            song,
-            title: title.replace(/\s/g, ''),
-        })),
+    getSongSearchTitles(song).map((title) => ({
+        song,
+        title: title.replace(/\s/g, ''),
+    })),
 )
 const fuse = new Fuse(entries, {
     keys: ['title'],
@@ -114,8 +145,7 @@ export function parseFields(fields: OcrFields): Recognition {
             c.difficulty === difficulty &&
             c.level === levelValue,
     )
-    if (charts.length !== 1)
-        throw new Error(t('ocr.errors.chartMismatch'))
+    if (charts.length !== 1) throw new Error(t('ocr.errors.chartMismatch'))
     return {
         kind: 'score',
         songId: song.id,

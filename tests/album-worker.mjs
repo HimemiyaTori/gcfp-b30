@@ -8,10 +8,7 @@ import worker from '../worker/index.ts'
 const realFetch = globalThis.fetch
 const runtimeMode = process.argv.includes('--runtime')
 const image = await readFile(
-    new URL(
-        './score images/20260922085638-01M2YK0M46GQPCK5PCRA3TAR4A.jpg',
-        import.meta.url,
-    ),
+    new URL('./score images/select/jp-adv-hard8-8.jpg', import.meta.url),
 )
 let expiredCoral = false,
     oversized = false
@@ -30,9 +27,12 @@ const json = (value) =>
     })
 const cipherPrefix = Buffer.from([0xfb, 0xff, 0x00, 0x01])
 const encrypted = (value) =>
-    new Response(Buffer.concat([cipherPrefix, Buffer.from(JSON.stringify(value))]), {
-        headers: { 'Content-Type': encryptedContentType },
-    })
+    new Response(
+        Buffer.concat([cipherPrefix, Buffer.from(JSON.stringify(value))]),
+        {
+            headers: { 'Content-Type': encryptedContentType },
+        },
+    )
 const mockFetch = async (url, init) => {
     const address = String(url)
     if (address.startsWith('http://127.0.0.1')) return realFetch(url, init)
@@ -59,7 +59,10 @@ const mockFetch = async (url, init) => {
             : new Response('invalid_client', { status: 401 })
     }
     if (address.endsWith('/api/session_token') && redirectSessionToken)
-        return new Response(null, { status: 307, headers: { Location: 'https://other.example/collect' } })
+        return new Response(null, {
+            status: 307,
+            headers: { Location: 'https://other.example/collect' },
+        })
     if (address.endsWith('/api/session_token'))
         return json({ session_token: 'test-session' })
     if (address.endsWith('/api/token'))
@@ -71,7 +74,12 @@ const mockFetch = async (url, init) => {
             language: 'ja-JP',
         })
     if (address.endsWith('/znca/f')) {
-        if (omitCombinedLogin) return json({ f: 'test-f', timestamp: 1780000000000, request_id: 'test-request-id' })
+        if (omitCombinedLogin)
+            return json({
+                f: 'test-f',
+                timestamp: 1780000000000,
+                request_id: 'test-request-id',
+            })
         return json({
             encrypted_token_request: Buffer.from('login').toString('base64'),
         })
@@ -79,20 +87,41 @@ const mockFetch = async (url, init) => {
     if (address.endsWith('/znca/encrypt-request')) {
         if (invalidThirdPartyToken) {
             invalidThirdPartyToken = false
-            return new Response(JSON.stringify({ error: 'invalid_token' }), { status: 401 })
+            return new Response(JSON.stringify({ error: 'invalid_token' }), {
+                status: 401,
+            })
         }
         if (badEncryptedResponse) return json({ data: null })
         const body = JSON.parse(init.body)
         const login = body.url.endsWith('/Account/Login')
-        const valid = login ? body.token === null && JSON.parse(body.data).parameter.f === 'test-f' : body.token === 'test-coral'
-        if (!valid) return new Response(JSON.stringify({ error: 'invalid_request' }), { status: 400 })
-        return json({ data: Buffer.concat([cipherPrefix, Buffer.from(login ? 'login' : 'media')]).toString('base64url') })
+        const valid = login
+            ? body.token === null &&
+              JSON.parse(body.data).parameter.f === 'test-f'
+            : body.token === 'test-coral'
+        if (!valid)
+            return new Response(JSON.stringify({ error: 'invalid_request' }), {
+                status: 400,
+            })
+        return json({
+            data: Buffer.concat([
+                cipherPrefix,
+                Buffer.from(login ? 'login' : 'media'),
+            ]).toString('base64url'),
+        })
     }
     if (address.endsWith('/znca/decrypt-response')) {
-        if (badDecryptedResponse) return new Response('invalid-json', { headers: { 'Content-Type': 'text/plain' } })
+        if (badDecryptedResponse)
+            return new Response('invalid-json', {
+                headers: { 'Content-Type': 'text/plain' },
+            })
         const raw = Buffer.from(JSON.parse(init.body).data, 'base64')
-        if (!raw.subarray(0, cipherPrefix.length).equals(cipherPrefix)) return new Response(JSON.stringify({ error: 'invalid_request' }), { status: 400 })
-        return new Response(raw.subarray(cipherPrefix.length), { headers: { 'Content-Type': 'text/plain' } })
+        if (!raw.subarray(0, cipherPrefix.length).equals(cipherPrefix))
+            return new Response(JSON.stringify({ error: 'invalid_request' }), {
+                status: 400,
+            })
+        return new Response(raw.subarray(cipherPrefix.length), {
+            headers: { 'Content-Type': 'text/plain' },
+        })
     }
     if (address.endsWith('/v4/Account/Login'))
         return encrypted({
@@ -130,12 +159,29 @@ const mockFetch = async (url, init) => {
         })
     }
     if (address === 'https://media.example.test/original.jpg') {
-        if (downloadMode === 'redirect') return new Response(null, { status: 302, headers: { Location: '/redirected.jpg' } })
-        if (downloadMode === 'untrusted') return new Response(null, { status: 307, headers: { Location: 'https://other.example/collect' } })
-        if (downloadMode === 'expired') return new Response(null, { status: 403 })
-        if (downloadMode === 'invalid') return new Response('<html>not an image</html>', { headers: { 'Content-Type': 'text/html' } })
+        if (downloadMode === 'redirect')
+            return new Response(null, {
+                status: 302,
+                headers: { Location: '/redirected.jpg' },
+            })
+        if (downloadMode === 'untrusted')
+            return new Response(null, {
+                status: 307,
+                headers: { Location: 'https://other.example/collect' },
+            })
+        if (downloadMode === 'expired')
+            return new Response(null, { status: 403 })
+        if (downloadMode === 'invalid')
+            return new Response('<html>not an image</html>', {
+                headers: { 'Content-Type': 'text/html' },
+            })
     }
-    if (['https://media.example.test/original.jpg', 'https://media.example.test/redirected.jpg'].includes(address))
+    if (
+        [
+            'https://media.example.test/original.jpg',
+            'https://media.example.test/redirected.jpg',
+        ].includes(address)
+    )
         return new Response(image, {
             headers: {
                 'Content-Type': 'image/jpeg',
@@ -159,8 +205,18 @@ const env = {
 }
 let runtime
 if (runtimeMode) {
-    const [{ Miniflare }, { build }] = await Promise.all([import('miniflare'), import('esbuild')])
-    const built = await build({ entryPoints: ['worker/index.ts'], bundle: true, write: false, format: 'esm', platform: 'neutral', target: 'es2022' })
+    const [{ Miniflare }, { build }] = await Promise.all([
+        import('miniflare'),
+        import('esbuild'),
+    ])
+    const built = await build({
+        entryPoints: ['worker/index.ts'],
+        bundle: true,
+        write: false,
+        format: 'esm',
+        platform: 'neutral',
+        target: 'es2022',
+    })
     // 只注入测试绑定与外部响应，产品路由、加解密适配和 Cookie 均在真实 Workerd 中运行
     const wrapper = `import worker from './project-worker.js';
         export default { fetch(request) {
@@ -169,27 +225,56 @@ if (runtimeMode) {
             env.ASSETS = { fetch: async () => new Response('static') };
             return worker.fetch(request, env);
         } };`
-    runtime = new Miniflare({ workers: [{
-        config: {
-            name: 'album-acceptance', compatibilityDate: '2026-10-06',
-            manifest: { mainModule: 'wrapper.js', modules: {
-                'wrapper.js': { type: 'esm', contents: wrapper },
-                'project-worker.js': { type: 'esm', contents: built.outputFiles[0].text },
-            } },
-        },
-        dev: { outboundService: { type: 'fetcher', handler: async request => mockFetch(request.url, {
-            method: request.method, headers: request.headers,
-            body: request.body ? await request.text() : undefined,
-        }) } },
-    }] })
+    runtime = new Miniflare({
+        workers: [
+            {
+                config: {
+                    name: 'album-acceptance',
+                    compatibilityDate: '2026-10-06',
+                    manifest: {
+                        mainModule: 'wrapper.js',
+                        modules: {
+                            'wrapper.js': { type: 'esm', contents: wrapper },
+                            'project-worker.js': {
+                                type: 'esm',
+                                contents: built.outputFiles[0].text,
+                            },
+                        },
+                    },
+                },
+                dev: {
+                    outboundService: {
+                        type: 'fetcher',
+                        handler: async (request) =>
+                            mockFetch(request.url, {
+                                method: request.method,
+                                headers: request.headers,
+                                body: request.body
+                                    ? await request.text()
+                                    : undefined,
+                            }),
+                    },
+                },
+            },
+        ],
+    })
 }
 const server = createServer(async (incoming, outgoing) => {
     const chunks = []
     for await (const chunk of incoming) chunks.push(chunk)
     const url = `${workerRequestOrigin || `http://127.0.0.1:${server.address().port}`}${incoming.url}`
-    const init = { method: incoming.method, headers: incoming.headers, body: chunks.length ? Buffer.concat(chunks) : undefined }
+    const init = {
+        method: incoming.method,
+        headers: incoming.headers,
+        body: chunks.length ? Buffer.concat(chunks) : undefined,
+    }
     const response = runtime
-        ? await runtime.dispatchFetch(url, { ...init, cf: { hostMetadata: { testEnv: JSON.parse(JSON.stringify(env)) } } })
+        ? await runtime.dispatchFetch(url, {
+              ...init,
+              cf: {
+                  hostMetadata: { testEnv: JSON.parse(JSON.stringify(env)) },
+              },
+          })
         : await worker.fetch(new Request(url, init), env)
     outgoing.writeHead(response.status, {
         ...Object.fromEntries(response.headers),
@@ -285,12 +370,20 @@ try {
     })
     assert.deepEqual(Buffer.from(await downloaded.arrayBuffer()), image)
     downloadMode = 'redirect'
-    const redirectedImage = await api('/api/album/content', 'POST', { ticket: album.media[0].ticket })
+    const redirectedImage = await api('/api/album/content', 'POST', {
+        ticket: album.media[0].ticket,
+    })
     assert.equal(redirectedImage.status, 200)
     assert.deepEqual(Buffer.from(await redirectedImage.arrayBuffer()), image)
-    for (const [mode, expected] of [['untrusted', 'media_host_rejected'], ['expired', 'media_expired'], ['invalid', 'invalid_image']]) {
+    for (const [mode, expected] of [
+        ['untrusted', 'media_host_rejected'],
+        ['expired', 'media_expired'],
+        ['invalid', 'invalid_image'],
+    ]) {
         downloadMode = mode
-        const rejected = await api('/api/album/content', 'POST', { ticket: album.media[0].ticket })
+        const rejected = await api('/api/album/content', 'POST', {
+            ticket: album.media[0].ticket,
+        })
         assert.equal(rejected.status, 502)
         assert.equal((await rejected.json()).error, expected)
     }
@@ -299,12 +392,18 @@ try {
     badDecryptedResponse = true
     const malformed = await api('/api/album/media', 'POST', {})
     assert.equal(malformed.status, 502)
-    assert.deepEqual(await malformed.json(), { error: 'upstream_format', stage: 'coral_media_decrypt' })
+    assert.deepEqual(await malformed.json(), {
+        error: 'upstream_format',
+        stage: 'coral_media_decrypt',
+    })
     badDecryptedResponse = false
     badEncryptedResponse = true
     const missingCipher = await api('/api/album/media', 'POST', {})
     assert.equal(missingCipher.status, 502)
-    assert.deepEqual(await missingCipher.json(), { error: 'upstream_format', stage: 'third_party_encrypt_fields' })
+    assert.deepEqual(await missingCipher.json(), {
+        error: 'upstream_format',
+        stage: 'third_party_encrypt_fields',
+    })
     badEncryptedResponse = false
     invalidThirdPartyToken = true
     assert.equal((await api('/api/album/media', 'POST', {})).status, 200)
@@ -344,7 +443,11 @@ try {
     )
     // 通过真实 HTTP 请求模拟远程代理改写 URL，显式来源仍精确校验浏览器地址
     workerRequestOrigin = 'https://preview.example.test'
-    assert.equal((await api('/api/nintendo/auth/start', 'POST', { consent: true })).status, 403)
+    assert.equal(
+        (await api('/api/nintendo/auth/start', 'POST', { consent: true }))
+            .status,
+        403,
+    )
     env.APP_ORIGIN = origin
     for (const extra of [
         { Origin: 'https://other.example' },
@@ -352,14 +455,31 @@ try {
         { Origin: '' },
         { Origin: origin.replace('127.0.0.1', 'localhost') },
         { 'Sec-Fetch-Site': 'cross-site' },
-        { Origin: 'https://other.example', 'MF-Original-URL': origin, 'X-Forwarded-Host': new URL(origin).host },
+        {
+            Origin: 'https://other.example',
+            'MF-Original-URL': origin,
+            'X-Forwarded-Host': new URL(origin).host,
+        },
     ]) {
-        assert.equal((await api('/api/nintendo/auth/start', 'POST', { consent: true }, extra)).status, 403)
+        assert.equal(
+            (
+                await api(
+                    '/api/nintendo/auth/start',
+                    'POST',
+                    { consent: true },
+                    extra,
+                )
+            ).status,
+            403,
+        )
     }
     // 远程代理场景下，仅 Client ID 的公开客户端也能完成绑定、读取相册及下载原图
     for (const optionalSecret of [undefined, '']) {
         omitCombinedLogin = optionalSecret === ''
-        encryptedContentType = optionalSecret === '' ? 'application/octet-stream' : 'application/json'
+        encryptedContentType =
+            optionalSecret === ''
+                ? 'application/octet-stream'
+                : 'application/json'
         if (optionalSecret === undefined) delete env.NXAPI_CLIENT_SECRET
         else env.NXAPI_CLIENT_SECRET = optionalSecret
         assert.equal(

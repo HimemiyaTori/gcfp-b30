@@ -50,7 +50,7 @@ yarn build
 
 测试围绕用户操作、真实文件和资源交互；内部计算、解析和状态逻辑通过代码审查检查。`yarn test` 只运行 10 项 XLSX 文件验收，包含模板生成、文件往返、删减行列、非法单元格和文件限制，不使用模拟数据库。`yarn build` 执行 Vue／TypeScript 检查及生产构建。
 
-OCR 真实样本验证：`tests/ocr-samples.json` 对应的 21 张样本默认在 `tests/score images/{result,select,playing}`，也可设置 `OCR_SAMPLES_DIR` 指向包含这三个子目录的样本目录。启动 `yarn dev` 后运行 `yarn test:ocr`（默认系统 Edge）。通过页面实际上传，检查 15 张有效成绩、6 张跳过及批量去重后的 11 条成绩。缺少图片会在启动浏览器前列出缺失文件。同目录根下另有 10 张相册参考截图，不在这份标注清单里。模型和本地运行时为较大资源，首次加载可能较慢。实现范围及 ROI 见一期设计文档第 21 节。
+OCR 真实样本验证：`tests/ocr-samples.json` 对应的 24 张样本默认在 `tests/score images/{result,select,playing}`，也可设置 `OCR_SAMPLES_DIR` 指向包含这三个子目录的样本目录。启动 `yarn dev` 后运行 `yarn test:ocr`（默认系统 Edge）。通过页面实际上传，检查 18 张有效成绩、6 张跳过及批量去重后的 14 条成绩。缺少图片会在启动浏览器前列出缺失文件。同目录根下另有 10 张相册参考截图，不在这份标注清单里。模型和本地运行时为较大资源，首次加载可能较慢。实现范围及 ROI 见一期设计文档第 21 节。
 
 ## 模块结构
 
