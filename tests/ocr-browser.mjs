@@ -2,12 +2,16 @@ import { chromium } from 'playwright'
 import assert from 'node:assert/strict'
 import { readFile, access, mkdir } from 'node:fs/promises'
 import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-// 先启动 yarn dev；样本目录可通过 OCR_SAMPLES_DIR 指定
+// 先启动 yarn dev；样本默认读 tests/score images，也可通过 OCR_SAMPLES_DIR 指定
 const samples = JSON.parse(
     await readFile(new URL('./ocr-samples.json', import.meta.url), 'utf8'),
 )
-const sampleDirectory = resolve(process.env.OCR_SAMPLES_DIR || 'src/data/test')
+const sampleDirectory = resolve(
+    process.env.OCR_SAMPLES_DIR ||
+        fileURLToPath(new URL('./score images', import.meta.url)),
+)
 const samplePath = path => resolve(sampleDirectory, path)
 const missing = []
 for (const sample of samples) {

@@ -1471,7 +1471,7 @@ SDK API 依据：[官方 PaddleOCR.js 文档](https://github.com/PaddlePaddle/Pa
 
 ### 21.4 固定样本与结果（T03）
 
-`tests/ocr-samples.json` 保存逐张人工标注预期；图片为本地 `src/data/test`，按现有 gitignore 不提交。21 张含 result 10 张、select 8 张、playing 3 张。目标：15 张有效成绩整条字段均正确；2 张任务结算、1 张未游玩占位、3 张游玩中图片全部跳过；错误入库为 0。
+`tests/ocr-samples.json` 保存逐张人工标注预期；图片在 `tests/score images/{result,select,playing}`。21 张含 result 10 张、select 8 张、playing 3 张。目标：15 张有效成绩整条字段均正确；2 张任务结算、1 张未游玩占位、3 张游玩中图片全部跳过；错误入库为 0。
 
 本机 Edge 真实 OCR 实测达到上述目标：有效曲目匹配、Score、模式／难度／等级、FC／AP、结算页 Max Chain 均为 15/15；6/6 负样本跳过。批量入库后去重得到 11 条谱面成绩。曲名原始文本完全一致不是 100%（存在空格和标点噪声），业务匹配后均正确。样本覆盖日英 UI、NORMAL/HARD 和 BASIC/ADVANCED；不将该结果外推为 EASY/MASTER、拍照、裁切、所有分辨率或所有曲目已通过。
 
