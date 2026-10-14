@@ -180,7 +180,6 @@
     "trend": {
         "region": "Rating 趨勢",
         "title": "Rating 變化",
-        "subtitle": "依成績時間查看 Rating 變化，相簿截圖使用拍攝時間",
         "grain": "Rating 時間粒度",
         "grains": {
             "day": "日",
@@ -188,8 +187,6 @@
             "year": "年"
         },
         "chart": "{mode} Rating 折線圖，{count} 個週期",
-        "slider": "選擇週期",
-        "valueText": "{date}，{rating} RT",
         "empty": "登錄第一份成績後，在這裡查看 Rating 變化。"
     },
     "b30Export": {

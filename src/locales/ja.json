@@ -180,7 +180,6 @@
     "trend": {
         "region": "Rating の推移",
         "title": "Rating の推移",
-        "subtitle": "成績日時ごとの Rating 推移。アルバム画像は撮影日時を使用",
         "grain": "Rating の集計単位",
         "grains": {
             "day": "日",
@@ -188,8 +187,6 @@
             "year": "年"
         },
         "chart": "{mode} Rating の折れ線グラフ、{count} 期間",
-        "slider": "期間を選択",
-        "valueText": "{date}、{rating} RT",
         "empty": "最初のスコアを登録すると、ここで Rating の推移を確認できます。"
     },
     "b30Export": {

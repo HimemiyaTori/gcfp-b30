@@ -180,7 +180,6 @@
     "trend": {
         "region": "Rating 趋势",
         "title": "Rating 变化",
-        "subtitle": "按成绩时间回看 Rating 变化，相册截图使用拍摄时间",
         "grain": "Rating 时间粒度",
         "grains": {
             "day": "日",
@@ -188,8 +187,6 @@
             "year": "年"
         },
         "chart": "{mode} Rating 折线图，{count} 个周期",
-        "slider": "选择周期",
-        "valueText": "{date}，{rating} RT",
         "empty": "录入第一份成绩后，在这里查看 Rating 变化。"
     },
     "b30Export": {

@@ -54,7 +54,7 @@ function pick(event: PointerEvent) {
 </script>
 <template>
     <section class="panel rating-trend" :aria-label="t('trend.region')">
-        <div class="section-title between"><div><h2>{{ t('trend.title') }} <small>{{ mode }}</small></h2><p class="muted">{{ t('trend.subtitle') }}</p></div><div class="segmented" role="group" :aria-label="t('trend.grain')"><button v-for="key in ['day', 'month', 'year'] as const" :key="key" :aria-pressed="grain === key" :class="{ selected: grain === key }" @click="grain = key">{{ t(`trend.grains.${key}`) }}</button></div></div>
+        <div class="section-title between"><div><h2>{{ t('trend.title') }} <small>{{ mode }}</small></h2></div><div class="segmented" role="group" :aria-label="t('trend.grain')"><button v-for="key in ['day', 'month', 'year'] as const" :key="key" :aria-pressed="grain === key" :class="{ selected: grain === key }" @click="grain = key">{{ t(`trend.grains.${key}`) }}</button></div></div>
         <template v-if="points.length && focus">
             <p class="trend-value" aria-live="polite">{{ label(focus.time) }} · {{ focus.rating.toFixed(2) }} RT</p>
             <svg ref="canvas" :viewBox="`0 0 ${width} 245`" role="img" :aria-label="t('trend.chart', { mode, count: points.length }, points.length)" @pointermove="pick" @pointerdown="pick">
@@ -63,7 +63,6 @@ function pick(event: PointerEvent) {
                 <circle :cx="x(selected)" :cy="y(focus.rating)" r="5" fill="currentColor" />
                 <text x="48" y="239">{{ label(points[0]!.time) }}</text><text v-if="points.length > 1" :x="width - 20" y="239" text-anchor="end">{{ label(points[points.length - 1]!.time) }}</text>
             </svg>
-            <label class="trend-slider">{{ t('trend.slider') }}<input v-model.number="selected" type="range" min="0" :max="points.length - 1" :aria-valuetext="t('trend.valueText', { date: label(focus.time), rating: focus.rating.toFixed(2) })" /></label>
         </template>
         <p v-else class="empty">{{ t('trend.empty') }}</p>
     </section>
@@ -75,7 +74,5 @@ function pick(event: PointerEvent) {
 .rating-trend svg text { fill: var(--muted); font-size: 13px; }
 .trend-grid { stroke: currentColor; opacity: .12; }
 .trend-value { font-variant-numeric: tabular-nums; margin: 0 24px; }
-.trend-slider { display: flex; align-items: center; gap: 12px; margin: 0 24px 20px; font-size: 12px; color: var(--muted); }
-.trend-slider input { flex: 1; min-width: 0; }
 @media (max-width: 680px) { .rating-trend svg { min-height: 160px; } }
 </style>

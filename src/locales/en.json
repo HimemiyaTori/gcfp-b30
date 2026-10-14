@@ -180,7 +180,6 @@
     "trend": {
         "region": "Rating trend",
         "title": "Rating trend",
-        "subtitle": "Rating over time; album screenshots use their capture date",
         "grain": "Rating period",
         "grains": {
             "day": "Day",
@@ -188,8 +187,6 @@
             "year": "Year"
         },
         "chart": "{mode} Rating line chart, {count} period | {mode} Rating line chart, {count} periods",
-        "slider": "Choose period",
-        "valueText": "{date}, {rating} RT",
         "empty": "Add your first score to see your Rating trend here."
     },
     "b30Export": {

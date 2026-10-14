@@ -2,7 +2,11 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { scoreRepository } from '../../db/scoreRepository'
-const props = defineProps<{ canWrite: boolean; count: number; historyCount: number }>()
+const props = defineProps<{
+    canWrite: boolean
+    count: number
+    historyCount: number
+}>()
 const emit = defineEmits<{ notify: [message: string, title?: string] }>()
 const { t } = useI18n()
 const pending = ref(false)
@@ -51,7 +55,7 @@ defineExpose({ open })
                 {{ t('common.cancel') }}
             </button>
             <button
-                class="button primary danger-button"
+                class="button secondary danger-button"
                 :disabled="pending || !canWrite"
                 @click="clearScores"
             >
