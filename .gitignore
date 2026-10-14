@@ -13,3 +13,7 @@ dist/
 
 public/covers/
 public/ocr/
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+.wrangler/

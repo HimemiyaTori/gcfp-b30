@@ -1,5 +1,5 @@
 import { computed, onUnmounted, ref } from 'vue'
-import { createRecognizer } from '../core/ocr/recognizer'
+import { createSharedRecognizer as createRecognizer } from '../core/ocr/shared'
 import { scoreRepository } from '../db/scoreRepository'
 import { scoreIdentity } from '../core/score/import'
 import { t } from '../i18n'

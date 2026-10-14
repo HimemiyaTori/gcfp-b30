@@ -211,7 +211,7 @@ try {
     await details.waitFor({ state: 'hidden' })
     await page.locator('.history-table tbody tr').first().getByRole('button').first().click()
     await details.locator('tbody tr').first().getByText('900,034', { exact: false }).waitFor()
-    assert.equal(await details.getByRole('button', { name: /^导入时间：/ }).getAttribute('aria-label'), '导入时间：当前降序，点击升序')
+    assert.equal(await details.getByRole('button', { name: /^成绩时间：/ }).getAttribute('aria-label'), '成绩时间：当前降序，点击升序')
     await page.screenshot({ animations: 'disabled', path: '.preview/history-details-desktop.png', fullPage: true })
     await page.keyboard.press('Escape')
     await details.waitFor({ state: 'hidden' })

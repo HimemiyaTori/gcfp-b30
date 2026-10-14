@@ -2,13 +2,18 @@ import { chromium } from 'playwright'
 import assert from 'node:assert/strict'
 import { readFile, access, mkdir } from 'node:fs/promises'
 import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-// 先启动 yarn dev；样本目录可通过 OCR_SAMPLES_DIR 指定
+// 先启动 yarn dev；样本默认读 tests/score images，也可通过 OCR_SAMPLES_DIR 指定
 const samples = JSON.parse(
     await readFile(new URL('./ocr-samples.json', import.meta.url), 'utf8'),
 )
-const sampleDirectory = resolve(process.env.OCR_SAMPLES_DIR || 'src/data/test')
+const sampleDirectory = resolve(
+    process.env.OCR_SAMPLES_DIR ||
+        fileURLToPath(new URL('./score images', import.meta.url)),
+)
 const samplePath = path => resolve(sampleDirectory, path)
+const repeatableResult = samplePath('result/en-bas-hard9-fc.jpg')
 const missing = []
 for (const sample of samples) {
     try { await access(samplePath(sample.path)) } catch { missing.push(sample.path) }
@@ -90,7 +95,7 @@ try {
     }
     await page.getByRole('button', { name: '关闭', exact: true }).click()
     // 关闭结果弹窗后再次导入，应提示重复成绩
-    await page.getByLabel('选择成绩截图或 Excel', { exact: true }).setInputFiles(samplePath('result/6292.jpg'))
+    await page.getByLabel('选择成绩截图或 Excel', { exact: true }).setInputFiles(repeatableResult)
     await page.waitForFunction(
         () => document.querySelector('.import-result.skipped'),
         {},
@@ -104,7 +109,7 @@ try {
     await page.getByRole('heading', { name: '成绩一览' }).waitFor()
     await page.evaluate(() => { location.hash = '#home' })
     await page.getByRole('heading', { name: '录入新成绩' }).waitFor()
-    await page.getByLabel('选择成绩截图或 Excel', { exact: true }).setInputFiles(samplePath('result/6292.jpg'))
+    await page.getByLabel('选择成绩截图或 Excel', { exact: true }).setInputFiles(repeatableResult)
     await page.waitForFunction(() => document.querySelector('.import-result.skipped'), {}, { timeout: 30000 })
     await page.getByRole('button', { name: '关闭', exact: true }).click()
     console.log('Upload after page navigation passed')
@@ -126,11 +131,11 @@ try {
     // 取消识别，再在新批次运行时切换页面，成绩不应改变
     await page
         .getByLabel('选择成绩截图或 Excel', { exact: true })
-        .setInputFiles(samplePath('result/6292.jpg'))
+        .setInputFiles(repeatableResult)
     await page.getByRole('button', { name: '取消识别', exact: true }).click()
     await page
         .getByLabel('选择成绩截图或 Excel', { exact: true })
-        .setInputFiles(samplePath('result/6292.jpg'))
+        .setInputFiles(repeatableResult)
     await page.evaluate(() => {
         location.hash = '#scores'
     })
@@ -182,8 +187,8 @@ try {
     })
     await page.getByRole('heading', { name: '录入新成绩' }).waitFor()
     await page.getByLabel('选择成绩截图或 Excel', { exact: true }).setInputFiles([
-        samplePath('result/6292.jpg'),
-        samplePath('result/6292.jpg'),
+        repeatableResult,
+        repeatableResult,
     ])
     await page.waitForFunction(
         () => document.querySelectorAll('.import-result').length === 2 &&
@@ -203,8 +208,8 @@ try {
         }
     })
     await page.getByLabel('选择成绩截图或 Excel', { exact: true }).setInputFiles([
-        samplePath('result/6292.jpg'),
-        samplePath('result/6292.jpg'),
+        repeatableResult,
+        repeatableResult,
     ])
     await page.waitForFunction(() => document.querySelectorAll('.import-result').length === 2 &&
         !document.querySelector('.import-result.queued, .import-result.running'), {}, { timeout: 120000 })
@@ -219,9 +224,9 @@ try {
         const record = (await scoreRepository.list()).find(item => item.chartId === '6-basic-hard')
         await scoreRepository.edit(record.id, 0, true)
     })
-    await page.getByLabel('选择成绩截图或 Excel', { exact: true }).setInputFiles(samplePath('result/6292.jpg'))
+    await page.getByLabel('选择成绩截图或 Excel', { exact: true }).setInputFiles(repeatableResult)
     await page.waitForFunction(() => document.querySelector('.import-result.success'), {}, { timeout: 30000 })
-    await page.getByLabel('选择成绩截图或 Excel', { exact: true }).setInputFiles(samplePath('result/6292.jpg'))
+    await page.getByLabel('选择成绩截图或 Excel', { exact: true }).setInputFiles(repeatableResult)
     await page.waitForFunction(() => document.querySelector('.import-result.skipped'), {}, { timeout: 30000 })
     // 等待用户可见的完成反馈结束，新批次结果弹窗应保持打开
     await page.waitForTimeout(3000)

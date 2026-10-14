@@ -6,6 +6,7 @@ export function getScoreRow(record: ScoreRecord | ScoreHistory, language: 'ja' |
     return {
         ...getSongDisplay(song, language),
         ...record,
+        ...('importedAt' in record ? { importedAt: record.playedAt ?? record.importedAt } : {}),
         id: record.id!,
         category: song.genre,
         difficulty: chart.difficulty.toUpperCase(),

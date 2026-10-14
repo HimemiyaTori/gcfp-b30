@@ -11,18 +11,19 @@ export interface ScoreRecord extends ScoreAchievements {
     chartId: string
     score: number
     rating: number
-    source: 'ocr' | 'manual' | 'excel'
+    source: 'ocr' | 'manual' | 'excel' | 'nso_ocr'
     historyId: number
     updatedAt: number
 }
 export interface ScoreHistory extends Omit<ScoreRecord, 'historyId'> {
+    playedAt?: number
     importedAt: number
     batchId: string
     correctedAt?: number
 }
 export interface RatingSnapshot {
     id?: number
-    importedAt: number
+    playedAt: number
     basic: number
     advanced: number
 }

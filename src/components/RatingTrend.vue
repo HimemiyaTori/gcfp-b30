@@ -21,8 +21,8 @@ const period = (time: number) => { const date = new Date(time); return new Date(
 const points = computed(() => {
     if (!props.snapshots.length) return []
     const buckets = new Map<number, number>()
-    for (const snapshot of props.snapshots) buckets.set(period(snapshot.importedAt).getTime(), props.mode === 'BASIC' ? snapshot.basic : snapshot.advanced)
-    const date = period(props.snapshots[0]!.importedAt), end = period(today.value).getTime()
+    for (const snapshot of props.snapshots) buckets.set(period(snapshot.playedAt).getTime(), props.mode === 'BASIC' ? snapshot.basic : snapshot.advanced)
+    const date = period(props.snapshots[0]!.playedAt), end = period(today.value).getTime()
     const result: { time: number; rating: number }[] = []
     let value = 0
     while (date.getTime() <= end) {

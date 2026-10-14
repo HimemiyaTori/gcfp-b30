@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Plus } from 'lucide-vue-next'
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppHeader from './components/app/AppHeader.vue'
 import AppNavigation from './components/app/AppNavigation.vue'
@@ -24,8 +24,18 @@ import B30Page from './pages/B30Page.vue'
 import HomePage from './pages/HomePage.vue'
 import ScoresPage from './pages/ScoresPage.vue'
 import SettingsPage from './pages/SettingsPage.vue'
+import type { AlbumState } from './db/albumModels'
+const nintendoAccount = shallowRef<{ state: AlbumState }>()
+const NintendoAccount = import.meta.env.VITE_SERVER === '1' ? defineAsyncComponent(() => import('./components/album/NintendoAccount.vue')) : undefined
+const AlbumProgress = import.meta.env.VITE_SERVER === '1' ? defineAsyncComponent(() => import('./components/album/AlbumProgress.vue')) : undefined
+const AlbumSync = import.meta.env.VITE_SERVER === '1' ? defineAsyncComponent(() => import('./components/album/AlbumSync.vue')) : undefined
+if (import.meta.env.VITE_SERVER === '1') void import('./core/album/controller').then(module => {
+    nintendoAccount.value = module.album
+    module.initializeAlbum()
+})
 const { t } = useI18n()
 const page = ref<Page>('home')
+const pageInfo = computed(() => navigation.find((item) => item.id === page.value)!)
 const sidebarCollapsed = ref(false)
 const {
     scores,
@@ -95,7 +105,7 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
             :count="scores.length"
         />
         <div class="workspace">
-            <AppHeader />
+            <AppHeader :account="nintendoAccount?.state" />
             <main>
                 <div class="page-heading between">
                     <div>
@@ -114,10 +124,10 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
                             {{
                                 page === 'home'
                                     ? t('app.homeTitle')
-                                    : t(`nav.${page}`)
+                                    : t(pageInfo.label)
                             }}
                         </h1>
-                        <p>{{ t(`app.intro.${page}`) }}</p>
+                        <p>{{ t(pageInfo.intro) }}</p>
                     </div>
                     <button
                         v-if="page === 'scores'"
@@ -136,6 +146,7 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
                         LOCAL DATA <span>{{ t('app.localData') }}</span>
                     </div>
                 </div>
+                <component :is="AlbumProgress" v-if="AlbumProgress && page !== 'settings'" />
                 <HomePage
                     v-if="page === 'home'"
                     :scores="scores"
@@ -173,7 +184,11 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
                     @import="excel?.start()"
                     @export="excel?.download(false)"
                     @template="excel?.download(true)"
-                />
+                >
+                    <template v-if="NintendoAccount" #account>
+                        <component :is="NintendoAccount" @notify="notify" />
+                    </template>
+                </SettingsPage>
                 <p v-if="databaseLoading" role="status">
                     {{ t('app.loading') }}
                 </p>
@@ -222,6 +237,12 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
             ref="excel"
             :can-write="canWrite"
             @notify="notify"
+        />
+        <component
+            :is="AlbumSync"
+            v-if="AlbumSync"
+            @notify="notify"
+            @manual-add="editor?.open()"
         />
     </div>
 </template>

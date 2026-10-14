@@ -36,12 +36,12 @@ onUnmounted(() => narrowSidebar.removeEventListener('change', syncSidebarToViewp
                 :key="n.id"
                 :href="`#${n.id}`"
                 :class="['nav-item row gap-3', { active: page === n.id }]"
-                :aria-label="t(`nav.${n.id}`)"
-                :title="sidebarCollapsed ? t(`nav.${n.id}`) : undefined"
+                :aria-label="t(n.label)"
+                :title="sidebarCollapsed ? t(n.label) : undefined"
                 :aria-current="page === n.id ? 'page' : undefined"
                 ><component :is="n.icon" :size="19" /><span
                     class="sidebar-copy"
-                    >{{ t(`nav.${n.id}`) }}</span
+                    >{{ t(n.label) }}</span
                 ><span
                     v-if="n.id === 'scores' && count > 0"
                     class="nav-badge"

@@ -5,7 +5,8 @@
         "home": "成績登錄",
         "scores": "成績管理",
         "b30": "我的 B30",
-        "settings": "偏好設定"
+        "settings": "偏好設定",
+        "account": "帳號與設定"
     },
     "common": {
         "cancel": "取消",
@@ -23,7 +24,8 @@
             "home": "記錄熱愛，收集進步。下一次，向更高的 Rating 出發。",
             "b30": "BASIC 與 ADVANCED 各自記錄最好的 30 張譜面，獨立計算 Groove Rating。",
             "scores": "回顧每一次發揮，整理你的個人最佳成績。",
-            "settings": "調整外觀與曲目資訊，讓這裡更像你的空間。"
+            "settings": "調整外觀與曲目資訊，讓這裡更像你的空間。",
+            "account": "綁定 Nintendo 帳號自動同步成績，調整外觀與曲目資訊，讓這裡更像你的空間。"
         },
         "localData": "本機成績",
         "loading": "正在載入本機成績…",
@@ -139,7 +141,7 @@
         "title": "曲目",
         "difficulty": "難度",
         "level": "等級",
-        "importedAt": "匯入時間",
+        "importedAt": "成績時間",
         "updatedAt": "更新時間",
         "position": "排名",
         "actions": "操作",
@@ -178,7 +180,7 @@
     "trend": {
         "region": "Rating 趨勢",
         "title": "Rating 變化",
-        "subtitle": "每個週期結束時的 Groove Rating",
+        "subtitle": "依成績時間查看 Rating 變化，相簿截圖使用拍攝時間",
         "grain": "Rating 時間粒度",
         "grains": {
             "day": "日",
@@ -388,5 +390,144 @@
         "scoreMissing": "成績已不存在，請重新整理列表。",
         "lowerUnconfirmed": "調低成績需要確認。",
         "chartNotFound": "曲目與譜面不存在或不相符，請檢查曲庫版本。"
+    },
+    "album": {
+        "failed": "相簿處理失敗，請重試",
+        "stale": "資料已清空或綁定已變更，舊任務無法提交",
+        "invalidTime": "拍攝時間無效",
+        "apiError": "相簿請求失敗：{code}",
+        "locksRequired": "目前瀏覽器不支援任務協調，請使用支援 Web Locks 的瀏覽器",
+        "otherTab": "另一個分頁正在更新相簿",
+        "bindFirst": "請先綁定 Nintendo 帳號",
+        "cooldown": "請在 {seconds} 秒後再更新",
+        "duplicate": "相同截圖已處理過，已略過",
+        "imageUnavailable": "原圖已從雲端相簿消失，無法讀取",
+        "unknownTime": "拍攝時間未知",
+        "deferred": "本次未處理，下次更新時繼續",
+        "errors": {
+            "network_error": "無法連線至相簿服務，請檢查網路後重試",
+            "request_failed": "相簿服務暫時無法使用，請稍後重試",
+            "not_configured": "相簿服務尚未設定，暫時無法使用",
+            "origin_rejected": "請求來源驗證失敗，請重新整理頁面後重試",
+            "consent_required": "請先確認風險與資料處理說明",
+            "auth_expired": "登入連結已過期，請點選「重新產生連結」後再次登入",
+            "invalid_callback": "連結無效或已使用。請重新登入，複製帳號選擇按鈕的連結位址後完整貼上",
+            "reauth_required": "Nintendo 登入已失效，請重新綁定帳號",
+            "rate_limited": "請求過於頻繁，請稍後再試",
+            "upstream_unavailable": "暫時無法連線至 Nintendo 服務，請稍後重試",
+            "download_failed": "截圖下載失敗，將在下次更新時重試",
+            "invalid_image": "不支援此截圖格式",
+            "too_large": "截圖超過 20 MB"
+        }
+    },
+    "account": {
+        "section": "帳號",
+        "nintendo": "Nintendo 帳號",
+        "unboundDescription": "綁定後，每次開啟本站都會自動讀取 Switch 2 上傳至 Nintendo Switch App 的 GCFP 截圖，在本機辨識並登錄成績。",
+        "features": {
+            "auto": "開啟網頁自動更新",
+            "local": "截圖僅在本機辨識",
+            "private": "成績只保存在本機"
+        },
+        "bind": "綁定 Nintendo 帳號",
+        "notConfigured": "相簿服務尚未設定，暫時無法綁定或更新。本機成績與手動登錄不受影響。",
+        "bound": "已綁定",
+        "boundDescription": "Nintendo 帳號 · 開啟本站時自動同步相簿中的新截圖",
+        "update": "更新成績",
+        "updating": "更新中…",
+        "cooldown": "{seconds} 秒後可更新",
+        "unbind": "解除綁定",
+        "stats": {
+            "media": "相簿中的 GCFP 截圖",
+            "imported": "已登錄的相簿成績",
+            "lastUpdate": "最近更新"
+        },
+        "never": "尚未更新",
+        "failures": "{count} 張截圖未能登錄",
+        "retry": "重試",
+        "note": "開啟本站時會自動檢查相簿中的新截圖，距上次更新不足 3 分鐘時不再檢查；兩次更新至少間隔 10 秒。雲端相簿只保留最近 30 天、最多 100 個檔案，請定期開啟本站同步。",
+        "source": "原始碼與授權",
+        "unbindTitle": "解除 Nintendo 帳號綁定？",
+        "unbindDescription": "將清除此瀏覽器保存的 Nintendo 登入憑證，並停止自動更新。已登錄的成績會保留；之後重新綁定時，已處理過的截圖不會重複登錄。",
+        "unbindConfirm": "確認解除",
+        "unbindPending": "正在解除…",
+        "unbound": "已解除 Nintendo 帳號綁定，已登錄的成績仍然保留。"
+    },
+    "bind": {
+        "title": "綁定 Nintendo 帳號",
+        "steps": {
+            "notice": "確認須知",
+            "login": "登入綁定"
+        },
+        "noticeIntro": "綁定後，開啟本站時會自動讀取 Nintendo Switch App 相簿中的 GCFP 截圖，在本機辨識並登錄成績。綁定前請仔細閱讀以下說明。",
+        "notices": {
+            "unofficial": {
+                "title": "非官方連線",
+                "text": "本功能透過非官方介面讀取相簿，任天堂更新後可能隨時失效。我們無法保證使用後帳號完全沒有風險，請自行判斷是否綁定。"
+            },
+            "thirdParty": {
+                "title": "資料經手方",
+                "text": "Cloudflare 會在傳輸中經手登入憑證、相簿清單和截圖；第三方服務 nxapi-znca-api 會處理 Nintendo 身分權杖、Coral 權杖及加密前後的請求內容。本站伺服器不保存這些資料。"
+            },
+            "storage": {
+                "title": "憑證與成績保存",
+                "text": "登入憑證加密後保存在本瀏覽器的 Cookie 中，30 天內有效，網頁指令碼無法讀取；辨識出的成績只保存在本機。"
+            },
+            "scope": {
+                "title": "讀取範圍",
+                "text": "僅讀取 Switch 2 已上傳至 Nintendo Switch App 的 GCFP 截圖。雲端相簿最多保存 100 個檔案、30 天，過期或未上傳的截圖無法讀取。"
+            }
+        },
+        "consent": "我已閱讀並了解上述風險與資料處理方式",
+        "agree": "同意並繼續",
+        "loginIntro": "依以下三個步驟完成綁定。登入連結 10 分鐘內有效，過期後可重新產生。",
+        "guide": {
+            "login": {
+                "title": "登入 Nintendo 帳號",
+                "text": "點選「前往登入」，在新開啟的頁面登入要綁定的 Nintendo 帳號。"
+            },
+            "copy": {
+                "title": "複製連結",
+                "text": "登入後頁面會顯示帳號選擇按鈕（如「選擇此人」）。請不要直接點選，在按鈕上按右鍵（手機上長按），選擇「複製連結網址」。"
+            },
+            "paste": {
+                "title": "回來貼上",
+                "text": "回到本頁面，把複製的連結貼到下方，點選「完成綁定」。"
+            }
+        },
+        "openLogin": "前往登入",
+        "preparing": "正在產生登入連結…",
+        "regenerate": "重新產生連結",
+        "callback": "帳號連結",
+        "paste": "貼上",
+        "pasteFailed": "無法讀取剪貼簿，請手動貼上連結",
+        "invalidLink": "連結應以 npf 開頭，請複製帳號選擇按鈕的連結位址。",
+        "safety": "此連結可用於登入你的帳號，請勿傳送給他人。手機上點選按鈕可能會跳轉至 Nintendo Switch App，建議在電腦上完成綁定。",
+        "back": "上一步",
+        "finish": "完成綁定",
+        "finishing": "正在綁定…",
+        "success": "綁定成功",
+        "successNote": "即將讀取相簿中的 GCFP 截圖並登錄成績",
+        "done": "完成"
+    },
+    "sync": {
+        "note": "截圖從 Nintendo 相簿讀取，僅在本機辨識；關閉對話框後會在背景繼續更新。",
+        "running": "關閉對話框不會中斷更新，可在帳號與設定中查看進度。",
+        "summary": "略過 {skipped} 張，失敗 {failed} 張。失敗的截圖可在帳號與設定中重試，也可以手動新增成績。",
+        "background": "背景更新",
+        "cancel": "停止更新",
+        "done": "已處理 {found} 張截圖，新增歷史 {recorded} 筆，更新最佳成績 {updated} 筆。",
+        "doneIssues": "已處理 {found} 張截圖，新增歷史 {recorded} 筆，更新最佳成績 {updated} 筆；略過 {skipped} 張，失敗 {failed} 張。",
+        "doneTitle": "相簿已同步",
+        "upToDate": "已是最新",
+        "noNew": "Nintendo 相簿中沒有新的 GCFP 截圖。",
+        "failedTitle": "相簿更新失敗",
+        "canceledTitle": "已停止更新",
+        "canceled": "已登錄的成績會保留，其餘截圖將在下次更新時繼續。",
+        "banner": {
+            "checking": "正在檢查 Nintendo 相簿…",
+            "importing": "正在登錄相簿截圖",
+            "view": "查看詳情"
+        }
     }
 }
