@@ -10,10 +10,9 @@ dist/
 !.yarn/sdks
 !.yarn/versions
 .pnp.*
+.dev.vars
+.dev.vars.*
+.wrangler/
 
 public/covers/
 public/ocr/
-.dev.vars
-.dev.vars.*
-!.dev.vars.example
-.wrangler/

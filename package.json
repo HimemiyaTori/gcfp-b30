@@ -4,7 +4,7 @@
     "version": "0.1.0",
     "type": "module",
     "scripts": {
-        "dev": "node scripts/prepare-ocr.mjs && node scripts/prepare-covers.mjs && vite --host 127.0.0.1",
+        "dev": "node scripts/build-server.mjs && wrangler dev --local",
         "build": "node scripts/prepare-ocr.mjs && node scripts/prepare-covers.mjs && vue-tsc --noEmit && vite build",
         "preview": "vite preview --host 127.0.0.1",
         "test": "tsx --test tests/excel.test.mjs",
@@ -15,6 +15,7 @@
         "test:covers": "tsx tests/covers-browser.mjs",
         "test:b30-export": "node tests/b30-export-browser.mjs",
         "build:server": "node scripts/build-server.mjs",
+        "dev:local": "node scripts/prepare-ocr.mjs && node scripts/prepare-covers.mjs && vite --host 127.0.0.1",
         "dev:server": "wrangler dev --local",
         "check:worker": "tsc -p worker/tsconfig.json",
         "test:album": "node tests/album-browser.mjs",

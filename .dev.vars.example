@@ -1,7 +1,0 @@
-COOKIE_KEY=""
-NXAPI_CLIENT_ID=""
-# 仅机密客户端需要填写，没有 Secret 时留空或删除此项
-NXAPI_CLIENT_SECRET=""
-# Wrangler 远程开发时填浏览器实际打开的来源，正式直连部署可留空
-# localhost 与 127.0.0.1 是不同来源，端口也必须一致
-APP_ORIGIN=""
