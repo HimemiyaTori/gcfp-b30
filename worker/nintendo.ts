@@ -56,6 +56,8 @@ async function upstream(url: string, init: RequestInit = {}) {
             host: target.hostname,
             path: target.pathname,
             error: error instanceof Error ? error.name : typeof error,
+            // 运行时网络错误文本不含请求体，截断后记录便于区分断连、TLS 与解析失败
+            message: error instanceof Error ? error.message.slice(0, 200) : undefined,
             cause:
                 causeRecord &&
                 `${String(causeRecord.name || 'Error')}${causeRecord.code ? ` (${String(causeRecord.code)})` : ''}`,
