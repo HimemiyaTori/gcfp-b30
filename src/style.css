@@ -1302,10 +1302,13 @@ input::placeholder {
 }
 .toast {
     position: fixed;
-    bottom: 25px;
-    left: 50%;
-    transform: translateX(-50%);
-    max-width: calc(100% - 30px);
+    right: 24px;
+    bottom: 24px;
+    width: 360px;
+    max-width: calc(100% - 48px);
+    max-height: calc(100dvh - 48px);
+    overflow-y: auto;
+    align-items: flex-start;
     background: var(--panel);
     border: 1px solid var(--line);
     box-shadow: var(--shadow);
@@ -1868,11 +1871,6 @@ input::placeholder {
         flex-wrap: wrap;
         gap: 10px;
     }
-    .toast {
-        width: calc(100% - 30px);
-        bottom: 80px;
-        font-size: 13px;
-    }
     .settings-panel {
         margin-bottom: 18px;
     }
@@ -2208,17 +2206,14 @@ input::placeholder {
     line-height: 1.8;
     margin-top: 9px;
 }
-.toast {
-    left: auto;
-    right: 24px;
-    bottom: 24px;
-    transform: none;
-    width: 360px;
-    align-items: flex-start;
+.toast > svg,
+.toast .icon-button {
+    flex-shrink: 0;
 }
 .notification-copy {
     flex: 1;
     min-width: 0;
+    overflow-wrap: anywhere;
 }
 .notification-copy strong {
     display: block;
@@ -2234,10 +2229,16 @@ input::placeholder {
     .toast {
         top: max(12px, env(safe-area-inset-top));
         bottom: auto;
-        right: 12px;
-        left: 12px;
+        right: max(12px, env(safe-area-inset-right));
+        left: max(12px, env(safe-area-inset-left));
         width: auto;
+        max-width: none;
+        max-height: calc(100dvh - max(12px, env(safe-area-inset-top)) - 80px - env(safe-area-inset-bottom));
         padding: 10px 12px;
+    }
+    .toast .icon-button {
+        width: 44px;
+        height: 44px;
     }
     .notification-copy strong {
         margin-bottom: 2px;

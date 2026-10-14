@@ -14,7 +14,7 @@ export const UPDATE_COOLDOWN = 10000
 const finished = new Set(['imported', 'skipped', 'rejected', 'expired', 'failed'])
 export const retryable = new Set(['failed', 'retry_wait', 'canceled'])
 export interface AlbumJob extends ImportJob { mediaId: string }
-export interface AlbumRun { id: number; manual: boolean; found: number; recorded: number; updated: number; failed: number; skipped: number; canceled: boolean; error?: string }
+export interface AlbumRun { id: number; manual: boolean; checked: boolean; found: number; recorded: number; updated: number; failed: number; skipped: number; canceled: boolean; error?: string }
 export const album = reactive({
     configured: undefined as boolean | undefined,
     state: initialAlbumState(),
@@ -240,6 +240,7 @@ export async function scan(manual = false) {
     const controller = new AbortController()
     aborter = controller
     const tally = { recorded: 0, updated: 0 }
+    let checked = false
     let failure: string | undefined
     try {
         if (!navigator.locks) throw new Error(t('album.locksRequired'))
@@ -248,6 +249,7 @@ export async function scan(manual = false) {
             const { result, state } = await credentialLock(() => fetchMedia(manual, controller.signal))
             active = state
             const queue = await collect(result, state)
+            checked = true
             album.jobs = queue.map((item, index): AlbumJob => ({ mediaId: item.mediaId, name: label(item.capturedAt), index: index + 1, status: 'queued', error: '' }))
             if (!queue.length) return
             album.phase = 'importing'
@@ -263,7 +265,7 @@ export async function scan(manual = false) {
         active = undefined
         for (const job of album.jobs) if (job.status === 'queued' || job.status === 'running') Object.assign(job, { status: 'skipped', error: t('album.deferred') })
         const count = (status: ImportJob['status']) => album.jobs.filter(job => job.status === status).length
-        album.run = { id: ++runs, manual, found: album.jobs.length, ...tally, failed: count('failed'), skipped: count('skipped'), canceled: canceled && controller.signal.aborted, error: failure }
+        album.run = { id: ++runs, manual, checked, found: album.jobs.length, ...tally, failed: count('failed'), skipped: count('skipped'), canceled: canceled && controller.signal.aborted, error: failure }
         album.busy = false
         album.phase = 'idle'
     }

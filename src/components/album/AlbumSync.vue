@@ -43,7 +43,7 @@ watch(
             return
         }
         if (!run.found) {
-            if (run.manual) emit('notify', t('sync.noNew'), t('sync.upToDate'))
+            if (run.checked) emit('notify', t('sync.noNew'), t('sync.upToDate'))
             return
         }
         if (!open) return emit('notify', summary(run), t('sync.doneTitle'))
