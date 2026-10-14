@@ -19,6 +19,7 @@ export interface CoralCache {
     accountId: string
     bindingId: string
     expiresAt: number
+    avatarSelection?: 'nso-first'
     // null 表示资料中没有可用头像，缺少字段的旧缓存需补取一次
     avatarUrl?: string | null
 }
@@ -448,7 +449,8 @@ export class Nintendo {
             accountId: session.accountId,
             bindingId: session.bindingId,
             expiresAt: Date.now() + credential.expiresIn * 1000,
-            avatarUrl: profileAvatar(result.naUser?.iconUri, profile.iconUri, result.user?.imageUri, result.user?.image2Uri, session.avatarUrl) ?? null,
+            avatarSelection: 'nso-first',
+            avatarUrl: profileAvatar(result.user?.imageUri, result.user?.image2Uri, result.naUser?.iconUri, profile.iconUri, session.avatarUrl) ?? null,
         }
     }
     async media(session: Session, cached?: CoralCache) {
@@ -456,6 +458,7 @@ export class Nintendo {
             cached &&
             cached.accountId === session.accountId &&
             cached.bindingId === session.bindingId &&
+            cached.avatarSelection === 'nso-first' &&
             cached.avatarUrl !== undefined &&
             cached.expiresAt > Date.now() + 30000
                 ? cached
