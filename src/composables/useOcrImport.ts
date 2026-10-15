@@ -4,17 +4,11 @@ import { createSharedRecognizer as createRecognizer } from '../core/ocr/shared'
 import { scoreRepository } from '../db/scoreRepository'
 import { saveRecognition } from '../db/recognitionRepository'
 import { scoreIdentity } from '../core/score/import'
-import { t } from '../i18n'
+import { errorMessage, t } from '../i18n'
+import type { ImportJob } from '../core/ocr/models'
 
 export const MAX_IMPORT_FILES = 60
 
-export interface ImportJob {
-    name: string
-    index: number
-    status: 'queued' | 'running' | 'success' | 'failed' | 'skipped'
-    error: string
-    preview?: string
-}
 export function useOcrImport() {
     const jobs = ref<ImportJob[]>([])
     const edgeSecurityHint = ref(false)
@@ -151,10 +145,7 @@ export function useOcrImport() {
                 } catch (error) {
                     if (current.signal.aborted) return
                     job.status = 'failed'
-                    job.error =
-                        error instanceof Error
-                            ? error.message
-                            : t('ocr.errors.unknown')
+                    job.error = errorMessage(error, 'ocr.errors.unknown')
                 } finally {
                     file = undefined
                 }

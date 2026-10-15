@@ -3,12 +3,10 @@ import type { ScoreRecord } from '../../db/models'
 import { getSongTitle, songService } from '../song/songService'
 import { getRankByScore, rankThresholds } from '../rating/rank'
 import { getChartRating, ratingNodes } from '../rating/calculator'
-import { TEMPLATE_HEADERS, localizedHeaders, type ExcelLanguage } from './headers'
-import { inputMessages, MAX_CHAIN } from './validation'
+import { MODE_SHEETS, TEMPLATE_HEADER_ROW, TEMPLATE_HEADERS, localizedHeaders, type ExcelLanguage } from './headers'
+import { inputMessages } from './validation'
+import { getMaxChainLimit } from '../score/validation'
 
-export const MODE_SHEETS = ['BASIC', 'ADVANCED'] as const
-export const TEMPLATE_HEADER_ROW = 1
-export { TEMPLATE_HEADERS } from './headers'
 const difficultyColors = {
     easy: ['FFDCFCE7', 'FF166534'],
     normal: ['FFFEF3C7', 'FF92400E'],
@@ -190,11 +188,11 @@ export function createScoreWorkbook(
                     type: 'whole',
                     operator: 'between',
                     allowBlank: true,
-                    formulae: [0, MAX_CHAIN],
+                    formulae: [0, getMaxChainLimit(chart)],
                     showErrorMessage: true,
                     errorStyle: 'stop',
                     errorTitle: messages.chainTitle,
-                    error: messages.chainError,
+                    error: messages.chainError.replace('{max}', String(getMaxChainLimit(chart))),
                 }
                 for (const column of [8, 9])
                     row.getCell(column).dataValidation = {

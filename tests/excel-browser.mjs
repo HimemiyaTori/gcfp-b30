@@ -5,11 +5,8 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { utils, read, write } from 'xlsx'
 import ExcelJS from 'exceljs'
-import {
-    createScoreWorkbook,
-    parseScoreWorkbook,
-    workbookBytes,
-} from '../src/core/excel/workbook.ts'
+import { createScoreWorkbook, workbookBytes } from '../src/core/excel/template.ts'
+import { parseScoreWorkbook } from '../src/core/excel/reader.ts'
 import { songService } from '../src/core/song/songService.ts'
 
 const song = songService.songs[0]
@@ -46,7 +43,8 @@ const expectedInputMessages = {
 function checkDownloadedInputs(sheet, messages) {
     for (const address of ['D2', 'D3'])
         assert.equal(sheet.getCell(address).alignment.horizontal, 'center')
-    assert.deepEqual(sheet.getCell('J2').dataValidation.formulae, [0, 2000])
+    const maxChain = sheet.name === 'ADVANCED' ? 160 : 2000
+    assert.deepEqual(sheet.getCell('J2').dataValidation.formulae, [0, maxChain])
     for (const [address, title, body] of [
         ['E2', messages[0], messages[1]],
         ['J2', messages[2], messages[3]],
@@ -54,7 +52,7 @@ function checkDownloadedInputs(sheet, messages) {
         ['I2', messages[4], messages[5]],
     ]) {
         assert.equal(sheet.getCell(address).dataValidation.errorTitle, title)
-        assert.equal(sheet.getCell(address).dataValidation.error, body)
+        assert.equal(sheet.getCell(address).dataValidation.error, address === 'J2' ? body.replace('2000', String(maxChain)) : body)
     }
     for (const address of ['F2', 'G2'])
         assert.ok(sheet.getCell(address).formula.includes(`"${messages[6]}"`))

@@ -4,7 +4,7 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AnimatedProgress from '../common/AnimatedProgress.vue'
 import AnimatedSuccess from '../common/AnimatedSuccess.vue'
-import type { ImportJob } from '../../composables/useOcrImport'
+import type { ImportJob } from '../../core/ocr/models'
 const props = defineProps<{
     jobs: ImportJob[]
     importing: boolean

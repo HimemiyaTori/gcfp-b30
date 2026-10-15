@@ -8,7 +8,7 @@ import type { ScoreRow } from '../../db/models'
 import { scoreRepository } from '../../db/scoreRepository'
 import { getChartRating } from '../../core/rating/calculator'
 import { getRankByScore } from '../../core/rating/rank'
-import { isValidScore } from '../../core/score/validation'
+import { getMaxChainLimit, isValidScore } from '../../core/score/validation'
 import {
     songService,
     getSongDisplay,
@@ -73,6 +73,7 @@ watch(chartOptions, (options) => {
         editorDifficulty.value = options[options.length - 1]?.difficulty ?? ''
 })
 const chartBase = computed(() => currentChart.value?.level ?? 0)
+const maxChainLimit = computed(() => getMaxChainLimit(currentChart.value))
 const pending = ref(false),
     saveError = ref(''),
     lowerConfirmed = ref(false)
@@ -340,10 +341,12 @@ defineExpose({ open, openChart })
                         v-model="inputMaxChain"
                         type="number"
                         min="0"
+                        :max="maxChainLimit"
                         step="1"
                         :placeholder="t('editor.notRecorded')"
                 /></label>
             </div>
+            <p class="form-note">{{ t('editor.maxChainLimit', { max: maxChainLimit }) }}</p>
             <div class="live-metrics" aria-live="polite">
                 <div>
                     <small>Rank</small><strong>{{ liveRank }}</strong>

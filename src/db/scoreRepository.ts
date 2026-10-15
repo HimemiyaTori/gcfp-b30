@@ -5,7 +5,8 @@ import { database, type ScoreDatabase } from './database'
 import type { ScoreAchievements, ScoreHistory, ScoreRecord } from './models'
 import Dexie from 'dexie'
 import { t } from '../i18n'
-import { validateScore, validateAchievements } from '../core/score/validation'
+import { validateScore, validateAchievements, normalizeAchievements } from '../core/score/validation'
+import { DomainError } from '../core/errors'
 import { mergeBest, scoreIdentity, selectExcelScores, type ImportedScore } from '../core/score/import'
 import { initialAlbumState } from './albumModels'
 
@@ -25,7 +26,8 @@ export function createScoreRepository(db: ScoreDatabase, library = songService, 
             if (entry.playedAt === undefined) await db.scoreHistory.update(entry.id!, { playedAt })
             const value = rating(entry)
             if (entry.rating !== value) await db.scoreHistory.update(entry.id!, { rating: value })
-            const next: ScoreRecord = { id: entry.id, historyId: entry.id!, songId: entry.songId, chartId: entry.chartId, score: entry.score, rating: value, source: entry.source, updatedAt: entry.updatedAt, ...validateAchievements(entry) }
+            // 旧历史保留原始完成信息，新上限只校验录入与修改，避免阻断整个成绩库
+            const next: ScoreRecord = { id: entry.id, historyId: entry.id!, songId: entry.songId, chartId: entry.chartId, score: entry.score, rating: value, source: entry.source, updatedAt: entry.updatedAt, ...normalizeAchievements(entry) }
             best.set(entry.chartId, mergeBest(best.get(entry.chartId), next))
             if ((history[i + 1]?.playedAt ?? history[i + 1]?.importedAt) === playedAt) continue
             const total = (mode: 'basic' | 'advanced') => getTotalRating([...best.values()]
@@ -39,7 +41,7 @@ export function createScoreRepository(db: ScoreDatabase, library = songService, 
         await db.ratingSnapshots.bulkAdd(snapshots)
     }
     async function append(input: ImportedScore, source: ScoreHistory['source'], batchId: string, now: number) {
-        const details = validateAchievements(input)
+        const details = validateAchievements(input, library.getChart(input.songId, input.chartId).chart)
         const latest = await db.scoreHistory.where('[chartId+importedAt]').between([input.chartId, Dexie.minKey], [input.chartId, Dexie.maxKey]).reverse().first()
         if (latest && scoreIdentity(latest) === scoreIdentity(input)) return undefined
         return db.scoreHistory.add({ songId: input.songId, chartId: input.chartId, score: input.score, ...details, rating: rating(input), source, importedAt: now, playedAt: source === 'nso_ocr' ? input.updatedAt : now, updatedAt: input.updatedAt ?? now, batchId })
@@ -111,7 +113,7 @@ export function createScoreRepository(db: ScoreDatabase, library = songService, 
                 const record = await db.scores.get(id)
                 if (!record) throw new Error(t('errors.scoreMissing'))
                 if (score < record.score && !allowLower) throw new Error(t('errors.lowerUnconfirmed'))
-                const details = validateAchievements(achievements ?? record)
+                const details = validateAchievements(achievements ?? record, library.getChart(record.songId, record.chartId).chart)
                 if (scoreIdentity({ ...record, ...details, score }) === scoreIdentity(record)) return
                 const onlyChain = record.score === score && record.fc === details.fc && record.ap === details.ap
                 await db.scoreHistory.update(record.historyId, { score, ...details, updatedAt: record.source === 'nso_ocr' || onlyChain ? record.updatedAt : Date.now(), correctedAt: Date.now() })
@@ -138,12 +140,12 @@ export function createScoreRepository(db: ScoreDatabase, library = songService, 
             return db.transaction('rw', tables, async () => {
                 const item = await db.albumItems.get([accountId, mediaId])
                 const state = await db.albumState.get('album')
-                if (!item || !state || state.accountId !== accountId || item.datasetEpoch !== state.datasetEpoch || item.bindingGeneration !== state.bindingGeneration) throw new Error(t('album.stale'))
+                if (!item || !state || state.accountId !== accountId || item.datasetEpoch !== state.datasetEpoch || item.bindingGeneration !== state.bindingGeneration) throw new DomainError('album.stale')
                 if (item.stage === 'imported' || item.stage === 'skipped') return { recorded: false, updated: false }
-                if (item.stage !== 'needs_review' && item.stage !== 'pending_commit') throw new Error(t('album.stale'))
+                if (item.stage !== 'needs_review' && item.stage !== 'pending_commit') throw new DomainError('album.stale')
                 const time = candidate.updatedAt
                 if (!Number.isSafeInteger(time) || time! < Date.UTC(2017, 0, 1) || time! > Date.now() + 86400000) throw new Error(t('album.invalidTime'))
-                const details = validateAchievements(candidate)
+                const details = validateAchievements(candidate, library.getChart(candidate.songId, candidate.chartId).chart)
                 rating(candidate)
                 const old = await db.scores.where('chartId').equals(candidate.chartId).first()
                 const id = await append({ ...candidate, ...details }, 'nso_ocr', crypto.randomUUID(), Date.now())

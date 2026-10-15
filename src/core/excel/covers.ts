@@ -1,7 +1,7 @@
 import type ExcelJS from 'exceljs'
 import { songService } from '../song/songService'
 import { coverThumbUrl } from '../song/cover'
-import { TEMPLATE_HEADERS, TEMPLATE_HEADER_ROW } from './template'
+import { TEMPLATE_HEADERS, TEMPLATE_HEADER_ROW } from './headers'
 
 export type CoverLoader = (url: string, signal: AbortSignal) => Promise<string>
 // 与成绩列表使用同一缩略图地址，已显示过的曲绘直接命中浏览器缓存

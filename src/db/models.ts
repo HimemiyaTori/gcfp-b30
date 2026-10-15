@@ -1,4 +1,5 @@
 import type { SongCategory } from '../data/categories'
+import type { SettledImportStatus } from '../core/ocr/models'
 export interface ScoreAchievements {
     // 未提供完成标记时按 false 处理，Max Chain 缺省表示未记录
     fc?: boolean
@@ -36,7 +37,7 @@ export type RecognitionSource = 'manual' | 'album'
 export interface RecognitionJob {
     name: string
     index: number
-    status: 'success' | 'failed' | 'skipped'
+    status: SettledImportStatus
     error: string
     preview?: Blob
 }

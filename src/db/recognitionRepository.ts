@@ -2,7 +2,7 @@ import { liveQuery } from 'dexie'
 import { onUnmounted, shallowRef } from 'vue'
 import { database } from './database'
 import type { RecognitionJob, RecognitionSource } from './models'
-import type { ImportJob } from '../composables/useOcrImport'
+import type { ImportJob } from '../core/ocr/models'
 
 export interface RecognitionSummary { finishedAt: number; total: number; failed: number; skipped: number }
 const settled = (job: ImportJob) => job.status !== 'queued' && job.status !== 'running'

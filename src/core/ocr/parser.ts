@@ -1,7 +1,7 @@
 import Fuse from 'fuse.js'
 import type { ScoreAchievements } from '../../db/models'
 import { t } from '../../i18n'
-import { validateScore } from '../score/validation'
+import { validateAchievements, validateScore } from '../score/validation'
 import { getSongSearchTitles, normalizeSongText } from '../search/songText'
 import { songService } from '../song/songService'
 
@@ -151,13 +151,13 @@ export function parseFields(fields: OcrFields): Recognition {
         songId: song.id,
         chartId: charts[0]!.id,
         score,
-        achievements: {
+        achievements: validateAchievements({
             fc: status === 'fc' || status === 'ap',
             ap: status === 'ap',
             maxChain:
                 fields.layout === 'result'
                     ? parseInteger(fields.maxChain ?? '', 'Max Chain')
                     : undefined,
-        },
+        }, charts[0]),
     }
 }

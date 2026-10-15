@@ -1,15 +1,10 @@
 import { read, utils, type WorkBook } from 'xlsx'
 import { songService } from '../song/songService'
-import { workbookBytes } from './template'
-import { localizedHeaders, normalizeExcelHeader } from './headers'
-import { inputMessages, MAX_CHAIN } from './validation'
-export { createScoreWorkbook, workbookBytes } from './template'
-import { validateImportedScore, type ImportedScore } from '../score/import'
+import { MODE_SHEETS, localizedHeaders, normalizeExcelHeader } from './headers'
+import { MAX_EXCEL_BYTES, MAX_EXCEL_ROWS, MAX_HEADER_ROWS, type ExcelPreview } from './models'
+import { validateImportedScore } from '../score/import'
 import { currentLanguage, t } from '../../i18n'
 
-export const MAX_EXCEL_BYTES = 5 * 1024 * 1024
-export const MAX_EXCEL_ROWS = 5000
-const MAX_HEADER_ROWS = 10
 const required = ['Chart ID', 'Score']
 const UPDATED_AT = '更新时间'
 const inputHeaders = [
@@ -28,16 +23,6 @@ const chartSongs = new Map(
         song.charts.map((chart) => [chart.id, song.id] as const),
     ),
 )
-export interface ExcelIssue {
-    sheet: string
-    row: number
-    message: string
-}
-export interface ExcelPreview {
-    rows: ImportedScore[]
-    issues: ExcelIssue[]
-    empty: number
-}
 const empty = (value: unknown) =>
     value === undefined ||
     value === null ||
@@ -98,7 +83,7 @@ export function parseScoreWorkbook(data: ArrayBuffer): ExcelPreview {
     } catch {
         throw new Error(t('excel.errors.unreadable'))
     }
-    const names = ['BASIC', 'ADVANCED'].filter((name) => book.Sheets[name])
+    const names = MODE_SHEETS.filter((name) => book.Sheets[name])
     if (!names.length)
         throw new Error(t('excel.errors.sheets'))
     const result: ExcelPreview = { rows: [], issues: [], empty: 0 }
@@ -177,8 +162,6 @@ export function parseScoreWorkbook(data: ArrayBuffer): ExcelPreview {
                     ? (chartSongs.get(chartId) ?? '')
                     : String(get('Song ID')).trim()
                 const maxChain = number(get('Max Chain'), 'Max Chain', true)
-                if (maxChain !== undefined && maxChain > MAX_CHAIN)
-                    throw new Error(inputMessages[currentLanguage()].chainError)
                 const row = validateImportedScore({
                     songId,
                     chartId,
@@ -210,19 +193,3 @@ export function parseScoreWorkbook(data: ArrayBuffer): ExcelPreview {
     return result
 }
 
-export async function downloadWorkbook(
-    book: Parameters<typeof workbookBytes>[0],
-    filename: string,
-) {
-    const blob = new Blob([await workbookBytes(book)], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = filename
-    document.body.append(link)
-    link.click()
-    link.remove()
-    setTimeout(() => URL.revokeObjectURL(url), 60000)
-}

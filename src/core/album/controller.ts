@@ -6,9 +6,10 @@ import { scoreRepository } from '../../db/scoreRepository'
 import { saveRecognition } from '../../db/recognitionRepository'
 import { createPreview, releasePreviews } from '../ocr/preview'
 import { createSharedRecognizer } from '../ocr/shared'
-import { AlbumError, credentialLock, download, request, type AlbumMedia, type Binding, type MediaResponse } from './api'
-import { currentLanguage, t } from '../../i18n'
-import type { ImportJob } from '../../composables/useOcrImport'
+import { credentialLock, download, request, type AlbumMedia, type Binding, type MediaResponse } from './api'
+import { AlbumError, DomainError } from '../errors'
+import { currentLanguage, errorMessage, t } from '../../i18n'
+import type { ImportJob } from '../ocr/models'
 const MARKER = 'groove-nintendo-bound'
 // 打开网页时距上次更新不足 3 分钟不自动更新，任意两次更新至少间隔 10 秒
 export const AUTO_UPDATE_INTERVAL = 3 * 60000
@@ -32,7 +33,7 @@ export const album = reactive({
     run: undefined as AlbumRun | undefined,
 })
 // 自动更新时可预期的跳过原因，仅手动更新时提示
-class ScanSkipped extends Error {}
+class ScanSkipped extends DomainError {}
 let aborter: AbortController | undefined
 let active: AlbumState | undefined
 let canceled = false
@@ -84,13 +85,13 @@ function valid(item: AlbumItem, state: AlbumState) { return item.accountId === s
 async function save(item: AlbumItem) {
     await database.transaction('rw', database.albumItems, database.albumState, async () => {
         const state = await database.albumState.get('album') ?? initialAlbumState()
-        if (!valid(item, state)) throw new Error(t('album.stale'))
+        if (!valid(item, state)) throw new DomainError('album.stale')
         // 持久化纯数据，避免把 Vue 候选代理对象交给 IndexedDB
         await database.albumItems.put(JSON.parse(JSON.stringify(item)) as AlbumItem)
     })
 }
 async function recordError(error: unknown) {
-    album.error = error instanceof Error ? error.message : t('album.failed')
+    album.error = errorMessage(error)
     if (error instanceof AlbumError && error.code === 'reauth_required') {
         aborter?.abort()
         // 登录失效后清除 Cookie 与本地绑定，由用户重新绑定
@@ -115,19 +116,20 @@ async function fetchMedia(manual: boolean, signal: AbortSignal) {
     const state = await database.transaction('rw', database.albumState, async () => {
         const state = await database.albumState.get('album') ?? initialAlbumState()
         const now = Date.now()
-        if (!state.accountId) throw new ScanSkipped(t('album.bindFirst'))
-        if (!manual && now - (state.lastCheckedAt ?? 0) < AUTO_UPDATE_INTERVAL) throw new ScanSkipped('')
-        if (state.nextAllowedAt > now) throw new ScanSkipped(t('album.cooldown', { seconds: Math.ceil((state.nextAllowedAt - now) / 1000) }))
+        if (!state.accountId) throw new ScanSkipped('album.bindFirst')
+        const lastChecked = state.lastCheckedAt ?? 0
+        if (!manual && now - lastChecked < AUTO_UPDATE_INTERVAL) throw new ScanSkipped('album.cooldown', { seconds: Math.ceil((lastChecked + AUTO_UPDATE_INTERVAL - now) / 1000) })
+        if (state.nextAllowedAt > now) throw new ScanSkipped('album.cooldown', { seconds: Math.ceil((state.nextAllowedAt - now) / 1000) })
         const next = { ...state, nextAllowedAt: now + UPDATE_COOLDOWN }
         await database.albumState.put(next)
         return next
     })
     signal.throwIfAborted()
     const result = await request<MediaResponse>('album/media', 'POST', {})
-    if (result.accountId !== state.accountId || result.bindingId !== state.bindingId) throw new Error(t('album.stale'))
+    if (result.accountId !== state.accountId || result.bindingId !== state.bindingId) throw new DomainError('album.stale')
     await database.transaction('rw', database.albumState, async () => {
         const latest = await database.albumState.get('album')
-        if (!latest || latest.datasetEpoch !== state.datasetEpoch || latest.bindingGeneration !== state.bindingGeneration) throw new Error(t('album.stale'))
+        if (!latest || latest.datasetEpoch !== state.datasetEpoch || latest.bindingGeneration !== state.bindingGeneration) throw new DomainError('album.stale')
         await database.albumState.put({ ...latest, avatarUrl: result.avatarUrl ?? latest.avatarUrl, lastCheckedAt: Date.now(), mediaCount: result.media.length })
     })
     return { result, state }
@@ -180,7 +182,7 @@ async function importQueue(queue: AlbumItem[], visible: AlbumMedia[], state: Alb
                     if (!(error instanceof AlbumError) || !['ticket_expired', 'media_expired'].includes(error.code)) throw error
                     // 下载地址失效时刷新列表，后续截图沿用新的下载地址
                     const refreshed = await credentialLock(() => request<MediaResponse>('album/media', 'POST', {}))
-                    if (refreshed.accountId !== state.accountId || refreshed.bindingId !== state.bindingId) throw new Error(t('album.stale'))
+                    if (refreshed.accountId !== state.accountId || refreshed.bindingId !== state.bindingId) throw new DomainError('album.stale')
                     media = new Map(refreshed.media.map(row => [row.mediaId, row]))
                     source = media.get(item.mediaId)
                     if (source) blob = await download(source, timeout())
@@ -230,10 +232,10 @@ async function importQueue(queue: AlbumItem[], visible: AlbumMedia[], state: Alb
                 break
             }
             if (error instanceof AlbumError && error.code === 'rate_limited') await save({ ...item, stage: 'retry_wait', retryAt: Math.max(Date.now() + 60000, error.retryAt) }).catch(() => {})
-            if ((error instanceof AlbumError && ['rate_limited', 'reauth_required'].includes(error.code)) || (error instanceof Error && error.message === t('album.stale'))) throw error
+            if ((error instanceof AlbumError && ['rate_limited', 'reauth_required'].includes(error.code)) || (error instanceof DomainError && error.code === 'album.stale')) throw error
             const attempts = item.attempts + 1
-            const temporary = error instanceof AlbumError ? ['download_failed', 'upstream_unavailable', 'network_error'].includes(error.code) : error instanceof Error && error.message === t('ocr.errors.timeout')
-            const reason = error instanceof Error ? error.message : t('album.failed')
+            const temporary = error instanceof AlbumError ? ['download_failed', 'upstream_unavailable', 'network_error'].includes(error.code) : error instanceof DomainError && error.code === 'ocr.errors.timeout'
+            const reason = errorMessage(error)
             await save({ ...item, attempts, reason, stage: temporary && attempts <= 2 ? 'retry_wait' : 'failed', retryAt: Date.now() + (attempts === 1 ? 60000 : 300000) }).catch(() => {})
             Object.assign(job, { status: 'failed', error: reason })
         }
@@ -255,9 +257,9 @@ export async function scan(manual = false) {
     let checked = false
     let failure: string | undefined
     try {
-        if (!navigator.locks) throw new Error(t('album.locksRequired'))
+        if (!navigator.locks) throw new DomainError('album.locksRequired')
         await navigator.locks.request('groove-nintendo-scan', { ifAvailable: true }, async lock => {
-            if (!lock) throw new ScanSkipped(t('album.otherTab'))
+            if (!lock) throw new ScanSkipped('album.otherTab')
             const { result, state } = await credentialLock(() => fetchMedia(manual, controller.signal))
             active = state
             const queue = await collect(result, state)

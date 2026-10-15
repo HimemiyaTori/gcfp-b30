@@ -29,6 +29,9 @@ export class ScoreDatabase extends Dexie {
             await transaction.table('metadata').delete('calculation')
         })
         this.version(3).stores({ recognitionRuns: '&key' })
+        this.version(4).stores({
+            scoreHistory: '++id,songId,chartId,importedAt,playedAt,[chartId+importedAt],[songId+playedAt]',
+        })
     }
 }
 export const database = new ScoreDatabase()

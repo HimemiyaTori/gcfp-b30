@@ -7,7 +7,7 @@ import { motionTiming } from '../common/motion'
 import { releasePreviews } from '../../core/ocr/preview'
 import { album, cancel, type AlbumRun } from '../../core/album/controller'
 import { loadRecognition } from '../../db/recognitionRepository'
-import type { ImportJob } from '../../composables/useOcrImport'
+import type { ImportJob } from '../../core/ocr/models'
 const emit = defineEmits<{ notify: [message: string, title?: string]; manualAdd: [] }>()
 const { t, locale } = useI18n()
 const dialog = ref<HTMLDialogElement>()

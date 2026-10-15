@@ -6,6 +6,7 @@ import {
     type Recognition,
 } from './parser'
 import { t } from '../../i18n'
+import { DomainError } from '../errors'
 // 单次区域推理触发慢速提示的时间，单位为毫秒
 const SLOW_INFERENCE_MS = 8000
 // 每张图片的识别时限，包含模型下载和初始化，单位为毫秒
@@ -298,9 +299,7 @@ export function createRecognizer(
                 return parseFields(fields)
             } catch (error) {
                 if (deadline.aborted)
-                    throw new Error(
-                        t('ocr.errors.timeout'),
-                    )
+                    throw new DomainError('ocr.errors.timeout')
                 throw error
             } finally {
                 signal.removeEventListener('abort', abort)

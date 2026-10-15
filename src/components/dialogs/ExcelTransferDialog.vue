@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { scoreRepository } from '../../db/scoreRepository'
 import { songLanguage, uiLanguage } from '../../composables/useSettings'
-import type { ExcelPreview } from '../../core/excel/workbook'
+import { MAX_EXCEL_BYTES, type ExcelPreview } from '../../core/excel/models'
 
 const props = defineProps<{ canWrite: boolean }>()
 const emit = defineEmits<{ notify: [message: string, title?: string] }>()
@@ -45,8 +45,8 @@ async function importFile(file: File) {
     try {
         if (!/\.xlsx$/i.test(file.name))
             throw new Error(t('excel.notXlsx'))
-        if (file.size > 5 * 1024 * 1024) throw new Error(t('excel.tooLarge'))
-        const { parseScoreWorkbook } = await import('../../core/excel/workbook')
+        if (file.size > MAX_EXCEL_BYTES) throw new Error(t('excel.tooLarge'))
+        const { parseScoreWorkbook } = await import('../../core/excel/reader')
         preview.value = parseScoreWorkbook(await file.arrayBuffer())
         if (!preview.value.rows.length && !preview.value.issues.length)
             error.value = t('excel.nothing')
@@ -81,8 +81,10 @@ async function download(template: boolean) {
     const headerLanguage = uiLanguage.value
     pending.value = true
     try {
-        const { createScoreWorkbook, downloadWorkbook } =
-            await import('../../core/excel/workbook')
+        const [{ createScoreWorkbook }, { downloadWorkbook }] = await Promise.all([
+            import('../../core/excel/template'),
+            import('../../core/excel/download'),
+        ])
         const records = template ? [] : await scoreRepository.list()
         const name = template
             ? `${t('excel.templateFile')}.xlsx`

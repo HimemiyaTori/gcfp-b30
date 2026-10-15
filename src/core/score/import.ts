@@ -1,6 +1,6 @@
 import type { ScoreAchievements, ScoreRecord } from '../../db/models'
 import { songService } from '../song/songService'
-import { validateAchievements, validateScore } from './validation'
+import { normalizeAchievements, validateAchievements, validateScore } from './validation'
 import { t } from '../../i18n'
 
 export interface ImportedScore extends ScoreAchievements {
@@ -11,13 +11,13 @@ export interface ImportedScore extends ScoreAchievements {
 }
 export function validateImportedScore(value: ImportedScore): ImportedScore {
     validateScore(value.score)
-    songService.getChart(value.songId, value.chartId)
+    const { chart } = songService.getChart(value.songId, value.chartId)
     if (value.updatedAt !== undefined && (!Number.isSafeInteger(value.updatedAt) || value.updatedAt < 0 || value.updatedAt > 8640000000000000))
         throw new Error(t('errors.time'))
-    return { ...value, ...validateAchievements(value) }
+    return { ...value, ...validateAchievements(value, chart) }
 }
 export function scoreIdentity(value: ImportedScore) {
-    const flags = validateAchievements(value)
+    const flags = normalizeAchievements(value)
     return JSON.stringify([value.chartId, value.score, flags.maxChain ?? null, flags.fc, flags.ap])
 }
 export function selectExcelScores(incoming: ImportedScore[]) {

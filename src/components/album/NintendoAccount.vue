@@ -7,6 +7,7 @@ import AccountAvatar from '../common/AccountAvatar.vue'
 import NintendoBindDialog from './NintendoBindDialog.vue'
 import { album, retryable, retryFailed, scan, unbind } from '../../core/album/controller'
 import { useRecognitionSummary } from '../../db/recognitionRepository'
+import { errorMessage } from '../../i18n'
 const emit = defineEmits<{ notify: [message: string, title?: string]; view: [] }>()
 const { t, locale } = useI18n()
 const bindDialog = ref<InstanceType<typeof NintendoBindDialog>>()
@@ -53,7 +54,7 @@ async function confirmUnbind() {
         unbindDialog.value?.close()
         emit('notify', t('account.unbound'))
     } catch (cause) {
-        unbindError.value = cause instanceof Error ? cause.message : t('album.failed')
+        unbindError.value = errorMessage(cause)
     } finally {
         unbinding.value = false
     }

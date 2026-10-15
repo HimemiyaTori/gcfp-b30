@@ -5,7 +5,8 @@ import ImportProgress from './ImportProgress.vue'
 import { motionTiming } from '../common/motion'
 import { releasePreviews } from '../../core/ocr/preview'
 import { loadRecognition } from '../../db/recognitionRepository'
-import { useOcrImport, MAX_IMPORT_FILES, type ImportJob } from '../../composables/useOcrImport'
+import { useOcrImport, MAX_IMPORT_FILES } from '../../composables/useOcrImport'
+import type { ImportJob } from '../../core/ocr/models'
 const props = defineProps<{ active: boolean; canWrite: boolean }>()
 const emit = defineEmits<{ notify: [message: string, title?: string]; manualAdd: [] }>()
 const { t, locale } = useI18n()

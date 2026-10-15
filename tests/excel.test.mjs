@@ -5,12 +5,9 @@ import { utils, read, write } from 'xlsx'
 import { mkdtemp, readFile, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import {
-    createScoreWorkbook,
-    parseScoreWorkbook,
-    workbookBytes,
-    MAX_EXCEL_BYTES,
-} from '../src/core/excel/workbook.ts'
+import { createScoreWorkbook, workbookBytes } from '../src/core/excel/template.ts'
+import { parseScoreWorkbook } from '../src/core/excel/reader.ts'
+import { MAX_EXCEL_BYTES } from '../src/core/excel/models.ts'
 import { songService } from '../src/core/song/songService.ts'
 
 const song = songService.songs[0]
@@ -78,6 +75,44 @@ test('saved XLSX round trip preserves both modes, zero scores, achievements, unk
         assert.ok(actual, expected.chartId)
         for (const key of ['songId', 'chartId', 'score', 'fc', 'ap', 'maxChain', 'updatedAt'])
             assert.equal(actual[key], ['fc', 'ap'].includes(key) ? expected[key] ?? false : expected[key], key)
+    }
+})
+
+test('saved XLSX uses chart combo limits, a missing-combo fallback and chart totals above 2000', async () => {
+    const known = song.charts.find(chart => chart.mode === 'advanced')
+    const larger = song.charts.find(chart => chart.mode === 'advanced' && chart.id !== known.id)
+    const previousCombo = larger.combo
+    // 用曲库资料准备超过兜底值的真实文件，验收上限以谱面总连击数为准
+    larger.combo = 2400
+    try {
+        const workbook = createScoreWorkbook([
+            record({ maxChain: 2000 }),
+            record({ chartId: known.id, maxChain: known.combo }),
+            record({ chartId: larger.id, maxChain: 2400 }),
+        ])
+        const data = await savedWorkbook(workbook)
+        const restored = new ExcelJS.Workbook()
+        await restored.xlsx.load(data)
+        const targets = []
+        for (const sheet of restored.worksheets) {
+            sheet.eachRow(row => {
+                const id = row.getCell(12).value
+                const max = id === chart.id ? 2000 : id === known.id ? known.combo : id === larger.id ? 2400 : undefined
+                if (max === undefined) return
+                assert.deepEqual(row.getCell(10).dataValidation.formulae, [0, max])
+                assert.ok(row.getCell(10).dataValidation.error.includes(String(max)))
+                targets.push({ sheet, row: row.number, max })
+            })
+        }
+        const parsed = parseScoreWorkbook(data)
+        assert.deepEqual(parsed.issues, [])
+        assert.deepEqual(parsed.rows.map(row => row.maxChain), [2000, known.combo, 2400])
+        for (const target of targets) target.sheet.getCell(target.row, 10).value = target.max + 1
+        const rejected = parseScoreWorkbook(await savedWorkbook(restored))
+        assert.equal(rejected.rows.length, 0)
+        assert.deepEqual(rejected.issues.map(issue => [issue.sheet, issue.row]), targets.map(target => [target.sheet.name, target.row]))
+    } finally {
+        larger.combo = previousCombo
     }
 })
 

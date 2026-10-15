@@ -1,5 +1,5 @@
 import { computed, onUnmounted, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
-import { liveQuery } from 'dexie'
+import Dexie, { liveQuery } from 'dexie'
 import { database } from '../db/database'
 import type { ScoreRow } from '../db/models'
 import { getScoreRow } from '../core/score/display'
@@ -47,10 +47,11 @@ export function useScoreHistory(options: {
         const currentMode = mode()
         const language = songLanguage.value
         subscription = liveQuery(() => database.transaction('r', database.scoreHistory, async () => {
-            let collection = database.scoreHistory.orderBy('playedAt')
+            let collection = currentSongId
+                ? database.scoreHistory.where('[songId+playedAt]').between([currentSongId, Dexie.minKey], [currentSongId, Dexie.maxKey])
+                : database.scoreHistory.orderBy('playedAt')
             if (!ascending || key !== 'importedAt') collection = collection.reverse()
-            collection = collection.filter(record => (!currentSongId || record.songId === currentSongId)
-                && (!currentMode || songService.getChart(record.songId, record.chartId).chart.mode.toUpperCase() === currentMode))
+            if (currentMode) collection = collection.filter(record => songService.getChart(record.songId, record.chartId).chart.mode.toUpperCase() === currentMode)
             const total = await collection.clone().count()
             const offset = (currentPage - 1) * pageSize
             // 成绩时间排序直接读取当前页，其他列在全部匹配历史中排序

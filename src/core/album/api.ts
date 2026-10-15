@@ -1,10 +1,7 @@
-import { i18n, t } from '../../i18n'
+import { AlbumError, DomainError } from '../errors'
 export interface Binding { status: 'active' | 'unbound'; configured: boolean; accountId?: string; bindingId?: string; nickname?: string; avatarUrl?: string }
 export interface AlbumMedia { mediaId: string; applicationId: string; capturedAt: number | null; contentLength: number; expiresAt: number; contentUri?: string; ticket: string }
 export interface MediaResponse { accountId: string; bindingId: string; avatarUrl?: string; media: AlbumMedia[] }
-export class AlbumError extends Error {
-    constructor(public code: string, public retryAt = 0) { super(i18n.global.te(`album.errors.${code}`) ? t(`album.errors.${code}`) : t('album.apiError', { code })) }
-}
 export async function request<T>(path: string, method = 'GET', body?: object): Promise<T> {
     let response: Response
     try {
@@ -18,7 +15,7 @@ export async function request<T>(path: string, method = 'GET', body?: object): P
     return response.json() as Promise<T>
 }
 export function credentialLock<T>(work: () => Promise<T>): Promise<T> {
-    if (!navigator.locks) throw new Error(t('album.locksRequired'))
+    if (!navigator.locks) throw new DomainError('album.locksRequired')
     return navigator.locks.request('groove-nintendo-credentials', work) as Promise<T>
 }
 export async function download(media: AlbumMedia, signal: AbortSignal) {

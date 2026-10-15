@@ -1,3 +1,6 @@
+export const TEMPLATE_HEADER_ROW = 1
+export const MODE_SHEETS = ['BASIC', 'ADVANCED'] as const
+
 export const TEMPLATE_HEADERS = [
     '曲绘', '曲名', '难度', '等级', 'Score', 'Rank', 'RT', 'FC', 'AP',
     'Max Chain', '更新时间', 'Chart ID', 'Song ID',

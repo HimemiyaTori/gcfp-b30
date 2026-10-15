@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import AnimatedSuccess from '../common/AnimatedSuccess.vue'
 import { motionTiming } from '../common/motion'
 import { album, beginBinding, finishBinding, refreshBinding } from '../../core/album/controller'
+import { errorMessage } from '../../i18n'
 const emit = defineEmits<{ bound: [] }>()
 const { t } = useI18n()
 const dialog = ref<HTMLDialogElement>()
@@ -23,7 +24,6 @@ const notices = [
     { id: 'scope', icon: Images },
 ] as const
 const linkValid = computed(() => /^npf[0-9a-z]+:\/\/auth\b/i.test(callback.value.trim()))
-const message = (cause: unknown) => (cause instanceof Error ? cause.message : t('album.failed'))
 let timer: ReturnType<typeof setTimeout> | undefined
 function open() {
     clearTimeout(timer)
@@ -57,7 +57,7 @@ async function prepare() {
     try {
         authUrl.value = (await beginBinding()).url
     } catch (cause) {
-        error.value = message(cause)
+        error.value = errorMessage(cause)
     } finally {
         preparing.value = false
     }
@@ -85,7 +85,7 @@ async function complete() {
         step.value = 'success'
         timer = setTimeout(close, motionTiming.successHold * 2 + motionTiming.successCircle + motionTiming.successCheck)
     } catch (cause) {
-        error.value = message(cause)
+        error.value = errorMessage(cause)
     } finally {
         pending.value = false
     }

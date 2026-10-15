@@ -178,6 +178,8 @@ try {
         await scoreRepository.clear()
         const now = Date.now()
         await database.scoreHistory.bulkAdd(Array.from({ length: 35 }, (_, index) => ({ songId: '1', chartId: '1-basic-hard', score: 900000 + index, fc: false, ap: false, rating: 0, source: 'ocr', importedAt: now - (35 - index) * 86400000, updatedAt: now, batchId: `pagination-${index}` })))
+        // 其他歌曲的旧历史不混入歌曲详情分页，也不改变首页最新成绩顺序
+        await database.scoreHistory.bulkAdd(Array.from({ length: 12 }, (_, index) => ({ songId: '2', chartId: '2-basic-hard', score: 900015, fc: false, ap: false, rating: 0, source: 'ocr', importedAt: now - (100 + index) * 86400000, updatedAt: now, batchId: `other-song-${index}` })))
         await database.metadata.clear()
         await scoreRepository.initialize()
     })
