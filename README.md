@@ -48,7 +48,7 @@ yarn build
 
 ## 验证范围
 
-测试围绕用户操作、真实文件和资源交互；内部计算、解析和状态逻辑通过代码审查检查。`yarn test` 只运行 5 项 XLSX 文件验收，包含模板生成、双模式文件往返、删减及重排模板、错误文件和输入单元格、文件及行列限制，不维护数字、布尔值和日期的解析边界枚举。`yarn build` 执行 Vue／TypeScript 检查及生产构建。
+测试围绕用户操作、真实文件和资源交互；内部计算、解析和状态逻辑通过代码审查检查。`yarn test` 只运行 6 项 XLSX 文件验收，包含模板生成、双模式文件往返、删减及重排模板、错误文件和输入单元格、文件及行列限制，不维护数字、布尔值和日期的解析边界枚举。`yarn build` 执行 Vue／TypeScript 检查及生产构建。
 
 OCR 真实样本验证以 `tests/ocr-samples.json` 的逐张标注为准，当前有 22 张：result 11 张、select 8 张、playing 3 张，默认位于 `tests/score images/{result,select,playing}`，也可设置 `OCR_SAMPLES_DIR` 指向包含这三个子目录的样本目录。启动 `yarn dev:local` 后运行 `yarn test:ocr`（默认系统 Edge）。通过页面实际上传，检查 16 张有效成绩、6 张跳过及批量处理后的 12 条谱面最佳成绩；脚本额外追加首张重复截图，共上传 23 张，验证不相邻去重。样本数量和成绩预期从清单生成，缺少图片会在启动浏览器前列出缺失文件。模型和本地运行时为较大资源，首次加载可能较慢。实现范围及 ROI 见一期设计文档第 21 节。
 
@@ -61,7 +61,7 @@ OCR 真实样本验证以 `tests/ocr-samples.json` 的逐张标注为准，当�
 - `src/core/score/` 提供统一校验与筛选，`src/core/search/songText.ts` 提供共用曲名归一化；特殊别名只维护在曲库的 searchAliases
 - 仓储提供 `addManual(songId, chartId, score, achievements?)` 和 `addOcr(songId, chartId, score, achievements?, signal?)`，前者返回 ID，后者返回 `{ id, skipped }`；`edit/list/remove/clear` 保留原职责
 
-不引入 Pinia、服务器后台队列、路由库或新的成绩缓存；数据库 groove-archive-fp-history 从 schema 1 升级到 2，保留既有历史并补充成绩时间、相册处理记录、绑定代次和谱面保护。历史为事实来源，当前最佳和 Rating 快照为可重建数据。
+不引入 Pinia、服务器后台队列、路由库或新的成绩缓存；数据库 groove-archive-fp-history 当前为 schema 4，保留既有历史，并为歌曲详情增加 songId + playedAt 复合索引；schema 3 保存最近识别结果，schema 2 补充成绩时间、相册处理记录、绑定代次和兼容保留的谱面保护表。历史为事实来源，当前最佳和 Rating 快照为可重建数据。
 
 启动 `yarn dev:local` 后运行 `yarn test:ui`，验证手动表单、AP 联动 FC、空 Max Chain、更新时间、分页与跨页筛选保留、界面语言切换、浏览器语言匹配、语言偏好刷新后保留、首页空状态及 390px 布局。历史删除和清空集中在 `yarn test:history` 验收。浏览器测试固定以简体中文环境启动。`yarn test:ocr` 同时验证重复上传、切页后继续上传、进行中取消，以及模拟初始化失败和超时后的恢复。浏览器测试默认使用独立 Edge 上下文；可通过 `OCR_URL` 指定开发服务地址，通过 `OCR_BROWSER` 指定浏览器通道。
 
@@ -69,9 +69,13 @@ OCR 真实样本验证以 `tests/ocr-samples.json` 的逐张标注为准，当�
 
 Windows 下先完成 `yarn build`，再启动 `yarn dev:local` 执行普通浏览器回归。dev/build 共用 `public/ocr` 资源准备脚本，同时执行可能因文件监听锁定而导致开发服务退出。
 
+Excel 的读取位于 `src/core/excel/reader.ts`，生成位于 `template.ts`，浏览器下载位于 `download.ts`；表头、文件限制和预览模型单独共享，导入不加载 ExcelJS，导出不加载 SheetJS。OCR 任务模型位于 `src/core/ocr/models.ts`，仓储不反向依赖 composable；相册请求和任务错误通过稳定错误码判断，展示时翻译。生产构建中的 OCR Worker 与 WASM 统一输出到 `ocr/`，与资源准备脚本共用地址，避免重复发布。
+
+启动 `yarn dev:local` 后运行 `yarn test:limits`，通过真实表单、下载与重新上传验收谱面上限、2000 兜底、超限阻止写入、旧数据库升级与刷新持久化；超过 2000 的谱面总连击数由真实 XLSX 文件验收覆盖。
+
 ## Excel 使用与验证
 
-打开「偏好设置 → 本地数据」，下载模板。BASIC / ADVANCED 两张表已包含当前曲库的全部歌曲、谱面与曲绘，第一行即表头，随当前界面语言使用简体中文、繁体中文、日文或英文；中文和英文使用「Rating」表头，日语使用「レーティング」，Max Chain 在所有语言中保留英文。Level 列居中，Rank、Rating 两列与分数列等宽。直接在黄色区域填写分数；FC / AP 达成时填写或下拉选择「√」，默认留空表示未达成；Max Chain 限制为 0～2000 的整数，未知时留空，导入也会检查此上限。Rank / Rating 随分数自动计算。Excel 中的输入报错标题、正文及公式错误提示随表头语言本地化；分数无效时分别显示「检查分数」「檢查分數」「スコアを確認」或「Check」。未填分数的谱面不导入，0 分正常导入。时间及 ID 列默认隐藏，请保留以便读取。
+打开「偏好设置 → 本地数据」，下载模板。BASIC / ADVANCED 两张表已包含当前曲库的全部歌曲、谱面与曲绘，第一行即表头，随当前界面语言使用简体中文、繁体中文、日文或英文；中文和英文使用「Rating」表头，日语使用「レーティング」，Max Chain 在所有语言中保留英文。Level 列居中，Rank、Rating 两列与分数列等宽。直接在黄色区域填写分数；FC / AP 达成时填写或下拉选择「√」，默认留空表示未达成；Max Chain 为 0～谱面总连击数（combo）的整数，缺少该资料时以 2000 兜底，未知时留空；总连击数超过 2000 的谱面按实际值限制。手动新增、编辑、OCR、相册和 Excel 共用此规则，模板每行也设置对应上限。既有超限历史保留原值，编辑时须修正，避免新规则阻断成绩库读取或其他成绩录入。Rank / Rating 随分数自动计算。Excel 中的输入报错标题、正文及公式错误提示随表头语言本地化；分数无效时分别显示「检查分数」「檢查分數」「スコアを確認」或「Check」。未填分数的谱面不导入，0 分正常导入。时间及 ID 列默认隐藏，请保留以便读取。
 
 首页上传区也可选择或拖入单个 Excel，先检查并预览，再确认导入；截图继续走 OCR，Excel 与截图需分别上传。仅支持 .xlsx，最大 5 MB，每张表最多 5000 行数据，只读取 BASIC / ADVANCED 表，不兼容旧版「成绩」表。
 
