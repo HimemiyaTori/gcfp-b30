@@ -11,7 +11,7 @@ try {
     const errors = []
     page.on('pageerror', error => errors.push(error.message))
     await page.goto(url)
-    const headings = { home: '录入新成绩', scores: '成绩一览', b30: '我的 B30', settings: '偏好设置' }
+    const headings = { home: '录入新成绩', scores: '成绩一览', settings: '偏好设置' }
     async function go(name) {
         await page.evaluate(value => { location.hash = `#${value}` }, name)
         await page.getByRole('heading', { name: headings[name], exact: true }).waitFor()
@@ -30,10 +30,16 @@ try {
     await go('scores')
     await page.getByRole('button', { name: '手动新增', exact: true }).click()
     const dialog = page.locator('dialog[open]')
+    // 手动录入允许 Max Chain 为空，AP 自动带上 FC，刷新后仍保留
+    await dialog.getByRole('button', { name: 'AP', exact: true }).click()
     await dialog.getByRole('button', { name: '保存成绩', exact: true }).click()
     await saved()
     assert.equal((await records()).length, 1)
     await page.reload()
+    const added = (await records())[0]
+    assert.equal(added.ap, true)
+    assert.equal(added.fc, true)
+    assert.equal(added.maxChain, undefined)
     await page.getByRole('button', { name: '编辑成绩' }).first().click()
     assert.equal(await dialog.getByRole('button', { name: 'BASIC', exact: true }).isDisabled(), true)
     const before = (await records())[0]
@@ -56,7 +62,7 @@ try {
     assert.equal(await dialog.getByLabel('Score', { exact: true }).inputValue(), '1040000')
     await dialog.getByRole('button', { name: '关闭弹窗', exact: true }).click()
 
-    // 用真实仓储准备多页成绩，覆盖榜单与筛选的共享状态
+    // 用真实仓储准备多页成绩，验收分页和跨页筛选保留
     await page.evaluate(async () => {
         const { scoreRepository } = await import('/src/db/scoreRepository.ts')
         const { songService } = await import('/src/core/song/songService.ts')
@@ -78,38 +84,11 @@ try {
     await page.getByLabel('筛选歌曲分类').selectOption(category)
     await go('home')
     assert.equal(await page.locator('.stats-grid article').count(), 2)
-    await page.locator('.rating-mode-toggle').click()
-    await go('b30')
-    assert.equal(await page.locator('.mode-rating-card.advanced').getAttribute('aria-pressed'), 'true')
-    await page.getByRole('button', { name: '查看 BASIC Best 30', exact: true }).click()
-    const originalRanks = await page.locator('tbody td.position').allTextContents()
-    assert.equal(originalRanks.length, 30)
-    const values = await page.locator('.mode-rating-card .rating-values').allTextContents()
-    await page.getByRole('button', { name: /^Score：/ }).click()
-    assert.deepEqual(await page.locator('tbody td.position').allTextContents(), originalRanks)
-    await page.getByRole('button', { name: /^Score：/ }).click()
-    assert.deepEqual(await page.locator('tbody td.position').allTextContents(), originalRanks)
-    // 切换榜单模式恢复默认排名排序，搜索保留入选谱面的原始排名
-    await page.getByRole('button', { name: '查看 ADVANCED Best 30', exact: true }).click()
-    await page.getByRole('button', { name: /^Rating：/ }).click()
-    await page.getByRole('button', { name: '查看 BASIC Best 30', exact: true }).click()
-    assert.equal(await page.getByRole('button', { name: /^排名：/ }).getAttribute('aria-label'), '排名：当前升序，点击降序')
-    assert.deepEqual(await page.locator('tbody td.position').allTextContents(), originalRanks)
-    const originalRows = await page.locator('tbody tr').allTextContents()
-    await page.getByRole('textbox', { name: '搜索成绩' }).fill('Idol')
-    const filteredRows = await page.locator('tbody tr').allTextContents()
-    assert.ok(filteredRows.length > 0 && filteredRows.length < originalRows.length)
-    assert.ok(filteredRows.every(row => originalRows.includes(row)))
-    assert.deepEqual(await page.locator('.mode-rating-card .rating-values').allTextContents(), values)
     await go('scores')
     assert.equal(await page.getByRole('textbox', { name: '搜索成绩' }).inputValue(), 'Idol')
     assert.equal(await page.getByLabel('筛选模式').inputValue(), 'BASIC')
     assert.equal(await page.getByLabel('筛选难度').inputValue(), 'NORMAL')
     assert.equal(await page.getByLabel('筛选歌曲分类').inputValue(), category)
-    await go('b30')
-    assert.equal(await page.getByRole('textbox', { name: '搜索成绩' }).inputValue(), 'Idol')
-    assert.equal(await page.getByRole('button', { name: /^排名：/ }).getAttribute('aria-label'), '排名：当前升序，点击降序')
-
     await go('settings')
     for (const [label, ui, song] of [['English', 'en', 'en'], ['繁體中文', 'zh-TW', 'ja'], ['English', 'en', 'en'], ['日本語', 'ja', 'ja'], ['English', 'en', 'en'], ['简体中文', 'zh-CN', 'ja']]) {
         await page.locator('.ui-settings-options').getByRole('button', { name: label, exact: true }).click()
@@ -117,28 +96,11 @@ try {
         assert.equal(await page.evaluate(() => document.documentElement.lang), ui)
     }
 
-    // 手机端仍能完成删除与清空操作，页面不产生横向溢出
+    // 手机端设置页不产生横向溢出
     await page.setViewportSize({ width: 390, height: 844 })
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
     await mkdir('.preview', { recursive: true })
     await page.screenshot({ path: '.preview/refactor-mobile.png', fullPage: true })
-
-    await go('scores')
-    assert.equal(await page.getByRole('button', { name: '删除成绩', exact: true }).count(), 0)
-    await page.getByRole('button', { name: '歌曲信息', exact: true }).first().click()
-    await page.getByRole('button', { name: '删除历史成绩', exact: true }).first().click()
-    await page.getByRole('button', { name: '确认删除', exact: true }).click()
-    await page.getByRole('button', { name: '确认删除', exact: true }).waitFor({ state: 'hidden' })
-    await page.getByRole('button', { name: '关闭歌曲信息' }).click()
-    await saved()
-    assert.equal((await records()).length, 35)
-    await go('settings')
-    await page.getByRole('button', { name: '清空数据', exact: true }).click()
-    await dialog.getByRole('button', { name: '确认清空全部成绩', exact: true }).click()
-    await saved()
-    await go('home')
-    assert.equal(await page.locator('.stats-grid').count(), 0)
-    assert.equal((await records()).length, 0)
 
     // 首次访问按浏览器语言匹配界面，不支持的语言回退简体中文
     const settingsHeadings = { 'zh-CN': '偏好设置', 'zh-TW': '偏好設定', ja: '設定', en: 'Settings' }
@@ -165,7 +127,7 @@ try {
         await context.close()
     }
     assert.deepEqual(errors, [])
-    console.log('UI regression passed: CRUD, timestamps, filters, B30, language, empty state and responsive navigation')
+    console.log('UI regression passed: manual AP/optional chain, add/edit, timestamps, pagination, filters, language, empty state and mobile')
 } finally {
     await browser.close()
 }

@@ -360,7 +360,7 @@ try {
     const listing = await api('/api/album/media', 'POST', {})
     assert.equal(listing.headers.get('cache-control'), 'no-store')
     const album = await listing.json()
-    assert.equal(album.avatarUrl, 'https://avatars.example.test/updated.png')
+    assert.equal(album.avatarUrl, 'https://avatars.example.test/switch.png')
     assert.equal((await (await api('/api/nintendo/binding')).json()).avatarUrl, album.avatarUrl)
     assert.equal(album.media.length, 1)
     assert.equal(album.media[0].capturedAt, 1780000000000)
@@ -511,7 +511,7 @@ try {
         const publicListing = await api('/api/album/media', 'POST', {})
         assert.equal(publicListing.status, 200)
         const publicAlbum = await publicListing.json()
-        assert.equal(publicAlbum.avatarUrl, noAccountAvatar ? 'https://avatars.example.test/switch.png' : 'https://avatars.example.test/updated.png')
+        assert.equal(publicAlbum.avatarUrl, 'https://avatars.example.test/switch.png')
         assert.equal((await (await api('/api/nintendo/binding')).json()).avatarUrl, publicAlbum.avatarUrl)
         assert.equal(publicAlbum.media.length, 1)
         const publicImage = await api('/api/album/content', 'POST', {
@@ -522,7 +522,7 @@ try {
         await api('/api/nintendo/binding', 'DELETE')
     }
     console.log(
-        `Album ${runtimeMode ? 'Workerd' : 'Node'} HTTP acceptance passed: account avatar persistence and Switch icon fallback, encrypted JSON-labelled responses, separate login encryption, malformed payload diagnostics, token recovery, rate limits, confidential/public clients, remote proxy origins, filtered album, original image, expiry, invalid tickets, size limit and unlink`,
+        `Album ${runtimeMode ? 'Workerd' : 'Node'} HTTP acceptance passed: NSO avatar preference and account persistence, encrypted JSON-labelled responses, separate login encryption, malformed payload diagnostics, token recovery, rate limits, confidential/public clients, remote proxy origins, filtered album, original image, expiry, invalid tickets, size limit and unlink`,
     )
 } finally {
     globalThis.fetch = realFetch

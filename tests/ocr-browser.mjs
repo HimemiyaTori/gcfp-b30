@@ -4,7 +4,7 @@ import { readFile, access, mkdir } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-// 先启动 yarn dev；样本默认读 tests/score images，也可通过 OCR_SAMPLES_DIR 指定
+// 先启动 yarn dev:local；样本默认读 tests/score images，也可通过 OCR_SAMPLES_DIR 指定
 const samples = JSON.parse(
     await readFile(new URL('./ocr-samples.json', import.meta.url), 'utf8'),
 )
@@ -21,6 +21,8 @@ for (const sample of samples) {
 if (missing.length) throw new Error(
     `缺少 ${missing.length} 张 OCR 标注样本，目录：${sampleDirectory}。请按 tests/ocr-samples.json 准备图片，或设置 OCR_SAMPLES_DIR 指向包含 result、select、playing 子目录的样本目录。缺失：${missing.join(', ')}`,
 )
+const sampleCount = samples.length
+const validSampleCount = samples.filter(sample => !sample.skip).length
 // 在批次末尾重复首张截图，验证不相邻的相同成绩只保留一次
 samples.push({ ...samples[0] })
 await mkdir('.preview', { recursive: true })
@@ -161,36 +163,8 @@ try {
     assert.deepEqual(await page.evaluate(async () =>
         (await import('/src/db/scoreRepository.ts')).scoreRepository.history(),
     ), beforeHistory)
-    // 手动录入允许 Max Chain 为空；AP 会触发 FC，刷新后仍保留
-    await page.getByRole('button', { name: '手动新增', exact: true }).click()
-    const dialog = page.locator('dialog[open]')
-    await dialog.getByRole('button', { name: 'AP', exact: true }).click()
-    await dialog.getByRole('button', { name: '保存成绩', exact: true }).click()
-    await page.waitForFunction(
-        () => !document.querySelector('.editor-dialog[open]'),
-    )
+    // 刷新后模拟初始化失败，同批下一张截图仍能成功保存
     await page.reload()
-    const manual = await page.evaluate(async () =>
-        (await import('/src/db/scoreRepository.ts')).scoreRepository.list(),
-    )
-    const added = manual.find(
-        (record) => record.chartId === '1-advanced-master',
-    )
-    assert.equal(added.ap, true)
-    assert.equal(added.fc, true)
-    assert.equal(added.maxChain, undefined)
-    assert.equal(
-        manual.find((record) => record.chartId === '6-basic-hard').score,
-        0,
-    )
-    await page.setViewportSize({ width: 390, height: 844 })
-    await page.getByRole('button', { name: '手动新增', exact: true }).click()
-    await page.screenshot({
-        path: '.preview/ocr-manual-mobile.png',
-        fullPage: true,
-    })
-    // 模拟初始化失败，同批下一张截图仍能成功保存
-    await page.getByRole('button', { name: '关闭弹窗', exact: true }).click()
     await page.evaluate(() => {
         location.hash = '#home'
         window.ocrFailNextWorker = true
@@ -245,7 +219,7 @@ try {
     console.log('Timeout recovery and stale completion callback protection passed')
     assert.deepEqual(errors, [])
     console.log(
-        `Browser OCR passed: ${samples.length} samples, ${records.length} distinct charts; repeated upload, navigation, initialization failure and timeout recovery, cancellation, manual AP/optional chain and reload passed.`,
+        `Browser OCR passed: ${sampleCount} annotated samples (${validSampleCount} valid, ${sampleCount - validSampleCount} skipped), ${samples.length} uploads, ${records.length} distinct charts; repeated upload, navigation, last result review, initialization failure and timeout recovery and cancellation passed.`,
     )
 } finally {
     await browser.close()

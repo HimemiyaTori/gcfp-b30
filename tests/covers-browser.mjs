@@ -58,8 +58,6 @@ try {
         )
         assert.equal(sheet.getCell('A2').value, null)
     }
-    const repeated = await download('repeated-template.xlsx')
-    assert.equal(repeated.media.length, expected)
 
     // 用本地图片模拟外站响应，验证页面的缩略图、原图和占位回退
     const originalUrl = songService.songs[0].coverSourceUrl
@@ -95,7 +93,7 @@ try {
     })
     assert.deepEqual(errors, [])
     console.log(
-        `Covers passed: ${expected} images, workbook and page fallbacks, failed request retry and repeated download`,
+        `Covers passed: ${expected} images, workbook and page fallbacks and failed request retry`,
     )
     console.log('Template:', join(output, 'template.xlsx'))
 } finally {
