@@ -38,7 +38,12 @@ const openable = computed(() => importing.value || (!album.busy && !!props.summa
                 </template>
                 <span v-if="openable" class="album-toast-link">{{ t('sync.banner.view') }}</span>
             </component>
-            <button class="icon-button" :aria-label="t('common.closeNotice')" @click="emit('dismiss')">
+            <button
+                v-if="!album.busy || album.phase !== 'checking'"
+                class="icon-button"
+                :aria-label="t('common.closeNotice')"
+                @click="emit('dismiss')"
+            >
                 <X :size="16" />
             </button>
         </div>
