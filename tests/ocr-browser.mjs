@@ -103,7 +103,17 @@ try {
     )
     assert.ok((await page.locator('.import-result').textContent()).includes('重复'))
     await page.getByRole('button', { name: '关闭', exact: true }).click()
-    console.log('Upload queue and repeated import passed')
+    // 刷新后仍可在录入区查看最近一次识别结果和截图
+    await page.reload()
+    await page.getByRole('button', { name: '查看上次识别（1 张）', exact: true }).click()
+    const last = page.locator('.import-dialog[open]')
+    await last.getByText('最近一次识别于', { exact: false }).waitFor()
+    assert.equal(await last.locator('.import-result').count(), 1)
+    assert.ok((await last.locator('.import-result').textContent()).includes('重复'))
+    await last.locator('.import-thumb').click()
+    await last.locator('.import-preview img').waitFor()
+    await last.getByRole('button', { name: '关闭', exact: true }).click()
+    console.log('Upload queue, repeated import and last result review passed')
     // 完成批次后切页再返回，仍能继续上传
     await page.evaluate(() => { location.hash = '#scores' })
     await page.getByRole('heading', { name: '成绩一览' }).waitFor()

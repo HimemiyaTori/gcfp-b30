@@ -1,7 +1,8 @@
 import { computed, onUnmounted, ref } from 'vue'
-import { createPreviewUrl, releasePreviews } from '../core/ocr/preview'
+import { createPreview, releasePreviews } from '../core/ocr/preview'
 import { createSharedRecognizer as createRecognizer } from '../core/ocr/shared'
 import { scoreRepository } from '../db/scoreRepository'
+import { saveRecognition } from '../db/recognitionRepository'
 import { scoreIdentity } from '../core/score/import'
 import { t } from '../i18n'
 
@@ -68,6 +69,9 @@ export function useOcrImport() {
             status: 'queued',
             error: '',
         }))
+        // 取消时 jobs 会被清空，保存结果使用本批次的任务列表
+        const batch = jobs.value
+        const previews: (Blob | undefined)[] = []
         const sources = queue.slice()
         const previewTask = (async () => {
             for (let i = 0; i < sources.length; i++) {
@@ -83,16 +87,13 @@ export function useOcrImport() {
                     file.size > 20 * 1024 * 1024
                 )
                     continue
-                let preview: string | undefined
                 try {
-                    preview = await createPreviewUrl(file)
+                    const preview = await createPreview(file)
+                    previews[i] = preview
                     if (current.signal.aborted || jobs.value[i] !== job) return
-                    job.preview = preview
-                    preview = undefined
+                    job.preview = URL.createObjectURL(preview)
                 } catch {
                     // 预览失败不阻断识别
-                } finally {
-                    if (preview) URL.revokeObjectURL(preview)
                 }
             }
         })()
@@ -160,6 +161,7 @@ export function useOcrImport() {
             }
         } finally {
             await previewTask
+            await saveRecognition('manual', batch, previews, t('ocr.errors.canceled')).catch(() => {})
             queue.fill(undefined)
             sources.fill(undefined)
             if (controller === current) {

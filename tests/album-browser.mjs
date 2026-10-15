@@ -137,10 +137,12 @@ try {
     await bind.getByRole('heading', { name: '绑定成功' }).waitFor()
     await bind.getByText('测试玩家', { exact: true }).waitFor()
 
-    // 绑定后自动读取相册，手动更新显示首页同款进度弹窗并直接录入
+    // 绑定后自动读取相册，只显示进度提示，点击提示打开首页同款识别弹窗
     const sync = page
         .locator('.import-dialog')
         .filter({ hasText: 'NINTENDO ALBUM' })
+    const toast = page.locator('button.album-toast-open')
+    await toast.click({ timeout: 180000 })
     await sync
         .getByText('跳过 1 张，失败 0 张', { exact: false })
         .waitFor({ timeout: 180000 })
@@ -196,8 +198,14 @@ try {
     await account.getByText('测试玩家', { exact: true }).waitFor()
     await page.waitForTimeout(1500)
     assert.equal(mediaRequests(), beforeReload)
+    // 刷新后仍可在账号中查看最近一次识别结果和截图
+    await account.locator('.account-last').getByRole('button', { name: '查看详情', exact: true }).click()
+    await sync.getByText('最近一次识别于', { exact: false }).waitFor()
+    await sync.getByText('不是支持的结算页或选曲页', { exact: false }).waitFor()
+    assert.equal(await sync.locator('.import-thumb').count(), 2)
+    await sync.getByRole('button', { name: '关闭', exact: true }).click()
 
-    // 超过 3 分钟后打开网页自动更新，只显示进度条和完成通知
+    // 超过 3 分钟后打开网页自动更新，只显示进度提示和完成通知
     media.push(entry('result-1', 'result', '2026-09-23T10:00:00Z'))
     await page.evaluate(async () => {
         const { database } = await import('/src/db/database.ts')
@@ -208,7 +216,7 @@ try {
         location.hash = '#home'
     })
     await page.reload()
-    await page.locator('.album-progress').waitFor({ timeout: 60000 })
+    await page.locator('.album-toast').waitFor({ timeout: 60000 })
     await page
         .getByText('已处理 1 张截图，新增历史 1 条，更新最佳成绩 1 条。', {
             exact: true,
@@ -245,6 +253,7 @@ try {
     media.push(entry('retry-1', 'retry', '2026-09-24T10:00:00Z'))
     await update.waitFor({ timeout: 15000 })
     await update.click()
+    await toast.click({ timeout: 60000 })
     await sync
         .getByText('截图下载失败，将在下次更新时重试', { exact: false })
         .waitFor({ timeout: 60000 })
@@ -303,7 +312,7 @@ try {
     )
     assert.deepEqual(errors, [])
     console.log(
-        'Album browser acceptance passed: risk confirmation, binding guide, automatic import with progress dialog, account details, cooldowns, auto update on visit, cleared data isolation, retry and unbinding',
+        'Album browser acceptance passed: risk confirmation, binding guide, automatic import with progress notice and dialog, last result review, account details, cooldowns, auto update on visit, cleared data isolation, retry and unbinding',
     )
 } finally {
     await browser.close()

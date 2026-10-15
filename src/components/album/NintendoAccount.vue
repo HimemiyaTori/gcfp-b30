@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { Check, CircleAlert, Gamepad2, Info, LoaderCircle, RefreshCw } from 'lucide-vue-next'
+import { Check, CircleAlert, Gamepad2, History, Info, LoaderCircle, RefreshCw } from 'lucide-vue-next'
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AnimatedProgress from '../common/AnimatedProgress.vue'
 import AccountAvatar from '../common/AccountAvatar.vue'
 import NintendoBindDialog from './NintendoBindDialog.vue'
 import { album, retryable, retryFailed, scan, unbind } from '../../core/album/controller'
-const emit = defineEmits<{ notify: [message: string, title?: string] }>()
+import { useRecognitionSummary } from '../../db/recognitionRepository'
+const emit = defineEmits<{ notify: [message: string, title?: string]; view: [] }>()
 const { t, locale } = useI18n()
 const bindDialog = ref<InstanceType<typeof NintendoBindDialog>>()
 const unbindDialog = ref<HTMLDialogElement>()
@@ -19,6 +20,7 @@ const name = computed(() => album.state.nickname || t('account.nintendo'))
 const initial = computed(() => Array.from(name.value)[0]?.toUpperCase() ?? 'N')
 const cooldown = computed(() => Math.max(0, Math.ceil((album.state.nextAllowedAt - now.value) / 1000)))
 const done = computed(() => album.jobs.filter((job) => !['queued', 'running'].includes(job.status)).length)
+const lastRun = useRecognitionSummary('album')
 const failures = computed(() =>
     album.items.filter((item) => item.datasetEpoch === album.state.datasetEpoch && retryable.has(item.stage)),
 )
@@ -127,13 +129,21 @@ async function confirmUnbind() {
                         <LoaderCircle class="spin" :size="15" />
                         {{ album.phase === 'importing' ? t('sync.banner.importing') : t('sync.banner.checking') }}
                     </span>
-                    <span v-if="album.phase === 'importing'" class="muted">
-                        {{ t('ocr.progress', { done, total: album.jobs.length }) }}
+                    <span v-if="album.phase === 'importing'" class="row gap-3">
+                        <span class="muted">{{ t('ocr.progress', { done, total: album.jobs.length }) }}</span>
+                        <button type="button" class="text-link" @click="emit('view')">{{ t('sync.banner.view') }}</button>
                     </span>
                 </div>
                 <AnimatedProgress v-if="album.phase === 'importing'" :value="done" :max="album.jobs.length" />
             </div>
-            <details v-else-if="failures.length" class="account-failures">
+            <div v-else-if="lastRun" class="account-progress account-last">
+                <span class="row gap-2">
+                    <History :size="15" />
+                    {{ t('account.lastRun', { time: format(lastRun.finishedAt), count: lastRun.total }, lastRun.total) }}
+                </span>
+                <button type="button" class="text-link" @click="emit('view')">{{ t('sync.banner.view') }}</button>
+            </div>
+            <details v-if="!album.busy && failures.length" class="account-failures">
                 <summary>{{ t('account.failures', { count: failures.length }, failures.length) }}</summary>
                 <ul>
                     <li v-for="item in failures" :key="item.mediaId">
@@ -302,6 +312,12 @@ async function confirmUnbind() {
 }
 .account-progress svg {
     color: var(--accent);
+}
+.account-last {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
 }
 .account-failures {
     margin: 0 26px 24px;

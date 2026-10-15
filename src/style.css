@@ -1300,13 +1300,21 @@ input::placeholder {
 .error {
     color: #c65f5f;
 }
-.toast {
+.toast-stack {
     position: fixed;
     right: 24px;
     bottom: 24px;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
     width: 360px;
     max-width: calc(100% - 48px);
     max-height: calc(100dvh - 48px);
+    pointer-events: none;
+}
+.toast {
+    min-height: 0;
     overflow-y: auto;
     align-items: flex-start;
     background: var(--panel);
@@ -1314,9 +1322,34 @@ input::placeholder {
     box-shadow: var(--shadow);
     border-radius: 9px;
     padding: 14px 18px;
-    z-index: 30;
     font-size: 13px;
     color: var(--accent);
+    pointer-events: auto;
+}
+.album-toast-open {
+    display: grid;
+    gap: 9px;
+    padding: 0;
+    background: transparent;
+    text-align: left;
+}
+.notification-copy.album-toast-open strong {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 0;
+}
+.album-toast-open strong small {
+    font-weight: 400;
+    color: var(--muted);
+    white-space: nowrap;
+}
+.album-toast-open .album-toast-link {
+    font-size: 12px;
+    color: var(--accent);
+}
+button.album-toast-open:hover .album-toast-link {
+    text-decoration: underline;
 }
 @media (min-width: 1550px) {
     main {
@@ -2285,7 +2318,7 @@ input::placeholder {
     font-size: 11px;
 }
 @media (max-width: 680px) {
-    .toast {
+    .toast-stack {
         top: max(12px, env(safe-area-inset-top));
         bottom: auto;
         right: max(12px, env(safe-area-inset-right));
@@ -2293,6 +2326,9 @@ input::placeholder {
         width: auto;
         max-width: none;
         max-height: calc(100dvh - max(12px, env(safe-area-inset-top)) - 80px - env(safe-area-inset-bottom));
+        gap: 8px;
+    }
+    .toast {
         padding: 10px 12px;
     }
     .toast .icon-button {

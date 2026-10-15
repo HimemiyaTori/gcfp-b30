@@ -3,7 +3,8 @@ import { liveQuery } from 'dexie'
 import { database } from '../../db/database'
 import { initialAlbumState, type AlbumItem, type AlbumState } from '../../db/albumModels'
 import { scoreRepository } from '../../db/scoreRepository'
-import { createPreviewUrl, releasePreviews } from '../ocr/preview'
+import { saveRecognition } from '../../db/recognitionRepository'
+import { createPreview, releasePreviews } from '../ocr/preview'
 import { createSharedRecognizer } from '../ocr/shared'
 import { AlbumError, credentialLock, download, request, type AlbumMedia, type Binding, type MediaResponse } from './api'
 import { currentLanguage, t } from '../../i18n'
@@ -22,11 +23,11 @@ export const album = reactive({
     items: [] as AlbumItem[],
     importedCount: 0,
     busy: false,
-    manual: false,
     phase: 'idle' as 'idle' | 'checking' | 'importing',
     jobs: [] as AlbumJob[],
     slow: false,
-    previewing: false,
+    // 弹窗正在展示本次 jobs 时，结束后由弹窗关闭时释放预览
+    viewing: false,
     error: '',
     run: undefined as AlbumRun | undefined,
 })
@@ -39,10 +40,11 @@ let started = false
 let runs = 0
 function marker(value: boolean) { try { if (value) localStorage.setItem(MARKER, '1'); else localStorage.removeItem(MARKER) } catch {} }
 async function localBinding(binding: Omit<Binding, 'configured'> & { configured?: boolean }) {
-    await database.transaction('rw', database.albumState, async () => {
+    await database.transaction('rw', database.albumState, database.recognitionRuns, async () => {
         const state = await database.albumState.get('album') ?? initialAlbumState()
         const changed = state.accountId !== binding.accountId || state.bindingId !== binding.bindingId
-        // 换绑或解绑后清除旧账号的更新记录，新绑定可立即更新
+        // 换绑或解绑后清除旧账号的更新记录与识别结果，新绑定可立即更新
+        if (changed) await database.recognitionRuns.delete('album')
         await database.albumState.put(changed
             ? { ...state, accountId: binding.accountId, bindingId: binding.bindingId, nickname: binding.nickname, avatarUrl: binding.avatarUrl, bindingGeneration: state.bindingGeneration + 1, nextAllowedAt: 0, lastCheckedAt: undefined, lastImportedAt: undefined, mediaCount: undefined }
             : { ...state, nickname: binding.nickname, avatarUrl: binding.avatarUrl })
@@ -154,7 +156,7 @@ async function collect(result: MediaResponse, state: AlbumState) {
     }
     return queue
 }
-async function importQueue(queue: AlbumItem[], visible: AlbumMedia[], state: AlbumState, controller: AbortController, tally: { recorded: number; updated: number }) {
+async function importQueue(queue: AlbumItem[], visible: AlbumMedia[], state: AlbumState, controller: AbortController, tally: { recorded: number; updated: number }, previews: (Blob | undefined)[]) {
     let media = new Map(visible.map(row => [row.mediaId, row]))
     const timeout = () => AbortSignal.any([controller.signal, AbortSignal.timeout(45000)])
     let recognizer = createSharedRecognizer(undefined, { onSlowInference: () => { album.slow = true } })
@@ -188,14 +190,12 @@ async function importQueue(queue: AlbumItem[], visible: AlbumMedia[], state: Alb
                     Object.assign(job, { status: 'skipped', error: t('album.imageUnavailable') })
                     continue
                 }
-                if (album.previewing) {
-                    try {
-                        const preview = await createPreviewUrl(blob)
-                        if (controller.signal.aborted || !album.previewing) URL.revokeObjectURL(preview)
-                        else job.preview = preview
-                    } catch {
-                        // 预览失败不阻断识别
-                    }
+                try {
+                    const preview = await createPreview(blob)
+                    previews[index] = preview
+                    if (!controller.signal.aborted) job.preview = URL.createObjectURL(preview)
+                } catch {
+                    // 预览失败不阻断识别
                 }
                 item = { ...item, contentHash: await digest(blob) }
                 const duplicates = await database.albumItems.where('[accountId+contentHash]').equals([item.accountId, item.contentHash!]).toArray()
@@ -242,7 +242,6 @@ async function importQueue(queue: AlbumItem[], visible: AlbumMedia[], state: Alb
 export async function scan(manual = false) {
     if (album.busy) return
     album.busy = true
-    album.manual = manual
     album.phase = 'checking'
     releasePreviews(album.jobs)
     album.jobs = []
@@ -252,6 +251,7 @@ export async function scan(manual = false) {
     const controller = new AbortController()
     aborter = controller
     const tally = { recorded: 0, updated: 0 }
+    const previews: (Blob | undefined)[] = []
     let checked = false
     let failure: string | undefined
     try {
@@ -265,7 +265,7 @@ export async function scan(manual = false) {
             album.jobs = queue.map((item, index): AlbumJob => ({ mediaId: item.mediaId, name: label(item.capturedAt), index: index + 1, status: 'queued', error: '' }))
             if (!queue.length) return
             album.phase = 'importing'
-            await importQueue(queue, result.media, state, controller, tally)
+            await importQueue(queue, result.media, state, controller, tally, previews)
         })
     } catch (error) {
         if (!controller.signal.aborted && !(error instanceof ScanSkipped && !manual)) {
@@ -274,8 +274,14 @@ export async function scan(manual = false) {
         }
     } finally {
         if (aborter === controller) aborter = undefined
+        const scanned = active
         active = undefined
+        // 清空成绩或换绑中断的批次不再保存识别结果
+        const latest = scanned && await database.albumState.get('album').catch(() => undefined)
+        if (latest && latest.datasetEpoch === scanned.datasetEpoch && latest.bindingGeneration === scanned.bindingGeneration)
+            await saveRecognition('album', album.jobs, previews, t('album.deferred')).catch(() => {})
         for (const job of album.jobs) if (job.status === 'queued' || job.status === 'running') Object.assign(job, { status: 'skipped', error: t('album.deferred') })
+        if (!album.viewing) releasePreviews(album.jobs)
         const count = (status: ImportJob['status']) => album.jobs.filter(job => job.status === status).length
         album.run = { id: ++runs, manual, checked, found: album.jobs.length, ...tally, failed: count('failed'), skipped: count('skipped'), canceled: canceled && controller.signal.aborted, error: failure }
         album.busy = false

@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie'
-import type { ScoreRecord, ScoreHistory, RatingSnapshot, RatingCalculationMetadata } from './models'
+import type { ScoreRecord, ScoreHistory, RatingSnapshot, RatingCalculationMetadata, RecognitionRun, RecognitionSource } from './models'
 import type { AlbumItem, AlbumState, ChartProtection } from './albumModels'
 export class ScoreDatabase extends Dexie {
     scores!: Table<ScoreRecord, number>
@@ -9,6 +9,7 @@ export class ScoreDatabase extends Dexie {
     albumItems!: Table<AlbumItem, [string, string]>
     albumState!: Table<AlbumState, string>
     chartProtections!: Table<ChartProtection, string>
+    recognitionRuns!: Table<RecognitionRun, RecognitionSource>
     constructor(name = 'groove-archive-fp-history') {
         super(name)
         this.version(1).stores({
@@ -27,6 +28,7 @@ export class ScoreDatabase extends Dexie {
             await transaction.table('scoreHistory').toCollection().modify(row => { row.playedAt = row.importedAt })
             await transaction.table('metadata').delete('calculation')
         })
+        this.version(3).stores({ recognitionRuns: '&key' })
     }
 }
 export const database = new ScoreDatabase()

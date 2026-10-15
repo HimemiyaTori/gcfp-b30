@@ -125,12 +125,13 @@ export function createScoreRepository(db: ScoreDatabase, library = songService, 
             })
         },
         async clear() {
-            await db.transaction('rw', tables, async () => {
+            await db.transaction('rw', [...tables, db.recognitionRuns], async () => {
                 const state = await db.albumState.get('album') ?? initialAlbumState()
                 await db.albumState.put({ ...state, datasetEpoch: state.datasetEpoch + 1, autoImport: false })
                 await db.scores.clear()
                 await db.scoreHistory.clear()
                 await db.ratingSnapshots.clear()
+                await db.recognitionRuns.clear()
             })
         },
         async commitAlbum(accountId: string, mediaId: string, candidate: ImportedScore) {

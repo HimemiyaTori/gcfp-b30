@@ -32,6 +32,20 @@ export interface RatingCalculationMetadata {
     ratingRuleVersion: string
     songLibraryVersion: string
 }
+export type RecognitionSource = 'manual' | 'album'
+export interface RecognitionJob {
+    name: string
+    index: number
+    status: 'success' | 'failed' | 'skipped'
+    error: string
+    preview?: Blob
+}
+// 首页录入与相册同步各保留最近一次识别结果
+export interface RecognitionRun {
+    key: RecognitionSource
+    finishedAt: number
+    jobs: RecognitionJob[]
+}
 export interface ScoreRow extends ScoreAchievements {
     id: number
     songId: string

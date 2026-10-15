@@ -6,6 +6,7 @@ import {
     CircleHelp,
     Disc3,
     FileImage,
+    History,
     ShieldCheck,
     Sparkles,
     Upload,
@@ -14,6 +15,7 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ScoreTable from '../components/ScoreTable.vue'
 import { useScoreHistory } from '../composables/useScoreHistory'
+import { useRecognitionSummary } from '../db/recognitionRepository'
 import RatingTrend, { type RatingGrain } from '../components/RatingTrend.vue'
 import RollingNumber from '../components/common/RollingNumber.vue'
 import type { ScoreRow, RatingSnapshot } from '../db/models'
@@ -26,11 +28,12 @@ defineProps<{
 }>()
 const grain = defineModel<RatingGrain>('grain', { required: true })
 const b30Mode = defineModel<RatingMode>('mode', { required: true })
-const emit = defineEmits<{ upload: [files: File[]]; song: [row: { songId: string; mode: string }] }>()
-const { t } = useI18n()
+const emit = defineEmits<{ upload: [files: File[]]; song: [row: { songId: string; mode: string }]; viewLast: [] }>()
+const { t, locale } = useI18n()
 const fileInput = ref<HTMLInputElement>()
 const dragging = ref(false)
 const { rows, sort, toggleSort, page, pagination, error, loading, reload } = useScoreHistory()
+const lastRun = useRecognitionSummary('manual')
 function selectFiles(files: FileList | null) {
     const selected = Array.from(files ?? [])
     if (fileInput.value) fileInput.value.value = ''
@@ -161,6 +164,15 @@ function drop(event: DragEvent) {
                 <span class="row gap-2"
                     ><ShieldCheck :size="14" /> {{ t('home.localOnly') }}</span
                 >
+                <button
+                    v-if="lastRun"
+                    type="button"
+                    class="text-link"
+                    :title="new Date(lastRun.finishedAt).toLocaleString(locale)"
+                    @click="emit('viewLast')"
+                >
+                    <History :size="14" />{{ t('home.lastRun', { count: lastRun.total }, lastRun.total) }}
+                </button>
             </div>
         </article>
         <article class="guide-panel">

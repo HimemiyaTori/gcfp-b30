@@ -27,7 +27,6 @@ import SettingsPage from './pages/SettingsPage.vue'
 import type { AlbumState } from './db/albumModels'
 const nintendoAccount = shallowRef<{ state: AlbumState }>()
 const NintendoAccount = import.meta.env.VITE_SERVER === '1' ? defineAsyncComponent(() => import('./components/album/NintendoAccount.vue')) : undefined
-const AlbumProgress = import.meta.env.VITE_SERVER === '1' ? defineAsyncComponent(() => import('./components/album/AlbumProgress.vue')) : undefined
 const AlbumSync = import.meta.env.VITE_SERVER === '1' ? defineAsyncComponent(() => import('./components/album/AlbumSync.vue')) : undefined
 if (import.meta.env.VITE_SERVER === '1') void import('./core/album/controller').then(module => {
     nintendoAccount.value = module.album
@@ -62,6 +61,7 @@ const songDetails = ref<InstanceType<typeof SongDetailsDialog>>()
 const clearDialog = ref<InstanceType<typeof ClearScoresDialog>>()
 const excel = ref<InstanceType<typeof ExcelTransferDialog>>()
 const notification = ref<InstanceType<typeof AppNotification>>()
+const albumSync = ref<{ open(): Promise<void> }>()
 function notify(message: string, title?: string) {
     notification.value?.show(message, title)
 }
@@ -146,7 +146,6 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
                         LOCAL DATA <span>{{ t('app.localData') }}</span>
                     </div>
                 </div>
-                <component :is="AlbumProgress" v-if="AlbumProgress && page !== 'settings'" />
                 <HomePage
                     v-if="page === 'home'"
                     :scores="scores"
@@ -157,6 +156,7 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
                     :snapshots="snapshots"
                     v-model:grain="ratingGrain"
                     @song="songDetails?.open($event)"
+                    @view-last="ocr?.view()"
                 />
                 <ScoresPage
                     v-if="page === 'scores'"
@@ -186,7 +186,7 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
                     @template="excel?.download(true)"
                 >
                     <template v-if="NintendoAccount" #account>
-                        <component :is="NintendoAccount" @notify="notify" />
+                        <component :is="NintendoAccount" @notify="notify" @view="albumSync?.open()" />
                     </template>
                 </SettingsPage>
                 <p v-if="databaseLoading" role="status">
@@ -232,7 +232,9 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
             :history-count="historyCount"
             @notify="notify"
         />
-        <AppNotification ref="notification" />
+        <div id="toast-stack" class="toast-stack">
+            <AppNotification ref="notification" />
+        </div>
         <ExcelTransferDialog
             ref="excel"
             :can-write="canWrite"
@@ -241,6 +243,7 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
         <component
             :is="AlbumSync"
             v-if="AlbumSync"
+            ref="albumSync"
             @notify="notify"
             @manual-add="editor?.open()"
         />

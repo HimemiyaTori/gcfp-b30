@@ -3,21 +3,30 @@ import { computed, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ImportProgress from './ImportProgress.vue'
 import { motionTiming } from '../common/motion'
-import { useOcrImport, MAX_IMPORT_FILES } from '../../composables/useOcrImport'
+import { releasePreviews } from '../../core/ocr/preview'
+import { loadRecognition } from '../../db/recognitionRepository'
+import { useOcrImport, MAX_IMPORT_FILES, type ImportJob } from '../../composables/useOcrImport'
 const props = defineProps<{ active: boolean; canWrite: boolean }>()
 const emit = defineEmits<{ notify: [message: string, title?: string]; manualAdd: [] }>()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const importDialog = ref<HTMLDialogElement>()
 const importPhase = ref<'processing' | 'success'>('processing')
 const { jobs, failures, skipped, importing, edgeSecurityHint,
     dismissEdgeSecurityHint, start: runImport, cancel } = useOcrImport()
-const importHasErrors = computed(() => !importing.value && failures.value.length > 0)
+// 查看最近一次结果时展示本地保存的记录
+const stored = ref<{ finishedAt: number; jobs: ImportJob[] }>()
+const shownJobs = computed(() => stored.value?.jobs ?? jobs.value)
+const shownFailures = computed(() => stored.value ? stored.value.jobs.filter((job) => job.status === 'failed').length : failures.value.length)
+const shownSkipped = computed(() => stored.value ? stored.value.jobs.filter((job) => job.status === 'skipped').length : skipped.value.length)
+const importHasErrors = computed(() => !importing.value && shownFailures.value > 0)
 let timer: ReturnType<typeof setTimeout> | undefined
 let generation = 0
 function resetPresentation() {
     generation++
     clearTimeout(timer)
     importPhase.value = 'processing'
+    if (stored.value) releasePreviews(stored.value.jobs)
+    stored.value = undefined
 }
 function close() {
     resetPresentation()
@@ -36,7 +45,7 @@ async function start(files: File[]) {
     }
     resetPresentation()
     const current = generation
-    importDialog.value?.showModal()
+    if (!importDialog.value?.open) importDialog.value?.showModal()
     await runImport(files)
     if (current !== generation || !jobs.value.length) return
     if (!failures.value.length && !skipped.value.length && !edgeSecurityHint.value) {
@@ -50,9 +59,22 @@ async function start(files: File[]) {
         }, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : motionTiming.progress)
     }
 }
+async function view() {
+    if (!props.active || importing.value) return
+    resetPresentation()
+    const current = generation
+    const run = await loadRecognition('manual')
+    if (current !== generation || !run) {
+        if (run) releasePreviews(run.jobs)
+        return
+    }
+    cancel()
+    stored.value = run
+    if (!importDialog.value?.open) importDialog.value?.showModal()
+}
 watch(() => props.active, active => { if (!active) close() })
-onUnmounted(() => { generation++; clearTimeout(timer) })
-defineExpose({ start })
+onUnmounted(() => { resetPresentation() })
+defineExpose({ start, view })
 </script>
 
 <template>
@@ -63,18 +85,22 @@ defineExpose({ start })
         @cancel.prevent="close()"
     >
         <ImportProgress
-            :jobs="jobs"
+            :jobs="shownJobs"
             :importing="importing"
             :success="importPhase !== 'processing'"
             eyebrow="SCREENSHOT IMPORT"
-            :note="t('ocr.localNote')"
+            :note="
+                stored
+                    ? t('ocr.lastRun', { time: new Date(stored.finishedAt).toLocaleString(locale) })
+                    : t('ocr.localNote')
+            "
             :footnote="
                 !importing
-                    ? t('ocr.summary', { skipped: skipped.length, failed: failures.length })
+                    ? t('ocr.summary', { skipped: shownSkipped, failed: shownFailures })
                     : t('ocr.closeCancels')
             "
             title-id="import-title"
-            :slow-hint="edgeSecurityHint"
+            :slow-hint="!stored && edgeSecurityHint"
             @dismiss-hint="dismissEdgeSecurityHint"
         >
             <template #actions>
