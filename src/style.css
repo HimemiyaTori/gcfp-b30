@@ -2148,6 +2148,32 @@ input::placeholder {
     height: 8px;
     accent-color: var(--accent);
 }
+.import-preview {
+    margin-top: 16px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--field);
+}
+.import-preview img {
+    display: block;
+    width: 100%;
+    max-height: 280px;
+    object-fit: contain;
+    background: #121421;
+}
+.import-preview figcaption {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--muted);
+}
+.import-preview figcaption span:first-child {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
 .import-results {
     max-height: 320px;
     overflow-y: auto;
@@ -2184,9 +2210,42 @@ input::placeholder {
     text-underline-offset: 3px;
 }
 .import-result {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
     padding: 14px 0;
     border-bottom: 1px solid var(--line);
     font-size: 12px;
+}
+.import-result.previewable {
+    cursor: pointer;
+}
+.import-result.current {
+    background: var(--field);
+    border-radius: 8px;
+}
+.import-result-body {
+    flex: 1;
+    min-width: 0;
+}
+.import-thumb {
+    width: 84px;
+    height: 48px;
+    flex-shrink: 0;
+    padding: 0;
+    overflow: hidden;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: #121421;
+}
+.import-thumb img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.import-result.current .import-thumb {
+    border-color: var(--accent);
 }
 .import-result .between {
     align-items: flex-start;
@@ -2245,6 +2304,9 @@ input::placeholder {
     }
     .editor-dialog {
         padding: 20px;
+    }
+    .import-preview img {
+        max-height: 180px;
     }
     .chart-buttons button {
         flex: 1;

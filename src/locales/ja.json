@@ -290,6 +290,9 @@
         "summary": "スキップ {skipped} 枚、失敗 {failed} 枚。失敗した画像からはスコアを作成しません。画像を選び直すか、手動で追加してください。",
         "closeCancels": "ダイアログを閉じると、未完了の処理はキャンセルされます。",
         "cancel": "認識をキャンセル",
+        "previewAlt": "スクリーンショットのプレビュー：{name}",
+        "previewShow": "スクリーンショット {name} を表示",
+        "previewHide": "スクリーンショット {name} を隠す",
         "errors": {
             "type": "PNG、JPG、WebP の画像のみ対応しています。",
             "size": "画像が空か、20 MB を超えています。",

@@ -1,4 +1,5 @@
 import { computed, onUnmounted, ref } from 'vue'
+import { createPreviewUrl, releasePreviews } from '../core/ocr/preview'
 import { createSharedRecognizer as createRecognizer } from '../core/ocr/shared'
 import { scoreRepository } from '../db/scoreRepository'
 import { scoreIdentity } from '../core/score/import'
@@ -11,6 +12,7 @@ export interface ImportJob {
     index: number
     status: 'queued' | 'running' | 'success' | 'failed' | 'skipped'
     error: string
+    preview?: string
 }
 export function useOcrImport() {
     const jobs = ref<ImportJob[]>([])
@@ -47,6 +49,7 @@ export function useOcrImport() {
         }
         pending.fill(undefined)
         pending = []
+        releasePreviews(jobs.value)
         jobs.value = []
     }
     async function start(files: File[]) {
@@ -65,6 +68,34 @@ export function useOcrImport() {
             status: 'queued',
             error: '',
         }))
+        const sources = queue.slice()
+        const previewTask = (async () => {
+            for (let i = 0; i < sources.length; i++) {
+                if (current.signal.aborted) return
+                const file = sources[i]
+                sources[i] = undefined
+                const job = jobs.value[i]
+                if (
+                    !job ||
+                    !file ||
+                    !['image/png', 'image/jpeg', 'image/webp'].includes(file.type) ||
+                    !file.size ||
+                    file.size > 20 * 1024 * 1024
+                )
+                    continue
+                let preview: string | undefined
+                try {
+                    preview = await createPreviewUrl(file)
+                    if (current.signal.aborted || jobs.value[i] !== job) return
+                    job.preview = preview
+                    preview = undefined
+                } catch {
+                    // 预览失败不阻断识别
+                } finally {
+                    if (preview) URL.revokeObjectURL(preview)
+                }
+            }
+        })()
         try {
             for (let i = 0; i < queue.length; i++) {
                 if (current.signal.aborted) return
@@ -128,7 +159,9 @@ export function useOcrImport() {
                 }
             }
         } finally {
+            await previewTask
             queue.fill(undefined)
+            sources.fill(undefined)
             if (controller === current) {
                 pending = []
                 controller = undefined

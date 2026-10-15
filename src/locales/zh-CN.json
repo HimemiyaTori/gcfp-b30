@@ -290,6 +290,9 @@
         "summary": "跳过 {skipped} 张，失败 {failed} 张。失败图片不会生成成绩，可以重新选择图片或手动新增。",
         "closeCancels": "关闭弹窗将取消未完成任务。",
         "cancel": "取消识别",
+        "previewAlt": "截图预览：{name}",
+        "previewShow": "查看截图 {name}",
+        "previewHide": "隐藏截图 {name}",
         "errors": {
             "type": "仅支持 PNG、JPG 或 WebP 图片。",
             "size": "图片不能为空，且不得超过 20 MB。",

@@ -290,6 +290,9 @@
         "summary": "略過 {skipped} 張，失敗 {failed} 張。失敗的圖片不會產生成績，可以重新選擇圖片或手動新增。",
         "closeCancels": "關閉對話框將取消未完成的工作。",
         "cancel": "取消辨識",
+        "previewAlt": "截圖預覽：{name}",
+        "previewShow": "查看截圖 {name}",
+        "previewHide": "隱藏截圖 {name}",
         "errors": {
             "type": "僅支援 PNG、JPG 或 WebP 圖片。",
             "size": "圖片不可為空，且不得超過 20 MB。",

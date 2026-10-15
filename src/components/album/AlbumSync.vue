@@ -3,6 +3,7 @@ import { computed, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ImportProgress from '../dialogs/ImportProgress.vue'
 import { motionTiming } from '../common/motion'
+import { releasePreviews } from '../../core/ocr/preview'
 import { album, cancel, type AlbumRun } from '../../core/album/controller'
 const emit = defineEmits<{ notify: [message: string, title?: string]; manualAdd: [] }>()
 const { t } = useI18n()
@@ -15,6 +16,8 @@ let timer: ReturnType<typeof setTimeout> | undefined
 const summary = (run: AlbumRun) => t(run.failed || run.skipped ? 'sync.doneIssues' : 'sync.done', { ...run })
 function close() {
     clearTimeout(timer)
+    album.previewing = false
+    releasePreviews(album.jobs)
     dialog.value?.close()
 }
 function stop() {
@@ -29,6 +32,7 @@ watch(
         clearTimeout(timer)
         success.value = false
         hintDismissed.value = false
+        album.previewing = true
         if (!dialog.value?.open) dialog.value?.showModal()
     },
 )
@@ -63,7 +67,11 @@ watch(
         )
     },
 )
-onUnmounted(() => clearTimeout(timer))
+onUnmounted(() => {
+    clearTimeout(timer)
+    album.previewing = false
+    releasePreviews(album.jobs)
+})
 </script>
 
 <template>

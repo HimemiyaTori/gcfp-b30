@@ -290,6 +290,9 @@
         "summary": "Skipped {skipped}, failed {failed}. Failed images don't create scores. Choose the images again or add the scores manually.",
         "closeCancels": "Closing this dialog cancels unfinished work.",
         "cancel": "Cancel recognition",
+        "previewAlt": "Screenshot preview: {name}",
+        "previewShow": "Show screenshot {name}",
+        "previewHide": "Hide screenshot {name}",
         "errors": {
             "type": "Only PNG, JPG, or WebP images are supported.",
             "size": "The image is empty or larger than 20 MB.",

@@ -3,6 +3,7 @@ import { liveQuery } from 'dexie'
 import { database } from '../../db/database'
 import { initialAlbumState, type AlbumItem, type AlbumState } from '../../db/albumModels'
 import { scoreRepository } from '../../db/scoreRepository'
+import { createPreviewUrl, releasePreviews } from '../ocr/preview'
 import { createSharedRecognizer } from '../ocr/shared'
 import { AlbumError, credentialLock, download, request, type AlbumMedia, type Binding, type MediaResponse } from './api'
 import { currentLanguage, t } from '../../i18n'
@@ -25,6 +26,7 @@ export const album = reactive({
     phase: 'idle' as 'idle' | 'checking' | 'importing',
     jobs: [] as AlbumJob[],
     slow: false,
+    previewing: false,
     error: '',
     run: undefined as AlbumRun | undefined,
 })
@@ -186,6 +188,15 @@ async function importQueue(queue: AlbumItem[], visible: AlbumMedia[], state: Alb
                     Object.assign(job, { status: 'skipped', error: t('album.imageUnavailable') })
                     continue
                 }
+                if (album.previewing) {
+                    try {
+                        const preview = await createPreviewUrl(blob)
+                        if (controller.signal.aborted || !album.previewing) URL.revokeObjectURL(preview)
+                        else job.preview = preview
+                    } catch {
+                        // 预览失败不阻断识别
+                    }
+                }
                 item = { ...item, contentHash: await digest(blob) }
                 const duplicates = await database.albumItems.where('[accountId+contentHash]').equals([item.accountId, item.contentHash!]).toArray()
                 if (duplicates.some(other => other.mediaId !== item.mediaId && ['imported', 'skipped'].includes(other.stage))) {
@@ -233,6 +244,7 @@ export async function scan(manual = false) {
     album.busy = true
     album.manual = manual
     album.phase = 'checking'
+    releasePreviews(album.jobs)
     album.jobs = []
     album.slow = false
     album.error = ''
