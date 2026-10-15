@@ -385,6 +385,7 @@
         "readScores": "无法读取本地成绩，请检查浏览器存储权限后重试。",
         "initialize": "数据库初始化或曲库版本重算失败，原有数据已保留。请检查浏览器存储权限或曲库后重试。",
         "readHistory": "无法读取历史成绩，请重试。",
+        "readTrend": "无法读取 Rating 走势，请重试。",
         "achievementType": "FC / AP 必须为布尔值。",
         "maxChain": "Max Chain 必须为 0～{max} 的整数，未知时留空。",
         "apWithoutFc": "AP 成绩必须同时为 FC。",

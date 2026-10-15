@@ -2,21 +2,30 @@ import { AlbumError, DomainError } from '../errors'
 export interface Binding { status: 'active' | 'unbound'; configured: boolean; accountId?: string; bindingId?: string; nickname?: string; avatarUrl?: string }
 export interface AlbumMedia { mediaId: string; applicationId: string; capturedAt: number | null; contentLength: number; expiresAt: number; contentUri?: string; ticket: string }
 export interface MediaResponse { accountId: string; bindingId: string; avatarUrl?: string; media: AlbumMedia[] }
-export async function request<T>(path: string, method = 'GET', body?: object): Promise<T> {
-    let response: Response
+export async function request<T>(path: string, method = 'GET', body?: object, signal?: AbortSignal): Promise<T> {
+    signal?.throwIfAborted()
+    const timeout = AbortSignal.timeout(120000)
     try {
-        response = await fetch(`/api/${path}`, { method, credentials: 'same-origin', cache: 'no-store', headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined, signal: AbortSignal.timeout(120000) })
-    } catch { throw new AlbumError('network_error') }
-    if (!response.ok) {
-        const result = await response.json().catch(() => ({}))
-        const code = typeof result.error === 'string' && /^[a-z_]+$/.test(result.error) ? result.error : 'request_failed'
-        throw new AlbumError(code, Date.now() + Math.max(0, Number(response.headers.get('retry-after')) || 0) * 1000)
+        const response = await fetch(`/api/${path}`, { method, credentials: 'same-origin', cache: 'no-store', headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined, signal: signal ? AbortSignal.any([signal, timeout]) : timeout })
+        if (!response.ok) {
+            const result = await response.json().catch(() => ({}))
+            signal?.throwIfAborted()
+            const code = typeof result.error === 'string' && /^[a-z_]+$/.test(result.error) ? result.error : 'request_failed'
+            throw new AlbumError(code, Date.now() + Math.max(0, Number(response.headers.get('retry-after')) || 0) * 1000)
+        }
+        const result = await response.json()
+        signal?.throwIfAborted()
+        return result as T
+    } catch (error) {
+        signal?.throwIfAborted()
+        if (error instanceof AlbumError) throw error
+        throw new AlbumError('network_error')
     }
-    return response.json() as Promise<T>
 }
-export function credentialLock<T>(work: () => Promise<T>): Promise<T> {
+export function credentialLock<T>(work: () => Promise<T>, signal?: AbortSignal): Promise<T> {
     if (!navigator.locks) throw new DomainError('album.locksRequired')
-    return navigator.locks.request('groove-nintendo-credentials', work) as Promise<T>
+    signal?.throwIfAborted()
+    return navigator.locks.request('groove-nintendo-credentials', { signal }, work) as Promise<T>
 }
 export async function download(media: AlbumMedia, signal: AbortSignal) {
     let response: Response

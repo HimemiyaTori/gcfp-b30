@@ -22,6 +22,7 @@ try {
     let bound = false,
         expiredTicket = true,
         brokenDownload = true
+    let pendingMedia
     const entry = (mediaId, image, capturedAt) => ({
         mediaId,
         applicationId: 'test-gcfp',
@@ -78,8 +79,13 @@ try {
         else if (path === '/api/nintendo/auth/complete') {
             bound = true
             data = binding()
-        } else if (path === '/api/album/media')
+        } else if (path === '/api/album/media') {
+            if (pendingMedia) {
+                await pendingMedia
+                return route.fulfill({ json: { accountId: 'test-user', bindingId: 'binding-1', media } }).catch(() => {})
+            }
             data = { accountId: 'test-user', bindingId: 'binding-1', media }
+        }
         else return route.fulfill({ status: 404, json: { error: 'not_found' } })
         return route.fulfill({ json: data })
     })
@@ -205,8 +211,8 @@ try {
     assert.equal(await sync.locator('.import-thumb').count(), 2)
     await sync.getByRole('button', { name: '关闭', exact: true }).click()
 
-    // 超过 3 分钟后打开网页自动更新，只显示进度提示和完成通知
-    media.push(entry('result-1', 'result', '2026-09-23T10:00:00Z'))
+    // 超过 3 分钟后自动更新，补录较早的截图仍按拍摄时间展示历史
+    media.push(entry('result-1', 'result', '2026-09-21T10:00:00Z'))
     await page.evaluate(async () => {
         const { database } = await import('/src/db/database.ts')
         await database.albumState.update('album', {
@@ -230,6 +236,7 @@ try {
             (row) => row.chartId === '5-basic-hard' && row.score === 1010973,
         ),
     )
+    await page.locator('.history-table tbody tr').first().getByText('1,027,499', { exact: false }).waitFor()
 
     // 清空成绩后，已处理过的截图不会重新录入
     await page.evaluate(() => {
@@ -290,12 +297,21 @@ try {
         ),
     )
 
-    // 解除绑定保留已录入成绩
-    await account.getByRole('button', { name: '解除绑定', exact: true }).click()
-    await page.getByRole('button', { name: '确认解除', exact: true }).click()
-    await account
-        .getByRole('button', { name: '绑定 Nintendo 账号', exact: true })
-        .waitFor()
+    // 列表请求尚未响应时解除绑定，立即中断请求并保留已录入成绩
+    await update.waitFor({ timeout: 15000 })
+    let releaseMedia
+    pendingMedia = new Promise(resolve => { releaseMedia = resolve })
+    try {
+        const pendingRequest = page.waitForRequest(request => request.url().endsWith('/api/album/media'))
+        await update.click()
+        await pendingRequest
+        await account.getByRole('button', { name: '解除绑定', exact: true }).click()
+        await page.getByRole('button', { name: '确认解除', exact: true }).click()
+        await account.getByRole('button', { name: '绑定 Nintendo 账号', exact: true }).waitFor({ timeout: 5000 })
+    } finally {
+        releaseMedia()
+        pendingMedia = undefined
+    }
     assert.equal((await state()).history.length, 1)
     await account
         .getByRole('button', { name: '绑定 Nintendo 账号', exact: true })
@@ -307,9 +323,40 @@ try {
             () => document.documentElement.scrollWidth <= innerWidth,
         ),
     )
+    // 凭据锁被其他操作占用时，清空成绩仍能取消正在排队的更新
+    const lockedContext = await browser.newContext({ locale: 'zh-CN' })
+    await lockedContext.route('**/api/**', route => route.fulfill({ json: { configured: true, status: 'active', accountId: 'locked-user', bindingId: 'locked-binding', media: [] } }))
+    const lockedPage = await lockedContext.newPage()
+    lockedPage.on('pageerror', error => errors.push(error.message))
+    await lockedPage.goto(`${origin}#settings`)
+    await lockedPage.getByRole('button', { name: '绑定 Nintendo 账号', exact: true }).waitFor()
+    await lockedPage.evaluate(async () => {
+        const { database } = await import('/src/db/database.ts')
+        const { initialAlbumState } = await import('/src/db/albumModels.ts')
+        const { scoreRepository } = await import('/src/db/scoreRepository.ts')
+        await scoreRepository.addManual('1', '1-basic-easy', 1000000)
+        await database.albumState.put({ ...initialAlbumState(), accountId: 'locked-user', bindingId: 'locked-binding', bindingGeneration: 1 })
+        await new Promise(granted => {
+            void navigator.locks.request('groove-nintendo-credentials', async () => {
+                granted()
+                await new Promise(resolve => { window.releaseCredential = resolve })
+            })
+        })
+    })
+    try {
+        await lockedPage.getByRole('button', { name: '更新成绩', exact: true }).click()
+        await lockedPage.getByRole('button', { name: '更新中…', exact: true }).waitFor()
+        await lockedPage.getByRole('button', { name: '清空数据', exact: true }).click()
+        await lockedPage.getByRole('button', { name: '确认清空全部成绩', exact: true }).click()
+        await lockedPage.getByRole('button', { name: '更新成绩', exact: true }).waitFor({ timeout: 5000 })
+        assert.equal(await lockedPage.locator('.account-alert[role=alert]').count(), 0)
+    } finally {
+        await lockedPage.evaluate(() => window.releaseCredential())
+        await lockedContext.close()
+    }
     assert.deepEqual(errors, [])
     console.log(
-        'Album browser acceptance passed: risk confirmation, binding guide, automatic import with progress notice and dialog, last result review, account details, cooldowns, auto update on visit, cleared data isolation, retry and unbinding',
+        'Album browser acceptance passed: binding, automatic import, last result, account details, cooldowns, cleared data isolation, retry, unbinding during a pending request and cancellation while waiting for credentials',
     )
 } finally {
     await browser.close()

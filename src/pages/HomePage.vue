@@ -15,15 +15,15 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ScoreTable from '../components/ScoreTable.vue'
 import { useScoreHistory } from '../composables/useScoreHistory'
+import { useRatingSnapshots } from '../composables/useRatingSnapshots'
 import { useRecognitionSummary } from '../db/recognitionRepository'
 import RatingTrend, { type RatingGrain } from '../components/RatingTrend.vue'
 import RollingNumber from '../components/common/RollingNumber.vue'
-import type { ScoreRow, RatingSnapshot } from '../db/models'
+import type { ScoreRow } from '../db/models'
 import type { getModeB30, RatingMode } from '../core/rating/calculator'
 defineProps<{
     scores: ScoreRow[]
     historyCount: number
-    snapshots: RatingSnapshot[]
     selectedRating: ReturnType<typeof getModeB30>
 }>()
 const grain = defineModel<RatingGrain>('grain', { required: true })
@@ -33,6 +33,7 @@ const { t, locale } = useI18n()
 const fileInput = ref<HTMLInputElement>()
 const dragging = ref(false)
 const { rows, sort, toggleSort, page, pagination, error, loading, reload } = useScoreHistory()
+const { snapshots, error: trendError, loading: trendLoading, reload: reloadTrend } = useRatingSnapshots()
 const lastRun = useRecognitionSummary('manual')
 function selectFiles(files: FileList | null) {
     const selected = Array.from(files ?? [])
@@ -114,12 +115,14 @@ function drop(event: DragEvent) {
         </article>
     </section>
 
-    <RatingTrend
-        v-if="scores.length"
-        :snapshots="snapshots"
-        :mode="b30Mode"
-        v-model:grain="grain"
-    />
+    <template v-if="scores.length">
+        <div v-if="trendError" class="panel error" role="alert">
+            {{ trendError }}
+            <button class="button secondary" @click="reloadTrend">{{ t('common.retry') }}</button>
+        </div>
+        <p v-else-if="trendLoading" role="status">{{ t('app.loading') }}</p>
+        <RatingTrend v-else :snapshots="snapshots" :mode="b30Mode" v-model:grain="grain" />
+    </template>
     <section class="import-grid">
         <article class="panel import-panel">
             <div class="section-title between">

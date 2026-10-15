@@ -32,6 +32,10 @@ export class ScoreDatabase extends Dexie {
         this.version(4).stores({
             scoreHistory: '++id,songId,chartId,importedAt,playedAt,[chartId+importedAt],[songId+playedAt]',
         })
+        this.version(5).stores({
+            scoreHistory: '++id,songId,chartId,source,importedAt,playedAt,[chartId+importedAt],[songId+playedAt]',
+            albumItems: '[accountId+mediaId],accountId,[accountId+contentHash],stage,[accountId+datasetEpoch+stage]',
+        })
     }
 }
 export const database = new ScoreDatabase()

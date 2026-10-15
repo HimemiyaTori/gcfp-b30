@@ -35,7 +35,11 @@ try {
         await excel.waitFor({ state: 'hidden' })
         return text
     }
-    async function go(name) { await page.evaluate(name => { location.hash = `#${name}` }, name); await page.locator(name === 'home' ? '.rating-trend' : '.score-table').first().waitFor() }
+    async function go(name) {
+        await page.evaluate(name => { location.hash = `#${name}` }, name)
+        await page.getByRole('heading', { name: name === 'home' ? '录入新成绩' : '成绩一览', exact: true }).waitFor()
+        await page.locator(name === 'home' ? '.rating-trend' : '.score-table').first().waitFor()
+    }
     await upload([['1-basic-easy', 1000000]])
     assert.equal((await state()).history.length, 1)
     const duplicate = await upload([['1-basic-easy', 1000000, false, false, null, '2020-01-01T00:00:00Z']])
@@ -74,12 +78,30 @@ try {
     await page.reload()
     await page.locator('.history-table tbody tr').first().waitFor()
     assert.match(await page.locator('.history-table tbody tr').first().textContent(), /NORMAL/)
+    // 只修改完成信息后保留走势，清除 Max Chain 时仍采用其他同分历史的补录
+    await page.locator('.rating-trend .trend-value').waitFor()
+    const unchangedTrend = await page.locator('.rating-trend .trend-value').textContent()
+    await go('scores')
+    const easyRow = page.locator('tbody tr').filter({ hasText: 'EASY' })
+    const editor = page.locator('dialog[open]')
+    await easyRow.getByRole('button', { name: '编辑成绩' }).click()
+    await editor.getByRole('button', { name: 'FC', exact: true }).click()
+    await editor.getByLabel('Max Chain（可选）', { exact: true }).fill('30')
+    await editor.getByRole('button', { name: '保存成绩', exact: true }).click()
+    await editor.waitFor({ state: 'hidden' })
+    await easyRow.getByText('FC · Max Chain 30', { exact: true }).waitFor()
+    await easyRow.getByRole('button', { name: '编辑成绩' }).click()
+    await editor.getByLabel('Max Chain（可选）', { exact: true }).fill('')
+    await editor.getByRole('button', { name: 'AP', exact: true }).click()
+    await editor.getByRole('button', { name: '保存成绩', exact: true }).click()
+    await editor.waitFor({ state: 'hidden' })
+    await easyRow.getByText('AP · Max Chain 0', { exact: true }).waitFor()
+    await go('home')
+    await page.locator('.rating-trend .trend-value').getByText(unchangedTrend, { exact: true }).waitFor()
     // 实际编辑修正关联历史，不新增记录，降分后恢复其他历史为最佳
     await go('scores')
     assert.equal(await page.getByRole('button', { name: '删除成绩' }).count(), 0)
-    const easyRow = page.locator('tbody tr').filter({ hasText: 'EASY' })
     await easyRow.getByRole('button', { name: '编辑成绩' }).click()
-    const editor = page.locator('dialog[open]')
     await editor.getByLabel('Score', { exact: true }).fill('850000')
     await editor.getByRole('checkbox').check()
     await editor.getByRole('button', { name: '保存成绩', exact: true }).click()
@@ -171,6 +193,20 @@ try {
     await Promise.all([page, second].map(target => target.getByRole('dialog', { name: '导入 Excel 成绩' }).waitFor({ state: 'hidden' })))
     assert.equal((await state()).history.length, 1)
     await second.close()
+    // 走势读取失败只影响首页走势，恢复存储后可在该区域重试
+    await go('scores')
+    await page.evaluate(async () => {
+        const { database } = await import('/src/db/database.ts')
+        window.trendOrderBy = database.ratingSnapshots.orderBy
+        database.ratingSnapshots.orderBy = () => { throw new Error('模拟走势读取失败') }
+        location.hash = '#home'
+    })
+    const trendError = page.getByRole('alert').filter({ hasText: '无法读取 Rating 走势' })
+    await trendError.waitFor()
+    await page.evaluate(async () => { (await import('/src/db/database.ts')).database.ratingSnapshots.orderBy = window.trendOrderBy })
+    await trendError.getByRole('button', { name: '重试', exact: true }).click()
+    await page.locator('.rating-trend .trend-value').waitFor()
+    assert.equal(await trendError.count(), 0)
     // 准备多页历史，验收全局排序、歌曲内分页和清空
     await page.evaluate(async () => {
         const { database } = await import('/src/db/database.ts')

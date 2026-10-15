@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n'
 import AnimatedProgress from '../common/AnimatedProgress.vue'
 import AccountAvatar from '../common/AccountAvatar.vue'
 import NintendoBindDialog from './NintendoBindDialog.vue'
-import { album, retryable, retryFailed, scan, unbind } from '../../core/album/controller'
+import { album, retryFailed, scan, unbind } from '../../core/album/controller'
 import { useRecognitionSummary } from '../../db/recognitionRepository'
 import { errorMessage } from '../../i18n'
 const emit = defineEmits<{ notify: [message: string, title?: string]; view: [] }>()
@@ -22,9 +22,7 @@ const initial = computed(() => Array.from(name.value)[0]?.toUpperCase() ?? 'N')
 const cooldown = computed(() => Math.max(0, Math.ceil((album.state.nextAllowedAt - now.value) / 1000)))
 const done = computed(() => album.jobs.filter((job) => !['queued', 'running'].includes(job.status)).length)
 const lastRun = useRecognitionSummary('album')
-const failures = computed(() =>
-    album.items.filter((item) => item.datasetEpoch === album.state.datasetEpoch && retryable.has(item.stage)),
-)
+const failures = computed(() => album.retryableItems)
 const format = (time?: number | null) =>
     time ? new Date(time).toLocaleString(locale.value, { dateStyle: 'medium', timeStyle: 'short' }) : t('account.never')
 let ticker: ReturnType<typeof setInterval> | undefined

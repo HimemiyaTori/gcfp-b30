@@ -1,33 +1,50 @@
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, shallowRef } from 'vue'
 import { liveQuery } from 'dexie'
 import { scoreRepository } from '../db/scoreRepository'
-import type { ScoreRecord, ScoreRow, RatingSnapshot } from '../db/models'
+import type { ScoreRecord, ScoreRow } from '../db/models'
 import { getScoreRow } from '../core/score/display'
 import { songLanguage } from './useSettings'
 import { database } from '../db/database'
 import { t } from '../i18n'
 export function useScoreList() {
-    const records = ref<ScoreRecord[]>([]), errorKey = ref(''), loading = ref(true)
+    const records = shallowRef<ScoreRecord[]>([]), errorKey = ref(''), loading = ref(true)
     const error = computed(() => errorKey.value && t(errorKey.value))
-    const historyCount = ref(0), snapshots = ref<RatingSnapshot[]>([])
-    let subscription: { unsubscribe(): void } | undefined
+    const historyCount = ref(0)
+    let subscriptions: { unsubscribe(): void }[] = []
+    let revision = 0
     let disposed = false
     async function reload() {
-        loading.value = true; errorKey.value = ''; subscription?.unsubscribe()
+        const current = ++revision
+        loading.value = true; errorKey.value = ''
+        subscriptions.forEach(subscription => subscription.unsubscribe())
+        subscriptions = []
         try {
             await scoreRepository.initialize()
-            if (disposed) return
-            subscription = liveQuery(() => database.transaction('r', [database.scores, database.scoreHistory, database.ratingSnapshots], async () => ({ records: await scoreRepository.list(), count: await database.scoreHistory.count(), snapshots: await scoreRepository.snapshots() }))).subscribe({
-                next: value => { records.value = value.records; historyCount.value = value.count; snapshots.value = value.snapshots; loading.value = false; errorKey.value = '' },
-                error: () => { errorKey.value = 'errors.readScores'; loading.value = false },
-            })
+            if (disposed || current !== revision) return
+            const ready = { scores: false, count: false }
+            const loaded = (key: keyof typeof ready) => {
+                ready[key] = true
+                loading.value = !errorKey.value && (!ready.scores || !ready.count)
+            }
+            const failed = () => { errorKey.value = 'errors.readScores'; loading.value = false }
+            subscriptions = [
+                liveQuery(async () => scoreRepository.list()).subscribe({
+                    next: value => { records.value = value; loaded('scores') },
+                    error: failed,
+                }),
+                liveQuery(async () => database.scoreHistory.count()).subscribe({
+                    next: value => { historyCount.value = value; loaded('count') },
+                    error: failed,
+                }),
+            ]
         } catch {
+            if (disposed || current !== revision) return
             errorKey.value = 'errors.initialize'
             loading.value = false
         }
     }
     onMounted(reload)
-    onUnmounted(() => { disposed = true; subscription?.unsubscribe() })
+    onUnmounted(() => { disposed = true; subscriptions.forEach(subscription => subscription.unsubscribe()) })
     const scores = computed<ScoreRow[]>(() => records.value.map(record => getScoreRow(record, songLanguage.value)))
-    return { scores, historyCount, snapshots, error, loading, reload }
+    return { scores, historyCount, error, loading, reload }
 }

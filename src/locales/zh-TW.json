@@ -385,6 +385,7 @@
         "readScores": "無法讀取本機成績，請檢查瀏覽器儲存權限後重試。",
         "initialize": "資料庫初始化或曲庫版本重新計算失敗，原有資料已保留。請檢查瀏覽器儲存權限或曲庫後重試。",
         "readHistory": "無法讀取歷史成績，請重試。",
+        "readTrend": "無法讀取 Rating 走勢，請重試。",
         "achievementType": "FC / AP 必須為布林值。",
         "maxChain": "Max Chain 必須為 0～{max} 的整數，未知時留空。",
         "apWithoutFc": "AP 成績必須同時為 FC。",

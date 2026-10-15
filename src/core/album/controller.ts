@@ -1,7 +1,7 @@
-import { reactive } from 'vue'
+import { reactive, watch } from 'vue'
 import { liveQuery } from 'dexie'
 import { database } from '../../db/database'
-import { initialAlbumState, type AlbumItem, type AlbumState } from '../../db/albumModels'
+import { initialAlbumState, type AlbumItem, type AlbumStage, type AlbumState } from '../../db/albumModels'
 import { scoreRepository } from '../../db/scoreRepository'
 import { saveRecognition } from '../../db/recognitionRepository'
 import { createPreview, releasePreviews } from '../ocr/preview'
@@ -15,13 +15,13 @@ const MARKER = 'groove-nintendo-bound'
 export const AUTO_UPDATE_INTERVAL = 3 * 60000
 export const UPDATE_COOLDOWN = 10000
 const finished = new Set(['imported', 'skipped', 'rejected', 'expired', 'failed'])
-export const retryable = new Set(['failed', 'retry_wait', 'canceled'])
+const retryable: AlbumStage[] = ['failed', 'retry_wait', 'canceled']
 export interface AlbumJob extends ImportJob { mediaId: string }
 export interface AlbumRun { id: number; manual: boolean; checked: boolean; found: number; recorded: number; updated: number; failed: number; skipped: number; canceled: boolean; error?: string }
 export const album = reactive({
     configured: undefined as boolean | undefined,
     state: initialAlbumState(),
-    items: [] as AlbumItem[],
+    retryableItems: [] as AlbumItem[],
     importedCount: 0,
     busy: false,
     phase: 'idle' as 'idle' | 'checking' | 'importing',
@@ -125,7 +125,7 @@ async function fetchMedia(manual: boolean, signal: AbortSignal) {
         return next
     })
     signal.throwIfAborted()
-    const result = await request<MediaResponse>('album/media', 'POST', {})
+    const result = await request<MediaResponse>('album/media', 'POST', {}, signal)
     if (result.accountId !== state.accountId || result.bindingId !== state.bindingId) throw new DomainError('album.stale')
     await database.transaction('rw', database.albumState, async () => {
         const latest = await database.albumState.get('album')
@@ -181,7 +181,7 @@ async function importQueue(queue: AlbumItem[], visible: AlbumMedia[], state: Alb
                 } catch (error) {
                     if (!(error instanceof AlbumError) || !['ticket_expired', 'media_expired'].includes(error.code)) throw error
                     // 下载地址失效时刷新列表，后续截图沿用新的下载地址
-                    const refreshed = await credentialLock(() => request<MediaResponse>('album/media', 'POST', {}))
+                    const refreshed = await credentialLock(() => request<MediaResponse>('album/media', 'POST', {}, controller.signal), controller.signal)
                     if (refreshed.accountId !== state.accountId || refreshed.bindingId !== state.bindingId) throw new DomainError('album.stale')
                     media = new Map(refreshed.media.map(row => [row.mediaId, row]))
                     source = media.get(item.mediaId)
@@ -257,12 +257,16 @@ export async function scan(manual = false) {
     let checked = false
     let failure: string | undefined
     try {
+        active = await database.albumState.get('album') ?? initialAlbumState()
+        controller.signal.throwIfAborted()
         if (!navigator.locks) throw new DomainError('album.locksRequired')
         await navigator.locks.request('groove-nintendo-scan', { ifAvailable: true }, async lock => {
             if (!lock) throw new ScanSkipped('album.otherTab')
-            const { result, state } = await credentialLock(() => fetchMedia(manual, controller.signal))
+            const { result, state } = await credentialLock(() => fetchMedia(manual, controller.signal), controller.signal)
             active = state
+            controller.signal.throwIfAborted()
             const queue = await collect(result, state)
+            controller.signal.throwIfAborted()
             checked = true
             album.jobs = queue.map((item, index): AlbumJob => ({ mediaId: item.mediaId, name: label(item.capturedAt), index: index + 1, status: 'queued', error: '' }))
             if (!queue.length) return
@@ -276,7 +280,7 @@ export async function scan(manual = false) {
         }
     } finally {
         if (aborter === controller) aborter = undefined
-        const scanned = active
+        const scanned = checked ? active : undefined
         active = undefined
         // 清空成绩或换绑中断的批次不再保存识别结果
         const latest = scanned && await database.albumState.get('album').catch(() => undefined)
@@ -291,13 +295,16 @@ export async function scan(manual = false) {
     }
 }
 export function cancel() { canceled = true; aborter?.abort() }
+function listRetryable(state: AlbumState) {
+    return database.albumItems.where('[accountId+datasetEpoch+stage]')
+        .anyOf(retryable.map(stage => [state.accountId!, state.datasetEpoch, stage])).toArray()
+}
 export async function retryFailed() {
     await database.transaction('rw', database.albumItems, database.albumState, async () => {
         const state = await database.albumState.get('album') ?? initialAlbumState()
         if (!state.accountId) return
-        for (const item of await database.albumItems.where('accountId').equals(state.accountId).toArray())
-            if (item.datasetEpoch === state.datasetEpoch && retryable.has(item.stage))
-                await database.albumItems.put({ ...item, bindingGeneration: state.bindingGeneration, attempts: 0, retryAt: 0, reason: undefined, stage: item.candidate ? 'pending_commit' : 'discovered' })
+        for (const item of await listRetryable(state))
+            await database.albumItems.put({ ...item, bindingGeneration: state.bindingGeneration, attempts: 0, retryAt: 0, reason: undefined, stage: item.candidate ? 'pending_commit' : 'discovered' })
     })
     await scan(true)
 }
@@ -313,23 +320,29 @@ function whenVisible(work: () => void) {
 export function initializeAlbum() {
     if (started) return
     started = true
-    liveQuery(async () => {
-        const state = await database.albumState.get('album') ?? initialAlbumState()
-        return {
-            state,
-            items: state.accountId ? await database.albumItems.where('accountId').equals(state.accountId).toArray() : [],
-            imported: await database.scoreHistory.filter(row => row.source === 'nso_ocr').count(),
-        }
-    }).subscribe({
-        next: ({ state, items, imported }) => {
+    const failed = () => { album.error = t('album.failed') }
+    liveQuery(async () => await database.albumState.get('album') ?? initialAlbumState()).subscribe({
+        next: state => {
             // 其他标签页清空成绩或换绑后停止当前批次
             if (active && (state.datasetEpoch !== active.datasetEpoch || state.bindingGeneration !== active.bindingGeneration)) aborter?.abort()
             album.state = state
-            album.items = items
-            album.importedCount = imported
         },
-        error: () => { album.error = t('album.failed') },
+        error: failed,
     })
+    liveQuery(async () => database.scoreHistory.where('source').equals('nso_ocr').count()).subscribe({
+        next: count => { album.importedCount = count },
+        error: failed,
+    })
+    watch([() => album.state.accountId, () => album.state.datasetEpoch], (_value, _old, onCleanup) => {
+        album.retryableItems = []
+        const state = { ...album.state }
+        if (!state.accountId) return
+        const subscription = liveQuery(async () => listRetryable(state)).subscribe({
+            next: items => { album.retryableItems = items },
+            error: failed,
+        })
+        onCleanup(() => subscription.unsubscribe())
+    }, { immediate: true })
     let bound = false
     try { bound = localStorage.getItem(MARKER) === '1' } catch {}
     if (bound) void refreshBinding().then(() => whenVisible(() => void scan())).catch(recordError)

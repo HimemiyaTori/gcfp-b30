@@ -39,7 +39,6 @@ const sidebarCollapsed = ref(false)
 const {
     scores,
     historyCount,
-    snapshots,
     error: databaseError,
     loading: databaseLoading,
     reload: reloadDatabase,
@@ -153,7 +152,6 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
                     v-model:mode="b30Mode"
                     @upload="uploadFiles"
                     :history-count="historyCount"
-                    :snapshots="snapshots"
                     v-model:grain="ratingGrain"
                     @song="songDetails?.open($event)"
                     @view-last="ocr?.view()"
