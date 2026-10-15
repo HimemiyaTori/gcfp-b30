@@ -294,6 +294,14 @@ small {
 .topbar svg {
     color: var(--muted);
 }
+.avatar-link {
+    display: inline-grid;
+    border-radius: 50%;
+    cursor: pointer;
+}
+.avatar-link:hover .avatar {
+    box-shadow: 0 0 0 2px var(--accent);
+}
 .avatar {
     width: 30px;
     height: 30px;
@@ -1989,7 +1997,7 @@ button.album-toast-open:hover .album-toast-link {
         font-size: 14px;
         letter-spacing: 1px;
     }
-    .topbar .avatar {
+    .topbar .avatar-link {
         display: none;
     }
     .topbar .gap-4 {

@@ -517,7 +517,7 @@
     "sync": {
         "note": "截图从 Nintendo 相册读取，仅在本机识别；关闭弹窗后会在后台继续更新。",
         "running": "关闭弹窗不会中断更新，可点击进度提示重新查看。",
-        "summary": "跳过 {skipped} 张，失败 {failed} 张。失败的截图可在账号与设置中重试，也可以手动新增成绩。",
+        "summary": "跳过 {skipped} 张，失败 {failed} 张。你可以重试或手动新增成绩。",
         "background": "后台更新",
         "cancel": "停止更新",
         "done": "已处理 {found} 张截图，新增历史 {recorded} 条，更新最佳成绩 {updated} 条。",
