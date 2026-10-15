@@ -249,7 +249,7 @@ try {
         .waitFor()
     assert.equal((await state()).history.length, 0)
 
-    // 下载失败的截图在设置页显示原因，可手动重试后录入
+    // 下载失败的截图在识别弹窗显示原因，最近识别中提示未录入，可手动重试后录入
     media.push(entry('retry-1', 'retry', '2026-09-24T10:00:00Z'))
     await update.waitFor({ timeout: 15000 })
     await update.click()
@@ -258,17 +258,14 @@ try {
         .getByText('截图下载失败，将在下次更新时重试', { exact: false })
         .waitFor({ timeout: 60000 })
     await sync.getByRole('button', { name: '关闭', exact: true }).click()
-    const failures = account.locator('.account-failures')
-    await failures.getByText('1 张截图未能录入', { exact: true }).click()
-    await failures
-        .getByText('截图下载失败，将在下次更新时重试', { exact: false })
-        .waitFor()
+    const failures = account.locator('.account-last .account-retry')
+    await failures.getByText('1 张截图未能录入', { exact: true }).waitFor()
     brokenDownload = false
     const retry = failures.getByRole('button', { name: '重试', exact: true })
     await page.waitForFunction(
         () =>
             !document
-                .querySelector('.account-failures button')
+                .querySelector('.account-retry button')
                 ?.hasAttribute('disabled'),
         undefined,
         { timeout: 15000 },

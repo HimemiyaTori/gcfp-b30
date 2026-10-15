@@ -136,25 +136,24 @@ async function confirmUnbind() {
                 </div>
                 <AnimatedProgress v-if="album.phase === 'importing'" :value="done" :max="album.jobs.length" />
             </div>
-            <div v-else-if="lastRun" class="account-progress account-last">
-                <span class="row gap-2">
-                    <History :size="15" />
-                    {{ t('account.lastRun', { time: format(lastRun.finishedAt), count: lastRun.total }, lastRun.total) }}
-                </span>
-                <button type="button" class="text-link" @click="emit('view')">{{ t('sync.banner.view') }}</button>
+            <div v-else-if="lastRun || failures.length" class="account-progress account-last">
+                <div v-if="lastRun" class="between">
+                    <span class="row gap-2">
+                        <History :size="15" />
+                        {{ t('account.lastRun', { time: format(lastRun.finishedAt), count: lastRun.total }, lastRun.total) }}
+                    </span>
+                    <button type="button" class="text-link" @click="emit('view')">{{ t('sync.banner.view') }}</button>
+                </div>
+                <div v-if="failures.length" class="between account-retry">
+                    <span class="row gap-2">
+                        <CircleAlert :size="15" />
+                        {{ t('account.failures', { count: failures.length }, failures.length) }}
+                    </span>
+                    <button type="button" class="text-link" :disabled="cooldown > 0" @click="retryFailed()">
+                        {{ t('account.retry') }}
+                    </button>
+                </div>
             </div>
-            <details v-if="!album.busy && failures.length" class="account-failures">
-                <summary>{{ t('account.failures', { count: failures.length }, failures.length) }}</summary>
-                <ul>
-                    <li v-for="item in failures" :key="item.mediaId">
-                        <span>{{ format(item.capturedAt) }}</span>
-                        <small v-if="item.reason">{{ item.reason }}</small>
-                    </li>
-                </ul>
-                <button class="button secondary" :disabled="cooldown > 0" @click="retryFailed()">
-                    {{ t('account.retry') }}
-                </button>
-            </details>
         </template>
         <p v-if="album.error" class="error account-alert" role="alert"><CircleAlert :size="15" />{{ album.error }}</p>
         <p v-if="bound && album.configured === false" class="warning account-alert">{{ t('account.notConfigured') }}</p>
@@ -313,39 +312,13 @@ async function confirmUnbind() {
 .account-progress svg {
     color: var(--accent);
 }
-.account-last {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+.account-last .between {
+    gap: 12px;
     flex-wrap: wrap;
 }
-.account-failures {
-    margin: 0 26px 24px;
-    padding: 12px 16px;
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    font-size: 12px;
-}
-.account-failures summary {
-    cursor: pointer;
+.account-retry,
+.account-retry svg {
     color: #b58349;
-    font-weight: 600;
-}
-.account-failures ul {
-    max-height: 240px;
-    overflow: auto;
-    list-style: none;
-    padding: 0;
-    margin: 10px 0 12px;
-}
-.account-failures li {
-    padding: 10px 0;
-    border-top: 1px solid var(--line);
-    line-height: 1.7;
-}
-.account-failures small {
-    color: var(--muted);
-    overflow-wrap: anywhere;
 }
 .account-alert {
     display: flex;
@@ -387,8 +360,7 @@ async function confirmUnbind() {
     .account-stats div:last-child {
         grid-column: 1 / -1;
     }
-    .account-progress,
-    .account-failures {
+    .account-progress {
         margin-inline: 19px;
     }
     .account-alert {
