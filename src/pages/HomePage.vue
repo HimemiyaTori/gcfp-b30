@@ -115,7 +115,7 @@ function drop(event: DragEvent) {
         </article>
     </section>
 
-    <template v-if="scores.length">
+    <template v-if="scores.length || snapshots.length">
         <div v-if="trendError" class="panel error" role="alert">
             {{ trendError }}
             <button class="button secondary" @click="reloadTrend">{{ t('common.retry') }}</button>

@@ -128,13 +128,15 @@ try {
     await page.screenshot({ animations: 'disabled', path: '.preview/history-details-mobile.png', fullPage: true })
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
     await details.getByRole('button', { name: '关闭歌曲信息' }).click()
-    // 准备跨日、月、年的持久化历史，再通过页面删除和切换粒度验收可见走势
+    // 准备跨日、月、年的持久化历史与每日快照，再通过页面操作验收冻结走势
     await page.evaluate(async () => {
         const { database } = await import('/src/db/database.ts')
         const { scoreRepository } = await import('/src/db/scoreRepository.ts')
+        const { localDay } = await import('/src/core/rating/calendar.ts')
         await scoreRepository.clear()
         const now = new Date(), dates = [new Date(now.getFullYear() - 1, 11, 30, 12), new Date(now.getFullYear(), 0, 2, 12), new Date(now.getFullYear(), 1, 2, 12)]
         await database.scoreHistory.bulkAdd(dates.map((date, index) => ({ songId: '1', chartId: '1-basic-hard', score: [900000, 1000000, 1040000][index], fc: false, ap: false, rating: 0, source: 'ocr', importedAt: date.getTime(), updatedAt: date.getTime(), batchId: `fixture-${index}` })))
+        await database.ratingSnapshots.bulkAdd(dates.map((date, index) => ({ day: localDay(date.getTime()), recordedAt: date.getTime(), basic: [.23, .26, .33][index], advanced: 0 })))
         await database.metadata.clear()
         await scoreRepository.initialize()
     })
@@ -142,6 +144,7 @@ try {
     const trend = page.locator('.rating-trend')
     assert.equal(await trend.getByRole('button', { name: '日', exact: true }).getAttribute('aria-pressed'), 'true')
     const initialRating = (await state()).snapshots.at(-1).basic
+    const frozenSnapshots = (await state()).snapshots
     assert.match(await trend.locator('.trend-value').textContent(), new RegExp(initialRating.toFixed(2)))
     await trend.getByRole('button', { name: '月', exact: true }).click()
     await trend.getByRole('img').click({ position: { x: 1, y: 1 } })
@@ -161,6 +164,7 @@ try {
     await page.getByRole('button', { name: '确认删除', exact: true }).waitFor({ state: 'hidden' })
     assert.equal((await state()).best[0].score, 1000000)
     assert.ok((await state()).snapshots.at(-1).basic < initialRating)
+    assert.deepEqual((await state()).snapshots.slice(0, frozenSnapshots.length), frozenSnapshots)
     await details.getByRole('button', { name: '关闭歌曲信息' }).click()
     await page.screenshot({ animations: 'disabled', path: '.preview/history-home-mobile.png', fullPage: true })
     await page.setViewportSize({ width: 1280, height: 960 })
@@ -175,8 +179,12 @@ try {
         await page.getByRole('button', { name: '确认删除', exact: true }).waitFor({ state: 'hidden' })
     }
     await details.getByText('暂无历史成绩', { exact: true }).waitFor()
-    assert.deepEqual(await state(), { history: [], best: [], snapshots: [] })
+    const deletedAll = await state()
+    assert.deepEqual(deletedAll.history, [])
+    assert.deepEqual(deletedAll.best, [])
+    assert.equal(deletedAll.snapshots.at(-1).basic, 0)
     await details.getByRole('button', { name: '关闭歌曲信息' }).click()
+    await trend.locator('.trend-value').getByText(/0.00 RT/).waitFor()
     // 两个标签页同时确认同一份文件，只保留一份历史
     const second = await page.context().newPage()
     await second.goto(process.env.OCR_URL || 'http://127.0.0.1:5173')
@@ -192,6 +200,16 @@ try {
     await Promise.all([page, second].map(target => target.getByRole('button', { name: '确认导入', exact: true }).click()))
     await Promise.all([page, second].map(target => target.getByRole('dialog', { name: '导入 Excel 成绩' }).waitFor({ state: 'hidden' })))
     assert.equal((await state()).history.length, 1)
+    // 当前排序视图在另一标签页写入后自动更新
+    await page.locator('.history-table').getByRole('button', { name: /^Score/ }).click()
+    await page.locator('.history-table tbody tr').first().getByText('1,000,000', { exact: false }).waitFor()
+    const updatedBook = utils.book_new()
+    utils.book_append_sheet(updatedBook, utils.aoa_to_sheet([['Chart ID', 'Score'], ['1-basic-hard', 1040000]]), 'BASIC')
+    await second.getByLabel('选择成绩截图或 Excel', { exact: true }).setInputFiles({ ...concurrentFile, buffer: Buffer.from(write(updatedBook, { type: 'array', bookType: 'xlsx' })) })
+    await second.locator('.excel-summary').waitFor()
+    await second.getByRole('button', { name: '确认导入', exact: true }).click()
+    await second.getByRole('dialog', { name: '导入 Excel 成绩' }).waitFor({ state: 'hidden' })
+    await page.locator('.history-table tbody tr').first().getByText('1,040,000', { exact: false }).waitFor()
     await second.close()
     // 走势读取失败只影响首页走势，恢复存储后可在该区域重试
     await go('scores')
@@ -227,9 +245,22 @@ try {
     await page.locator('.history-table').getByRole('button', { name: /^Score/ }).click()
     await page.locator('.history-table tbody tr').first().getByText('900,034', { exact: false }).waitFor()
     assert.match(await page.locator('.history-table tbody tr').first().textContent(), /900,034/)
+    // 暂时无法重新读取存储时，已加载的排序结果仍支持翻页和切换排序
+    await page.evaluate(async () => {
+        const { database } = await import('/src/db/database.ts')
+        window.cachedHistoryOrderBy = database.scoreHistory.orderBy
+        database.scoreHistory.orderBy = () => { throw new Error('模拟重新读取不可用') }
+    })
+    await page.locator('.history-table').getByRole('button', { name: '下一页' }).click()
+    await page.locator('.history-table tbody tr').first().getByText('900,024', { exact: false }).waitFor()
     await page.locator('.history-table').getByRole('button', { name: /^Score/ }).click()
     await page.locator('.history-table tbody tr').first().getByText('900,000', { exact: false }).waitFor()
     assert.match(await page.locator('.history-table tbody tr').first().textContent(), /900,000/)
+    await page.getByRole('button', { name: /^曲目信息语言：日本語/ }).click()
+    await page.locator('.history-table tbody tr').first().getByText('Idol', { exact: true }).waitFor()
+    await page.getByRole('button', { name: /^曲目信息语言：English/ }).click()
+    await page.locator('.history-table tbody tr').first().getByText('アイドル', { exact: true }).waitFor()
+    await page.evaluate(async () => { (await import('/src/db/database.ts')).database.scoreHistory.orderBy = window.cachedHistoryOrderBy })
     await page.locator('.history-table tbody tr').first().getByRole('button').first().click()
     await page.waitForFunction(() => document.querySelectorAll('.song-dialog tbody tr').length === 30)
     assert.equal(await details.locator('tbody tr').count(), 30)
@@ -255,6 +286,8 @@ try {
     await page.keyboard.press('Escape')
     await details.waitFor({ state: 'hidden' })
     // 模拟历史存储读取失败，通过重试按钮恢复可见数据
+    await page.locator('.history-table').getByRole('button', { name: /^成绩时间：/ }).click()
+    await page.locator('.history-table tbody tr').first().waitFor()
     await page.evaluate(async () => {
         const { database } = await import('/src/db/database.ts')
         window.historyOrderBy = database.scoreHistory.orderBy
@@ -275,5 +308,5 @@ try {
     await page.getByRole('heading', { name: '本地数据' }).waitFor()
     assert.deepEqual(await state(), { history: [], best: [], snapshots: [] })
     assert.deepEqual(errors, [])
-    console.log('History acceptance passed: real XLSX selection/deduplication, persistence, edit, per-history deletion, mode details, corrected trends, calendar grains and mobile')
+    console.log('History acceptance passed: real XLSX import/rollback, cross-tab refresh, local best replay, frozen daily trends, cached sorting/pagination, read retry and mobile')
 } finally { await browser.close() }

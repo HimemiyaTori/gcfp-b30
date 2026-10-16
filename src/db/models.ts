@@ -24,7 +24,8 @@ export interface ScoreHistory extends Omit<ScoreRecord, 'historyId'> {
 }
 export interface RatingSnapshot {
     id?: number
-    playedAt: number
+    day: string
+    recordedAt: number
     basic: number
     advanced: number
 }

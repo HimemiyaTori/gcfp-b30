@@ -257,7 +257,7 @@
         "noChart": "No charts available in this mode.",
         "save": "Save score",
         "saving": "Saving…",
-        "saved": "Score saved. Best scores and history trend have been recalculated.",
+        "saved": "Score saved. Best scores and today's Rating have been updated.",
         "saveFailed": "Couldn't save. Please try again.",
         "confirmLowerRequired": "Check the box to confirm lowering this score."
     },
@@ -329,10 +329,10 @@
     },
     "deleteHistory": {
         "title": "Delete this history record?",
-        "description": "Best scores, B30, and the Rating history will be recalculated from the remaining records.",
+        "description": "Best scores and B30 will be updated from the remaining records.",
         "keep": "Keep",
         "confirm": "Delete",
-        "done": "History record deleted. Best scores and trend have been recalculated.",
+        "done": "History record deleted. Best scores and today's Rating have been updated.",
         "failed": "Couldn't delete. Check your browser's storage permissions and try again."
     },
     "excel": {

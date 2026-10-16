@@ -126,7 +126,7 @@ const { t } = useI18n()
             </div>
             <button
                 class="button secondary danger-button"
-                :disabled="(!count && !historyCount) || !canWrite || excelBusy"
+                :disabled="!canWrite || excelBusy"
                 @click="emit('clear')"
             >
                 {{ t('settings.clearButton') }}

@@ -3,6 +3,7 @@ import { computed, ref, watch, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { RatingSnapshot } from '../db/models'
 import type { RatingMode } from '../core/rating/calculator'
+import { dayDate } from '../core/rating/calendar'
 export type RatingGrain = 'day' | 'month' | 'year'
 const props = defineProps<{ snapshots: RatingSnapshot[]; mode: RatingMode }>()
 const grain = defineModel<RatingGrain>('grain', { required: true })
@@ -21,8 +22,8 @@ const period = (time: number) => { const date = new Date(time); return new Date(
 const points = computed(() => {
     if (!props.snapshots.length) return []
     const buckets = new Map<number, number>()
-    for (const snapshot of props.snapshots) buckets.set(period(snapshot.playedAt).getTime(), props.mode === 'BASIC' ? snapshot.basic : snapshot.advanced)
-    const date = period(props.snapshots[0]!.playedAt), end = period(today.value).getTime()
+    for (const snapshot of props.snapshots) buckets.set(period(dayDate(snapshot.day).getTime()).getTime(), props.mode === 'BASIC' ? snapshot.basic : snapshot.advanced)
+    const date = period(dayDate(props.snapshots[0]!.day).getTime()), end = period(today.value).getTime()
     const result: { time: number; rating: number }[] = []
     let value = 0
     while (date.getTime() <= end) {

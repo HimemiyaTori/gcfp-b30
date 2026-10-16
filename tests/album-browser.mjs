@@ -101,6 +101,7 @@ try {
             return {
                 history: await scoreRepository.history(),
                 best: await scoreRepository.list(),
+                snapshots: await scoreRepository.snapshots(),
             }
         })
     await page.goto(origin)
@@ -113,6 +114,15 @@ try {
         .waitFor()
     // 未绑定用户浏览首页和设置页都不请求 API
     assert.deepEqual(observed, [])
+    // 已保存的过去日期在旧图补录后保持原值
+    const frozen = await page.evaluate(async () => {
+        const { database } = await import('/src/db/database.ts')
+        const { localDay } = await import('/src/core/rating/calendar.ts')
+        const recordedAt = Date.now() - 2 * 86400000
+        const row = { day: localDay(recordedAt), recordedAt, basic: .10, advanced: 0 }
+        const id = await database.ratingSnapshots.add(row)
+        return { ...row, id }
+    })
 
     // 先确认风险与信息，再进入登录步骤并自动生成登录链接
     const account = page.locator('.account-panel')
@@ -231,6 +241,8 @@ try {
     assert.equal(await page.locator('dialog[open]').count(), 0)
     const second = await state()
     assert.equal(second.history.length, 2)
+    assert.equal(second.snapshots.length, 2)
+    assert.deepEqual(second.snapshots.find(row => row.day === frozen.day), frozen)
     assert.ok(
         second.history.some(
             (row) => row.chartId === '5-basic-hard' && row.score === 1010973,

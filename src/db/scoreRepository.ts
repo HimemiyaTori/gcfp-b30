@@ -1,8 +1,9 @@
 import versions from '../data/metadata.json'
 import { songService } from '../core/song/songService'
 import { getChartRating, getTotalRating } from '../core/rating/calculator'
+import { localDay } from '../core/rating/calendar'
 import { database, type ScoreDatabase } from './database'
-import type { RatingSnapshot, ScoreAchievements, ScoreHistory, ScoreRecord } from './models'
+import type { ScoreAchievements, ScoreHistory, ScoreRecord } from './models'
 import Dexie from 'dexie'
 import { t } from '../i18n'
 import { validateScore, validateAchievements, normalizeAchievements } from '../core/score/validation'
@@ -24,76 +25,52 @@ export function createScoreRepository(db: ScoreDatabase, library = songService, 
         // 旧历史保留原始完成信息，新上限只校验录入与修改，避免阻断整个成绩库
         ...normalizeAchievements(entry),
     })
-    function projection(records: ScoreRecord[] = []) {
-        const best = new Map(records.map(record => [record.chartId, record]))
-        const ratings = { basic: new Map<string, number>(), advanced: new Map<string, number>() }
-        type Mode = keyof typeof ratings
-        const dirty = new Set<Mode>(['basic', 'advanced'])
-        const totals = { basic: 0, advanced: 0 }
-        for (const record of records) ratings[library.getChart(record.songId, record.chartId).chart.mode].set(record.chartId, record.rating)
-        return {
-            best,
-            merge(entry: ScoreHistory, value = entry.rating) {
-                const old = best.get(entry.chartId)
-                const next = mergeBest(old, recordFrom(entry, value))
-                best.set(entry.chartId, next)
-                if (old?.rating !== next.rating) {
-                    const mode = library.getChart(next.songId, next.chartId).chart.mode
-                    ratings[mode].set(next.chartId, next.rating)
-                    dirty.add(mode)
-                }
-                return next !== old
-            },
-            snapshot(time: number): RatingSnapshot {
-                for (const mode of dirty) totals[mode] = getTotalRating([...ratings[mode].values()])
-                dirty.clear()
-                return { playedAt: time, ...totals }
-            },
-        }
+    async function saveDailySnapshot() {
+        const records = await db.scores.toArray()
+        const latest = await db.ratingSnapshots.orderBy('day').last()
+        if (!latest && !records.length) return
+        const ratings = { basic: [] as number[], advanced: [] as number[] }
+        for (const record of records) ratings[library.getChart(record.songId, record.chartId).chart.mode].push(record.rating)
+        const basic = getTotalRating(ratings.basic), advanced = getTotalRating(ratings.advanced)
+        if (latest?.basic === basic && latest.advanced === advanced) return
+        const recordedAt = Date.now(), day = localDay(recordedAt)
+        // 系统日期回退时也不覆盖已经保存的过去日期
+        if (latest && day < latest.day) return
+        await db.ratingSnapshots.put({ ...(latest?.day === day ? { id: latest.id } : {}), day, recordedAt, basic, advanced })
     }
-    async function rebuild() {
+    async function rebuildBest() {
         const history = (await db.scoreHistory.toArray()).sort(chronological)
-        const current = projection()
-        const snapshots: RatingSnapshot[] = []
-        for (let i = 0; i < history.length; i++) {
-            const entry = history[i]!
+        const best = new Map<string, ScoreRecord>()
+        for (const entry of history) {
             const time = playedAt(entry)
             if (entry.playedAt === undefined) await db.scoreHistory.update(entry.id!, { playedAt: time })
             const value = rating(entry)
             if (entry.rating !== value) await db.scoreHistory.update(entry.id!, { rating: value })
-            current.merge(entry, value)
-            if (history[i + 1] && playedAt(history[i + 1]!) === time) continue
-            snapshots.push(current.snapshot(time))
+            best.set(entry.chartId, mergeBest(best.get(entry.chartId), recordFrom(entry, value)))
         }
         await db.scores.clear()
-        await db.ratingSnapshots.clear()
-        await db.scores.bulkPut([...current.best.values()])
-        await db.ratingSnapshots.bulkAdd(snapshots)
+        await db.scores.bulkPut([...best.values()])
     }
-    async function projectAppended(entries: ScoreHistory[]) {
+    type AppendedHistory = ScoreHistory & { backdated: boolean }
+    async function projectAppended(entries: AppendedHistory[]) {
         if (!entries.length) return
         entries.sort(chronological)
-        const latest = await db.ratingSnapshots.orderBy('playedAt').last()
-        // 旧图补录或系统时间回拨会改变后续走势，交回完整重建
-        if (latest && playedAt(entries[0]!) < latest.playedAt) return rebuild()
+        const replay = new Set(entries.filter(entry => entry.backdated).map(entry => entry.chartId))
         const records = await db.scores.toArray()
-        const current = projection(records)
+        const best = new Map(records.map(record => [record.chartId, record]))
         const changed = new Set<string>()
-        const snapshots: RatingSnapshot[] = []
-        for (let i = 0; i < entries.length; i++) {
-            const entry = entries[i]!
-            if (current.merge(entry)) changed.add(entry.chartId)
-            const time = playedAt(entry)
-            if (entries[i + 1] && playedAt(entries[i + 1]!) === time) continue
-            const snapshot = current.snapshot(time)
-            // 同一毫秒的批次合并为一个快照，保留原快照主键
-            if (latest?.playedAt === time) await db.ratingSnapshots.put({ ...snapshot, id: latest.id })
-            else snapshots.push(snapshot)
+        for (const entry of entries) {
+            if (replay.has(entry.chartId)) continue
+            const old = best.get(entry.chartId)
+            const next = mergeBest(old, recordFrom(entry))
+            if (next !== old) changed.add(entry.chartId)
+            best.set(entry.chartId, next)
         }
-        const replacements = [...changed].map(chartId => current.best.get(chartId)!)
-        await db.scores.bulkDelete(records.filter(record => changed.has(record.chartId) && current.best.get(record.chartId)!.id !== record.id).map(record => record.id!))
+        const replacements = [...changed].map(chartId => best.get(chartId)!)
+        await db.scores.bulkDelete(records.filter(record => changed.has(record.chartId) && best.get(record.chartId)!.id !== record.id).map(record => record.id!))
         await db.scores.bulkPut(replacements)
-        await db.ratingSnapshots.bulkAdd(snapshots)
+        for (const chartId of replay) await rebuildChart(chartId)
+        await saveDailySnapshot()
     }
     async function rebuildChart(chartId: string) {
         const history = (await db.scoreHistory.where('chartId').equals(chartId).toArray()).sort(chronological)
@@ -107,9 +84,10 @@ export function createScoreRepository(db: ScoreDatabase, library = songService, 
         const details = validateAchievements(input, library.getChart(input.songId, input.chartId).chart)
         const latest = await db.scoreHistory.where('[chartId+importedAt]').between([input.chartId, Dexie.minKey], [input.chartId, Dexie.maxKey]).reverse().first()
         if (latest && scoreIdentity(latest) === scoreIdentity(input)) return undefined
+        const lastPlayed = await db.scoreHistory.where('[chartId+playedAt]').between([input.chartId, Dexie.minKey], [input.chartId, Dexie.maxKey]).reverse().first()
         const entry: ScoreHistory = { songId: input.songId, chartId: input.chartId, score: input.score, ...details, rating: rating(input), source, importedAt: now, playedAt: source === 'nso_ocr' ? input.updatedAt : now, updatedAt: input.updatedAt ?? now, batchId }
         const id = await db.scoreHistory.add(entry)
-        return { ...entry, id }
+        return { ...entry, id, backdated: !!lastPlayed && playedAt(entry) < playedAt(lastPlayed) }
     }
     async function excelPlan(rows: ImportedScore[]) {
         const chosen = selectExcelScores(rows)
@@ -131,20 +109,22 @@ export function createScoreRepository(db: ScoreDatabase, library = songService, 
         async initialize() {
             await db.transaction('rw', tables, async () => {
                 const previous = await db.metadata.get('calculation')
-                if (previous?.ratingRuleVersion === version.ratingRuleVersion && previous.songLibraryVersion === version.songLibraryVersion) return
-                await rebuild()
-                await db.metadata.put({ key: 'calculation', ...version })
+                if (previous?.ratingRuleVersion !== version.ratingRuleVersion || previous.songLibraryVersion !== version.songLibraryVersion) {
+                    await rebuildBest()
+                    await db.metadata.put({ key: 'calculation', ...version })
+                }
+                await saveDailySnapshot()
             })
         },
         list: () => db.scores.orderBy('updatedAt').reverse().toArray(),
         history: () => db.scoreHistory.orderBy('playedAt').reverse().toArray(),
-        snapshots: () => db.ratingSnapshots.orderBy('playedAt').toArray(),
+        snapshots: () => db.ratingSnapshots.orderBy('day').toArray(),
         async previewImport(rows: ImportedScore[]) { return db.transaction('r', tables, async () => (await excelPlan(rows)).summary) },
         async importScores(rows: ImportedScore[]) {
             return db.transaction('rw', tables, async () => {
                 const { selected, summary } = await excelPlan(rows)
                 const now = Date.now(), batch = crypto.randomUUID()
-                const entries: ScoreHistory[] = []
+                const entries: AppendedHistory[] = []
                 for (const row of selected) {
                     const entry = await append(row, 'excel', batch, now)
                     if (entry) entries.push(entry)
@@ -185,15 +165,18 @@ export function createScoreRepository(db: ScoreDatabase, library = songService, 
                 const details = validateAchievements(achievements ?? record, library.getChart(record.songId, record.chartId).chart)
                 if (scoreIdentity({ ...record, ...details, score }) === scoreIdentity(record)) return
                 const onlyChain = record.score === score && record.fc === details.fc && record.ap === details.ap
-                await db.scoreHistory.update(record.historyId, { score, ...details, updatedAt: record.source === 'nso_ocr' || onlyChain ? record.updatedAt : Date.now(), correctedAt: Date.now() })
-                if (score === record.score) await rebuildChart(record.chartId)
-                else await rebuild()
+                await db.scoreHistory.update(record.historyId, { score, rating: rating({ ...record, score }), ...details, updatedAt: record.source === 'nso_ocr' || onlyChain ? record.updatedAt : Date.now(), correctedAt: Date.now() })
+                await rebuildChart(record.chartId)
+                await saveDailySnapshot()
             })
         },
         async removeHistory(id: number) {
             await db.transaction('rw', tables, async () => {
+                const record = await db.scoreHistory.get(id)
+                if (!record) return
                 await db.scoreHistory.delete(id)
-                await rebuild()
+                await rebuildChart(record.chartId)
+                await saveDailySnapshot()
             })
         },
         async clear() {
