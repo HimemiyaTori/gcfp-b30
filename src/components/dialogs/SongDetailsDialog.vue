@@ -178,6 +178,10 @@ defineExpose({ open })
                     <dt>{{ t('song.pack') }}</dt>
                     <dd>{{ packName }}</dd>
                 </div>
+                <div v-if="song.updateAt">
+                    <dt>{{ t('song.updateAt') }}</dt>
+                    <dd>{{ song.updateAt }}</dd>
+                </div>
             </dl>
             <div class="chart-heading">
                 <h3>{{ t('song.charts') }}</h3>
