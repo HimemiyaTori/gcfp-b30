@@ -8,6 +8,7 @@ import type { ImportJob } from '../../core/ocr/models'
 const props = defineProps<{
     jobs: ImportJob[]
     importing: boolean
+    checking?: boolean
     success: boolean
     eyebrow: string
     note: string
@@ -41,7 +42,9 @@ function togglePreview(index: number) {
                 <div class="eyebrow">{{ eyebrow }}</div>
                 <h2 :id="titleId">
                     {{
-                        hasErrors
+                        checking
+                            ? t('sync.banner.checking')
+                            : hasErrors
                             ? t('ocr.partialFailed')
                             : importing
                               ? t('ocr.importing')
@@ -51,13 +54,13 @@ function togglePreview(index: number) {
             </div>
         </div>
         <p class="muted">{{ note }}</p>
-        <div class="between import-counter" aria-live="polite">
+        <div v-if="!checking" class="between import-counter" aria-live="polite">
             <strong v-if="hasErrors" class="error">
                 {{ t('ocr.failedCount', { failed: failures, total: jobs.length }) }}
             </strong>
             <span v-else>{{ t('ocr.progress', { done: completed, total: jobs.length }) }}</span>
         </div>
-        <AnimatedProgress :value="completed" :max="jobs.length" />
+        <AnimatedProgress v-if="!checking" :value="completed" :max="jobs.length" />
         <figure v-if="shown?.preview" class="import-preview">
             <img :src="shown.preview" :alt="t('ocr.previewAlt', { name: shown.name })" draggable="false" />
             <figcaption>

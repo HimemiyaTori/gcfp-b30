@@ -7,19 +7,21 @@ import {
     Disc3,
     FileImage,
     History,
+    LoaderCircle,
     ShieldCheck,
     Sparkles,
     Upload,
 } from 'lucide-vue-next'
-import { ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ScoreTable from '../components/ScoreTable.vue'
 import { useScoreHistory } from '../composables/useScoreHistory'
 import { useRatingSnapshots } from '../composables/useRatingSnapshots'
 import { useRecognitionSummary } from '../db/recognitionRepository'
+import { useRecognitionStore } from '../stores/recognition'
 import RatingTrend, { type RatingGrain } from '../components/RatingTrend.vue'
 import RollingNumber from '../components/common/RollingNumber.vue'
-import type { ScoreRow } from '../db/models'
+import type { RecognitionSource, ScoreRow } from '../db/models'
 import type { getModeB30, RatingMode } from '../core/rating/calculator'
 defineProps<{
     scores: ScoreRow[]
@@ -28,16 +30,26 @@ defineProps<{
 }>()
 const grain = defineModel<RatingGrain>('grain', { required: true })
 const b30Mode = defineModel<RatingMode>('mode', { required: true })
-const emit = defineEmits<{ upload: [files: File[]]; song: [row: { songId: string; mode: string }]; viewLast: [] }>()
+const emit = defineEmits<{ upload: [files: File[]]; song: [row: { songId: string; mode: string }]; viewLast: []; viewTask: [source: RecognitionSource] }>()
 const { t, locale } = useI18n()
 const fileInput = ref<HTMLInputElement>()
 const dragging = ref(false)
 const { rows, sort, toggleSort, page, pagination, error, loading, reload } = useScoreHistory()
 const { snapshots, error: trendError, loading: trendLoading, reload: reloadTrend } = useRatingSnapshots()
 const lastRun = useRecognitionSummary('manual')
+const recognition = useRecognitionStore()
+const taskLabel = computed(() => recognition.activeSource === 'album'
+    ? t(recognition.tasks.album.phase === 'checking' ? 'sync.banner.checking' : 'sync.banner.importing')
+    : t('ocr.importing'))
+watch(() => recognition.activeSource, () => { dragging.value = false })
+function viewActiveTask() {
+    const source = recognition.activeSource
+    if (source) emit('viewTask', source)
+}
 function selectFiles(files: FileList | null) {
     const selected = Array.from(files ?? [])
     if (fileInput.value) fileInput.value.value = ''
+    if (recognition.activeSource) return viewActiveTask()
     if (selected.length) emit('upload', selected)
 }
 function drop(event: DragEvent) {
@@ -132,7 +144,21 @@ function drop(event: DragEvent) {
                 </div>
                 <span class="micro-label">SCORE IMPORT</span>
             </div>
+            <button
+                v-if="recognition.activeSource"
+                type="button"
+                class="drop-zone drop-zone-task"
+                :aria-label="t('sync.banner.view')"
+                @click="viewActiveTask"
+                @dragover.prevent
+                @drop.prevent
+            >
+                <LoaderCircle class="spin" :size="38" aria-hidden="true" />
+                <strong class="drop-zone-title">{{ taskLabel }}</strong>
+                <small>{{ t('sync.banner.view') }}</small>
+            </button>
             <label
+                v-else
                 :class="['drop-zone', { dragging }]"
                 @dragover.prevent="dragging = true"
                 @dragleave.prevent="dragging = false"
@@ -168,10 +194,10 @@ function drop(event: DragEvent) {
                     ><ShieldCheck :size="14" /> {{ t('home.localOnly') }}</span
                 >
                 <button
-                    v-if="lastRun"
+                    v-if="lastRun && !recognition.activeSource"
                     type="button"
                     class="text-link"
-                    :title="new Date(lastRun.finishedAt).toLocaleString(locale)"
+                    :title="lastRun && new Date(lastRun.finishedAt).toLocaleString(locale)"
                     @click="emit('viewLast')"
                 >
                     <History :size="14" />{{ t('home.lastRun', { count: lastRun.total }, lastRun.total) }}

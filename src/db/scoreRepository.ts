@@ -141,9 +141,10 @@ export function createScoreRepository(db: ScoreDatabase, library = songService, 
                 return entry!.id
             })
         },
-        async addOcr(songId: string, chartId: string, score: number, achievements: ScoreAchievements = {}, signal?: AbortSignal) {
+        async addOcr(songId: string, chartId: string, score: number, achievements: ScoreAchievements = {}, signal?: AbortSignal, datasetEpoch?: number) {
             return db.transaction('rw', tables, async () => {
                 signal?.throwIfAborted()
+                if (datasetEpoch !== undefined && ((await db.albumState.get('album'))?.datasetEpoch ?? 0) !== datasetEpoch) throw new DomainError('ocr.errors.canceled')
                 const transaction = Dexie.currentTransaction!
                 const abort = () => transaction.abort()
                 signal?.addEventListener('abort', abort, { once: true })

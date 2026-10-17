@@ -140,29 +140,39 @@ try {
     const beforeHistory = await page.evaluate(async () =>
         (await import('/src/db/scoreRepository.ts')).scoreRepository.history(),
     )
-    // 取消识别，再在新批次运行时切换页面，成绩不应改变
+    // 明确取消时不改变成绩和历史
     await page
         .getByLabel('选择成绩截图或 Excel', { exact: true })
         .setInputFiles(repeatableResult)
     await page.getByRole('button', { name: '取消识别', exact: true }).click()
-    await page
-        .getByLabel('选择成绩截图或 Excel', { exact: true })
-        .setInputFiles(repeatableResult)
-    await page.evaluate(() => {
-        location.hash = '#scores'
-    })
-    await page.waitForFunction(
-        () => !document.querySelector('.import-dialog[open]'),
-    )
-    assert.deepEqual(
-        await page.evaluate(async () =>
-            (await import('/src/db/scoreRepository.ts')).scoreRepository.list(),
-        ),
-        beforeCancellation,
-    )
+    await page.getByText('已取消识别', { exact: true }).waitFor()
+    assert.deepEqual(await page.evaluate(async () =>
+        (await import('/src/db/scoreRepository.ts')).scoreRepository.list(),
+    ), beforeCancellation)
     assert.deepEqual(await page.evaluate(async () =>
         (await import('/src/db/scoreRepository.ts')).scoreRepository.history(),
     ), beforeHistory)
+    // 后台识别时切页仍继续，可从右下角重新打开当前批次
+    await page
+        .getByLabel('选择成绩截图或 Excel', { exact: true })
+        .setInputFiles(repeatableResult)
+    await page.getByRole('button', { name: '后台识别', exact: true }).click()
+    await page.locator('.ocr-toast').waitFor()
+    await page.locator('a[href="#scores"]').first().click()
+    await page.getByRole('heading', { name: '成绩一览' }).waitFor()
+    await page.locator('.ocr-toast .recognition-toast-open').click()
+    const background = page.locator('.import-dialog[open][data-source="manual"]')
+    await background.waitFor()
+    await background.getByText('已处理', { exact: true }).waitFor({ timeout: 30000 })
+    const afterBackground = await page.evaluate(async () =>
+        (await import('/src/db/scoreRepository.ts')).scoreRepository.history(),
+    )
+    assert.equal(afterBackground.length, beforeHistory.length + 1)
+    const added = afterBackground.find(row => !beforeHistory.some(previous => previous.id === row.id))
+    assert.equal(added.chartId, '6-basic-hard')
+    assert.equal(added.score, samples[0].score)
+    await page.waitForFunction(() => !document.querySelector('.import-dialog[open]'), {}, { timeout: 10000 })
+    console.log('Background recognition, navigation and reopening passed')
     // 刷新后模拟初始化失败，同批下一张截图仍能成功保存
     await page.reload()
     await page.evaluate(() => {
@@ -181,7 +191,7 @@ try {
         { timeout: 120000 },
     )
     assert.ok((await page.locator('.import-result.failed').textContent()).includes('模拟工作线程初始化失败'))
-    assert.equal(await page.locator('.import-result.success').count(), 1)
+    assert.equal(await page.locator('.import-result.skipped').count(), 1)
     await page.getByRole('button', { name: '关闭', exact: true }).click()
     // 仅让下一张图片立即超时，后续图片仍能继续处理
     await page.evaluate(() => {

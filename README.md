@@ -4,7 +4,7 @@
 
 后续开发以 [二期设计文档](docs/FP_B30_二期设计文档.md) 为主；共同业务规则和已完成的验收记录见 [一期设计与验收归档](docs/FP_B30_一期设计文档.md)。
 
-Nintendo 相册方案见 [三期设计文档](docs/FP_B30_三期设计文档.md)。已实现本地可联调版本：Cloudflare 版设置页改为「账号与设置」，通过同源 Worker 绑定 Nintendo 账号、读取相册，前端复用首页 OCR 识别后直接录入。尚未连接真实 Nintendo 账号或验证 Cloudflare 出口；3C 站内账号、多设备同步未开放。默认构建保持纯前端，设置页仍为「偏好设置」。
+Nintendo 相册方案见 [三期设计文档](docs/FP_B30_三期设计文档.md)。Cloudflare 版通过同源 Worker 绑定 Nintendo 账号、读取相册，前端 OCR 识别后直接录入；用户于 2026-10-17 确认 3A、3B 实际使用正常。首页截图与相册识别统一由 Pinia 管理，支持切页后后台处理、右下角进度提示及重新打开识别弹窗。3C 站内账号、多设备同步未开放。默认构建保持纯前端，设置页仍为「偏好设置」。
 
 ## 运行
 
@@ -36,7 +36,7 @@ yarn build
 - 设置页可二次确认清空全部本地成绩、历史及趋势，保留曲库与偏好。封面统一由 coverSourceUrl 生成同源缩略图，缺失时回退来源原图，再失败显示占位图。新增弹窗的已选曲目可展开搜索，选中后自动收起。
 - 设置页支持下载 Excel 导入模板、导出全部成绩、预览后批量导入；Excel 每谱面取文件最高分，同分按更新时间和行序选择；历史去重后保存，当前最佳保留高分，错误行阻止整批写入。
 
-支持完整 16:9 结算页和选曲页，在浏览器 Worker 内通过 PaddleOCR 识别，成功后直接入库。MISSION CLEAR（含 MISSON 拼写）、游玩中画面与未游玩占位跳过。图片仅在内存中处理，进行中的任务关闭或切页即取消；完成后保留空闲 Worker／模型供后续批次复用，切页不保留截图，应用卸载时释放模型；首次识别需联网下载模型。每批最多 60 张，每张不超过 20 MiB。FC／AP 和 Max Chain 随成绩保存，选曲页及手动新增可无 Max Chain。无云端同步，支持 Excel 成绩导入导出。成绩保存在当前浏览器，清除站点数据会删除成绩。
+支持完整 16:9 结算页和选曲页，在浏览器 Worker 内通过 PaddleOCR 识别，成功后直接入库。MISSION CLEAR（含 MISSON 拼写）、游玩中画面与未游玩占位跳过。首页与相册共用串行 OCR 模型；关闭识别弹窗或切页后继续处理，右下角提示可重新打开弹窗，明确取消才停止批次。相册读取、截图下载或任一识别任务进行中，首页录入区改为「查看详情」，暂停选择、拖入截图和 Excel；点击打开对应任务，结束或取消后恢复录入。原图只在当前页面会话内处理，缩略图和最近一次结果保存在本机；刷新或关闭网页会停止任务，相册未完成项下次更新恢复，首页未完成图片需重新上传。完成后复用空闲 Worker／模型；首次识别需联网下载模型。首页每批最多 60 张，每张不超过 20 MiB。FC／AP 和 Max Chain 随成绩保存，选曲页及手动新增可无 Max Chain。无云端同步，支持 Excel 成绩导入导出。成绩保存在当前浏览器，清除站点数据会删除成绩。
 
 ## 曲库维护
 
@@ -58,12 +58,14 @@ OCR 真实样本验证以 `tests/ocr-samples.json` 的逐张标注为准，当�
 - `src/pages/` 包含 HomePage、ScoresPage、B30Page、SettingsPage，通过 props 和事件连接根部
 - `src/components/app/` 包含导航、顶部栏、通知与共用外观按钮
 - `src/components/dialogs/` 包含常驻的新增／编辑、OCR、删除及清空弹窗，各自维护操作状态
+- `src/stores/recognition.ts` 统一管理首页与相册批次、进度和结果；`src/components/recognition/` 共用识别弹窗与右下角提示
+- `src/core/ocr/importer.ts` 运行首页上传任务，`src/core/album/controller.ts` 负责相册下载、去重与恢复，二者共用 `src/core/ocr/shared.ts` 的串行识别引擎
 - `src/core/score/` 提供统一校验与筛选，`src/core/search/songText.ts` 提供共用曲名归一化；特殊别名只维护在曲库的 searchAliases
-- 仓储提供 `addManual(songId, chartId, score, achievements?)` 和 `addOcr(songId, chartId, score, achievements?, signal?)`，前者返回 ID，后者返回 `{ id, skipped }`；`edit/list/remove/clear` 保留原职责
+- 仓储提供 `addManual(songId, chartId, score, achievements?)` 和 `addOcr(songId, chartId, score, achievements?, signal?, datasetEpoch?)`，前者返回 ID，后者返回 `{ id, skipped }`；后台 OCR 入库时校验数据代次，`edit/list/remove/clear` 保留原职责
 
-不引入 Pinia、服务器后台队列或路由库；数据库 groove-archive-fp-history 当前为 schema 6，历史为成绩事实来源，当前最佳可重建，过去日期的 Rating 快照固定保存。schema 6 将旧快照按本地日期保留每天最后一条，增加唯一 day 索引与 chartId + playedAt 历史索引；schema 5 为相册计数和重试查询增加索引，schema 4 增加 songId + playedAt。历史非时间排序在当前视图内复用匹配数据和排序结果，翻页只截取结果，关闭或切回时间排序时释放。
+Pinia 保存当前页面会话内的识别状态，成绩和相册恢复记录继续由 Dexie／IndexedDB 持久化；服务器后台队列和路由库未引入。数据库 groove-archive-fp-history 当前为 schema 6，历史为成绩事实来源，当前最佳可重建，过去日期的 Rating 快照固定保存。schema 6 将旧快照按本地日期保留每天最后一条，增加唯一 day 索引与 chartId + playedAt 历史索引；schema 5 为相册计数和重试查询增加索引，schema 4 增加 songId + playedAt。历史非时间排序在当前视图内复用匹配数据和排序结果，翻页只截取结果，关闭或切回时间排序时释放。
 
-启动 `yarn dev:local` 后运行 `yarn test:ui`，验证手动表单、AP 联动 FC、空 Max Chain、更新时间、分页与跨页筛选保留、界面语言切换、浏览器语言匹配、语言偏好刷新后保留、首页空状态及 390px 布局。历史删除和清空集中在 `yarn test:history` 验收。浏览器测试固定以简体中文环境启动。`yarn test:ocr` 同时验证重复上传、切页后继续上传、进行中取消，以及模拟初始化失败和超时后的恢复。浏览器测试默认使用独立 Edge 上下文；可通过 `OCR_URL` 指定开发服务地址，通过 `OCR_BROWSER` 指定浏览器通道。
+启动 `yarn dev:local` 后运行 `yarn test:ui`，验证手动表单、AP 联动 FC、空 Max Chain、更新时间、分页与跨页筛选保留、界面语言切换、浏览器语言匹配、语言偏好刷新后保留、首页空状态及 390px 布局。历史删除和清空集中在 `yarn test:history` 验收。浏览器测试固定以简体中文环境启动。`yarn test:ocr` 同时验证重复上传、后台识别与切页后重新打开进度、进行中取消，以及模拟初始化失败和超时后的恢复。服务端构建下的 `yarn test:recognition` 验收两个来源同时运行、各自取消和重新打开、任务期间首页禁用上传并切换详情入口及跨标签页清空拦截。浏览器测试默认使用独立 Edge 上下文；可通过 `OCR_URL` 指定开发服务地址，通过 `OCR_BROWSER` 指定浏览器通道。
 
 验收脚本允许直接准备样本数据和读取实际操作结果；被测的录入、导入、删除和下载通过页面执行。不再维护计算边界、模拟数据库、Worker 数量或生命周期计数等内部验证，也不绑定无明确要求的像素位置和 CSS 实现。B30、头像展示、部署模式和旧数据库迁移的自动化验收已移除。历史验收结果保留在设计文档中，不代表当前测试范围。
 
@@ -102,12 +104,12 @@ Excel 的读取位于 `src/core/excel/reader.ts`，生成位于 `template.ts`，
 
 `yarn test:daily-rating` 验收真实 schema 5 升级、每日快照合并与回落、无变化不写入、跨天冻结、同日双标签写入、计算版本重算、删光历史后的零 Rating、跨时区持久化及清空全部数据。`test:history` 同时覆盖排序结果复用、跨标签页更新和读取错误重试。
 
-## Nintendo 相册本地联调（3A）
+## Nintendo 相册配置与验收（3A / 3B）
 
 1. `yarn build:server` 构建包含相册入口的前端，并检查 Worker 类型
 2. 将 `.dev.vars.example` 复制为 `.dev.vars`，把注册页给出的 Client ID 填入 `NXAPI_CLIENT_ID`。支持只有 Client ID 的公开客户端；`NXAPI_CLIENT_SECRET` 可留空或删除，仅服务方实际提供 Secret 的机密客户端才填写。Worker 请求 `ca:gf ca:er ca:dr`，客户端必须获准这些权限；在客户端详情的 Scope 表单中配置，若显示 Requires approval 则按服务方提示申请批准，不使用其他应用的身份
 3. 为 `COOKIE_KEY` 生成随机 32 字节 base64url 密钥，例如 `node -e "console.log(require('node:crypto').randomBytes(32).toString('base64url'))"`；不要提交或发送该密钥
-4. 从真实媒体确认 `wrangler.jsonc` 的 `GCFP_APPLICATION_IDS` 和 `MEDIA_HOSTS`，分别填逗号分隔的准确游戏 ID 和 HTTPS 主机名，禁止通配符。默认留空并禁用绑定，避免把猜测当成验证结果
+4. `wrangler.jsonc` 已配置 GCFP 游戏 ID 和媒体主机；部署时核对 `GCFP_APPLICATION_IDS` 和 `MEDIA_HOSTS`，使用逗号分隔的准确游戏 ID 和 HTTPS 主机名，禁止通配符
 5. `yarn dev:server` 启动本地 Worker，在同源页面的「账号与设置 → 账号」点击「绑定 Nintendo 账号」，确认须知后按弹窗中的登录、复制链接、回来粘贴三步完成绑定。Cookie 使用 Secure / HttpOnly，正式部署必须 HTTPS；本地使用浏览器认可的 localhost 环境
 
 若本地 `workerd` 出站连接失败，可在 Wrangler 已登录的情况下运行 `yarn wrangler dev --remote --ip 127.0.0.1 --port 8787 --upstream-protocol http`，将 Worker 运行于 Cloudflare 临时预览环境。远程代理会改写 Worker 收到的请求 URL，因此需在 `.dev.vars` 中添加 `APP_ORIGIN="http://127.0.0.1:8787"`，并用该地址打开页面。来源必须精确匹配协议、主机和端口，`localhost` 与 `127.0.0.1` 不能混用。该配置只指定可信来源，不启用跨域访问；正式直连部署可留空，默认仍校验实际请求 URL 的来源。远程模式使用 Cloudflare 上的远程绑定。
@@ -126,8 +128,9 @@ yarn test:album-runtime
 # PowerShell: $env:VITE_SERVER='1'; yarn dev:local --port 5175
 # sh: VITE_SERVER=1 yarn dev:local --port 5175
 yarn test:album
+yarn test:recognition
 ```
 
 `test:album-worker` 通过真实本地 HTTP 请求验收公开接口，Nintendo 和第三方服务为模拟依赖。`test:album-runtime` 在实际 Workerd 中运行同一套 HTTP 验收，覆盖声明 JSON 类型的加密响应、Base64/Base64url、登录单独加密、令牌失效恢复、限流、原图重定向和下载限制。加密请求的响应必须先解密，不能根据 Content-Type 判断为明文。上游错误会记录固定阶段、HTTP 状态或 Coral 错误码，不记录响应正文和凭据。`test:album` 使用仓库里的真实截图、浏览器 OCR 和 IndexedDB，验收风险确认、绑定教程、手动更新进度弹窗与自动录入、拍摄时间、账号信息、10 秒冷却、3 分钟内重开不更新、超时后打开网页自动更新、清空后不重新录入、失败重试及解除绑定；可通过 `ALBUM_URL` 指定带服务端开关的 Vite 地址。上述结果不代替真实授权、上游重放限制、媒体 ID、CDN 跨域和 Cloudflare 出口验证。当前 OCR 样本与逐张预期见 `tests/ocr-samples.json`。
 
-绑定后打开网页时，距上次更新满 3 分钟才自动读取相册，3 分钟内重复打开不更新；设置页「更新成绩」可手动更新，自动与手动更新共用 10 秒冷却，多个标签页共享冷却并只允许一个标签页更新。识别成功的截图直接录入，跳过 MISSION CLEAR、游玩中、非结算页及重复截图；拍摄时间缺失时按录入时间记录。手动更新有新截图时弹出与首页相同的识别进度弹窗，关闭弹窗在后台继续；打开网页的自动更新只显示进度条，完成后通知。页面切换保留进行中的队列，未完成任务在下次更新时继续。临时下载失败或 OCR 超时下次更新最多自动重试两次，其余失败在设置页显示原因并可手动重试。账号区域显示 Nintendo 昵称、相册中可见的 GCFP 截图数、已录入的相册成绩数和最近更新时间。真实账号 PoC 尚未完成。
+绑定后打开网页时，距上次更新满 3 分钟才自动读取相册，3 分钟内重复打开不更新；设置页「更新成绩」可手动更新，自动与手动更新共用 10 秒冷却，多个标签页共享冷却并只允许一个标签页更新。识别成功的截图直接录入，跳过 MISSION CLEAR、游玩中、非结算页及重复截图；拍摄时间缺失时按录入时间记录。手动与自动更新均通过右下角进度提示查看；点击提示或账号区域的查看入口可打开与首页共用的识别弹窗，关闭弹窗在后台继续。页面切换保留进行中的队列，未完成任务在下次更新时继续。临时下载失败或 OCR 超时下次更新最多自动重试两次，其余失败在设置页显示原因并可手动重试。账号区域显示 Nintendo 昵称、相册中可见的 GCFP 截图数、已录入的相册成绩数和最近更新时间。用户已确认 3A、3B 实际使用正常；CDN 直连须单独实测后启用，当前仍默认 Worker 中转。

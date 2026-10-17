@@ -8,6 +8,8 @@ import NintendoBindDialog from './NintendoBindDialog.vue'
 import { album, retryFailed, scan, unbind } from '../../core/album/controller'
 import { useRecognitionSummary } from '../../db/recognitionRepository'
 import { errorMessage } from '../../i18n'
+import { useRecognitionStore } from '../../stores/recognition'
+const task = useRecognitionStore().tasks.album
 const emit = defineEmits<{ notify: [message: string, title?: string]; view: [] }>()
 const { t, locale } = useI18n()
 const bindDialog = ref<InstanceType<typeof NintendoBindDialog>>()
@@ -20,7 +22,7 @@ const bound = computed(() => !!album.state.accountId)
 const name = computed(() => album.state.nickname || t('account.nintendo'))
 const initial = computed(() => Array.from(name.value)[0]?.toUpperCase() ?? 'N')
 const cooldown = computed(() => Math.max(0, Math.ceil((album.state.nextAllowedAt - now.value) / 1000)))
-const done = computed(() => album.jobs.filter((job) => !['queued', 'running'].includes(job.status)).length)
+const done = computed(() => task.jobs.filter((job) => !['queued', 'running'].includes(job.status)).length)
 const lastRun = useRecognitionSummary('album')
 const failures = computed(() => album.retryableItems)
 const format = (time?: number | null) =>
@@ -91,12 +93,12 @@ async function confirmUnbind() {
                 <div class="account-actions">
                     <button
                         class="button primary"
-                        :disabled="album.busy || cooldown > 0 || album.configured === false"
+                        :disabled="task.busy || cooldown > 0 || album.configured === false"
                         @click="scan(true)"
                     >
-                        <LoaderCircle v-if="album.busy" class="spin" :size="15" /><RefreshCw v-else :size="15" />
+                        <LoaderCircle v-if="task.busy" class="spin" :size="15" /><RefreshCw v-else :size="15" />
                         {{
-                            album.busy
+                            task.busy
                                 ? t('account.updating')
                                 : cooldown
                                   ? t('account.cooldown', { seconds: cooldown })
@@ -122,18 +124,18 @@ async function confirmUnbind() {
                     <dd class="account-time">{{ format(album.state.lastCheckedAt) }}</dd>
                 </div>
             </dl>
-            <div v-if="album.busy" class="account-progress" role="status">
+            <div v-if="task.busy" class="account-progress" role="status">
                 <div class="between">
                     <span class="row gap-2">
                         <LoaderCircle class="spin" :size="15" />
-                        {{ album.phase === 'importing' ? t('sync.banner.importing') : t('sync.banner.checking') }}
+                        {{ task.phase === 'importing' ? t('sync.banner.importing') : t('sync.banner.checking') }}
                     </span>
-                    <span v-if="album.phase === 'importing'" class="row gap-3">
-                        <span class="muted">{{ t('ocr.progress', { done, total: album.jobs.length }) }}</span>
+                    <span v-if="task.phase === 'importing'" class="row gap-3">
+                        <span class="muted">{{ t('ocr.progress', { done, total: task.jobs.length }) }}</span>
                         <button type="button" class="text-link" @click="emit('view')">{{ t('sync.banner.view') }}</button>
                     </span>
                 </div>
-                <AnimatedProgress v-if="album.phase === 'importing'" :value="done" :max="album.jobs.length" />
+                <AnimatedProgress v-if="task.phase === 'importing'" :value="done" :max="task.jobs.length" />
             </div>
             <div v-else-if="lastRun || failures.length" class="account-progress account-last">
                 <div v-if="lastRun" class="between">

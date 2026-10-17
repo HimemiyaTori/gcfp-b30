@@ -157,7 +157,7 @@ try {
     const sync = page
         .locator('.import-dialog')
         .filter({ hasText: 'NINTENDO ALBUM' })
-    const toast = page.locator('button.album-toast-open')
+    const toast = page.locator('.album-toast button.recognition-toast-open')
     await toast.click({ timeout: 180000 })
     await sync
         .getByText('跳过 1 张，失败 0 张', { exact: false })

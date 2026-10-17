@@ -8,17 +8,21 @@ export interface RecognitionSummary { finishedAt: number; total: number; failed:
 const settled = (job: ImportJob) => job.status !== 'queued' && job.status !== 'running'
 
 // 一张都没处理完就中断的批次不覆盖上一次结果，未完成的截图按 pending 原因保存
-export async function saveRecognition(key: RecognitionSource, jobs: ImportJob[], previews: (Blob | undefined)[], pending: string) {
+export async function saveRecognition(key: RecognitionSource, jobs: ImportJob[], previews: (Blob | undefined)[], pending: string, context?: { datasetEpoch: number; bindingGeneration?: number }) {
     if (!jobs.some(settled)) return
-    await database.recognitionRuns.put({
-        key,
-        finishedAt: Date.now(),
-        jobs: jobs.map((job, i): RecognitionJob => ({
-            name: job.name,
-            index: job.index,
-            ...(settled(job) ? { status: job.status as RecognitionJob['status'], error: job.error } : { status: 'skipped', error: pending }),
-            preview: previews[i],
-        })),
+    await database.transaction('rw', database.recognitionRuns, database.albumState, async () => {
+        const state = await database.albumState.get('album')
+        if (context && ((state?.datasetEpoch ?? 0) !== context.datasetEpoch || (context.bindingGeneration !== undefined && state?.bindingGeneration !== context.bindingGeneration))) return
+        await database.recognitionRuns.put({
+            key,
+            finishedAt: Date.now(),
+            jobs: jobs.map((job, i): RecognitionJob => ({
+                name: job.name,
+                index: job.index,
+                ...(settled(job) ? { status: job.status as RecognitionJob['status'], error: job.error } : { status: 'skipped', error: pending }),
+                preview: previews[i],
+            })),
+        })
     })
 }
 // 返回的预览地址由调用方用 releasePreviews 释放

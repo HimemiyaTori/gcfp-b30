@@ -25,6 +25,9 @@ import HomePage from './pages/HomePage.vue'
 import ScoresPage from './pages/ScoresPage.vue'
 import SettingsPage from './pages/SettingsPage.vue'
 import type { AlbumState } from './db/albumModels'
+import type { RecognitionSource } from './db/models'
+import { useRecognitionStore } from './stores/recognition'
+const recognition = useRecognitionStore()
 const nintendoAccount = shallowRef<{ state: AlbumState }>()
 const NintendoAccount = import.meta.env.VITE_SERVER === '1' ? defineAsyncComponent(() => import('./components/album/NintendoAccount.vue')) : undefined
 const AlbumSync = import.meta.env.VITE_SERVER === '1' ? defineAsyncComponent(() => import('./components/album/AlbumSync.vue')) : undefined
@@ -64,7 +67,15 @@ const albumSync = ref<{ open(): Promise<void> }>()
 function notify(message: string, title?: string) {
     notification.value?.show(message, title)
 }
+function viewRecognition(source: RecognitionSource) {
+    if (source === 'album') void albumSync.value?.open()
+    else void ocr.value?.view()
+}
 function uploadFiles(files: File[]) {
+    if (recognition.activeSource) {
+        viewRecognition(recognition.activeSource)
+        return
+    }
     if (!canWrite.value) {
         notify(t('common.databaseNotReady'))
         return
@@ -155,6 +166,7 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
                     v-model:grain="ratingGrain"
                     @song="songDetails?.open($event)"
                     @view-last="ocr?.view()"
+                    @view-task="viewRecognition"
                 />
                 <ScoresPage
                     v-if="page === 'scores'"

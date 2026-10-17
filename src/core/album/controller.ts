@@ -4,12 +4,16 @@ import { database } from '../../db/database'
 import { initialAlbumState, type AlbumItem, type AlbumStage, type AlbumState } from '../../db/albumModels'
 import { scoreRepository } from '../../db/scoreRepository'
 import { saveRecognition } from '../../db/recognitionRepository'
-import { createPreview, releasePreviews } from '../ocr/preview'
+import { createPreview } from '../ocr/preview'
 import { createSharedRecognizer } from '../ocr/shared'
 import { credentialLock, download, request, type AlbumMedia, type Binding, type MediaResponse } from './api'
 import { AlbumError, DomainError } from '../errors'
 import { currentLanguage, errorMessage, t } from '../../i18n'
 import type { ImportJob } from '../ocr/models'
+import { pinia } from '../../stores'
+import { useRecognitionStore } from '../../stores/recognition'
+const recognition = useRecognitionStore(pinia)
+const task = recognition.tasks.album
 const MARKER = 'groove-nintendo-bound'
 // 打开网页时距上次更新不足 3 分钟不自动更新，任意两次更新至少间隔 10 秒
 export const AUTO_UPDATE_INTERVAL = 3 * 60000
@@ -17,20 +21,12 @@ export const UPDATE_COOLDOWN = 10000
 const finished = new Set(['imported', 'skipped', 'rejected', 'expired', 'failed'])
 const retryable: AlbumStage[] = ['failed', 'retry_wait', 'canceled']
 export interface AlbumJob extends ImportJob { mediaId: string }
-export interface AlbumRun { id: number; manual: boolean; checked: boolean; found: number; recorded: number; updated: number; failed: number; skipped: number; canceled: boolean; error?: string }
 export const album = reactive({
     configured: undefined as boolean | undefined,
     state: initialAlbumState(),
     retryableItems: [] as AlbumItem[],
     importedCount: 0,
-    busy: false,
-    phase: 'idle' as 'idle' | 'checking' | 'importing',
-    jobs: [] as AlbumJob[],
-    slow: false,
-    // 弹窗正在展示本次 jobs 时，结束后由弹窗关闭时释放预览
-    viewing: false,
     error: '',
-    run: undefined as AlbumRun | undefined,
 })
 // 自动更新时可预期的跳过原因，仅手动更新时提示
 class ScanSkipped extends DomainError {}
@@ -38,7 +34,6 @@ let aborter: AbortController | undefined
 let active: AlbumState | undefined
 let canceled = false
 let started = false
-let runs = 0
 function marker(value: boolean) { try { if (value) localStorage.setItem(MARKER, '1'); else localStorage.removeItem(MARKER) } catch {} }
 async function localBinding(binding: Omit<Binding, 'configured'> & { configured?: boolean }) {
     await database.transaction('rw', database.albumState, database.recognitionRuns, async () => {
@@ -161,10 +156,10 @@ async function collect(result: MediaResponse, state: AlbumState) {
 async function importQueue(queue: AlbumItem[], visible: AlbumMedia[], state: AlbumState, controller: AbortController, tally: { recorded: number; updated: number }, previews: (Blob | undefined)[]) {
     let media = new Map(visible.map(row => [row.mediaId, row]))
     const timeout = () => AbortSignal.any([controller.signal, AbortSignal.timeout(45000)])
-    let recognizer = createSharedRecognizer(undefined, { onSlowInference: () => { album.slow = true } })
+    let recognizer = createSharedRecognizer(undefined, { onSlowInference: () => { task.slow = true } })
     for (let index = 0; index < queue.length; index++) {
         if (controller.signal.aborted) break
-        const job = album.jobs[index]!
+        const job = task.jobs[index]!
         let item = queue[index]!
         job.status = 'running'
         try {
@@ -208,7 +203,7 @@ async function importQueue(queue: AlbumItem[], visible: AlbumMedia[], state: Alb
                 }
                 item = { ...item, stage: 'recognizing' }
                 await save(item)
-                if (recognizer.disposed) recognizer = createSharedRecognizer(undefined, { onSlowInference: () => { album.slow = true } })
+                if (recognizer.disposed) recognizer = createSharedRecognizer(undefined, { onSlowInference: () => { task.slow = true } })
                 const result = await recognizer.recognize(blob, controller.signal)
                 controller.signal.throwIfAborted()
                 if (result.kind === 'skipped') {
@@ -242,12 +237,7 @@ async function importQueue(queue: AlbumItem[], visible: AlbumMedia[], state: Alb
     }
 }
 export async function scan(manual = false) {
-    if (album.busy) return
-    album.busy = true
-    album.phase = 'checking'
-    releasePreviews(album.jobs)
-    album.jobs = []
-    album.slow = false
+    if (!recognition.begin('album', 'checking')) return
     album.error = ''
     canceled = false
     const controller = new AbortController()
@@ -268,15 +258,15 @@ export async function scan(manual = false) {
             const queue = await collect(result, state)
             controller.signal.throwIfAborted()
             checked = true
-            album.jobs = queue.map((item, index): AlbumJob => ({ mediaId: item.mediaId, name: label(item.capturedAt), index: index + 1, status: 'queued', error: '' }))
+            task.jobs = queue.map((item, index): AlbumJob => ({ mediaId: item.mediaId, name: label(item.capturedAt), index: index + 1, status: 'queued', error: '' }))
             if (!queue.length) return
-            album.phase = 'importing'
+            task.phase = 'importing'
             await importQueue(queue, result.media, state, controller, tally, previews)
         })
     } catch (error) {
         if (!controller.signal.aborted && !(error instanceof ScanSkipped && !manual)) {
             await recordError(error)
-            failure = album.error
+            failure = task.error = album.error
         }
     } finally {
         if (aborter === controller) aborter = undefined
@@ -285,13 +275,9 @@ export async function scan(manual = false) {
         // 清空成绩或换绑中断的批次不再保存识别结果
         const latest = scanned && await database.albumState.get('album').catch(() => undefined)
         if (latest && latest.datasetEpoch === scanned.datasetEpoch && latest.bindingGeneration === scanned.bindingGeneration)
-            await saveRecognition('album', album.jobs, previews, t('album.deferred')).catch(() => {})
-        for (const job of album.jobs) if (job.status === 'queued' || job.status === 'running') Object.assign(job, { status: 'skipped', error: t('album.deferred') })
-        if (!album.viewing) releasePreviews(album.jobs)
-        const count = (status: ImportJob['status']) => album.jobs.filter(job => job.status === status).length
-        album.run = { id: ++runs, manual, checked, found: album.jobs.length, ...tally, failed: count('failed'), skipped: count('skipped'), canceled: canceled && controller.signal.aborted, error: failure }
-        album.busy = false
-        album.phase = 'idle'
+            await saveRecognition('album', task.jobs, previews, t('album.deferred'), scanned).catch(() => {})
+        for (const job of task.jobs) if (job.status === 'queued' || job.status === 'running') Object.assign(job, { status: 'skipped', error: t('album.deferred') })
+        recognition.finish('album', { checked, found: task.jobs.length, ...tally, canceled: canceled && controller.signal.aborted, error: failure })
     }
 }
 export function cancel() { canceled = true; aborter?.abort() }
