@@ -3,6 +3,7 @@ import { ArrowDown, ArrowUp, ArrowUpDown, Ellipsis, Music2, Pencil, Plus, Info, 
 import { computed, nextTick, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { songLanguage } from '../composables/useSettings'
+import { MOBILE_MEDIA_QUERY } from '../breakpoints'
 import { isPlayedChart, type ChartListRow, type UnplayedChartRow } from '../core/score/catalog'
 import { getRankByScore } from '../core/rating/rank'
 import type { ScoreTableSort, ScoreTableSortKey } from '../core/scoreSort'
@@ -14,7 +15,7 @@ const props = withDefaults(defineProps<{
     sort: ScoreTableSort
     positions?: ReadonlyMap<number, number>
     hideMode?: boolean
-    hideSongOnMobile?: boolean
+    hideSongWhenNarrow?: boolean
     ranked?: boolean
     editable?: boolean
     deletable?: boolean
@@ -105,7 +106,7 @@ async function changePage(page: number) {
     expandedRow.value = null
     emit('page', page)
     await nextTick()
-    if (window.matchMedia('(max-width: 680px)').matches) mobileControls.value?.scrollIntoView({ block: 'start' })
+    if (window.matchMedia(MOBILE_MEDIA_QUERY).matches) mobileControls.value?.scrollIntoView({ block: 'start' })
 }
 </script>
 
@@ -125,14 +126,14 @@ async function changePage(page: number) {
             {{ t(sort.ascending ? 'table.ascending' : 'table.descending') }}
         </button>
     </div>
-    <div class="table-scroll" :aria-busy="loading">
+    <div class="table-scroll" :class="{ 'contextual-score-table': hideSongWhenNarrow }" :aria-busy="loading">
         <table class="score-table">
             <thead>
                 <tr>
                     <th
                         v-for="column in columns"
                         :key="column.keys[0]"
-                        :class="{ num: column.numeric, position: column.keys[0] === 'position' }"
+                        :class="{ num: column.numeric, position: column.keys[0] === 'position', 'song-column': column.keys[0] === 'title' }"
                         :aria-sort="column.keys.includes(sort.key) ? (sort.ascending ? 'ascending' : 'descending') : 'none'">
                         <div class="sort-head" :class="{ 'sort-numeric': column.numeric }">
                             <button
@@ -161,7 +162,7 @@ async function changePage(page: number) {
                         :class="{ podium: (positions?.get(recordId(s) ?? -1) ?? Infinity) <= 3 }">
                         {{ recordId(s) != null && positions?.has(recordId(s)!) ? String(positions.get(recordId(s)!)).padStart(2, '0') : '—' }}
                     </td>
-                    <td>
+                    <td class="song-column">
                         <button type="button" class="row gap-3 song-link" @click="$emit('song', s)">
                             <SongCover :src="s.coverSourceUrl" />
                             <div class="song-copy">
@@ -231,7 +232,7 @@ async function changePage(page: number) {
                     <span v-if="ranked" class="score-card-position" :class="{ podium: (rowPosition(s) ?? Infinity) <= 3 }">
                         {{ rowPosition(s) == null ? '—' : String(rowPosition(s)).padStart(2, '0') }}
                     </span>
-                    <div v-if="hideSongOnMobile" class="score-card-chart">
+                    <div v-if="hideSongWhenNarrow" class="score-card-chart">
                         <span class="difficulty" :class="s.difficulty.toLowerCase()">{{ s.difficulty }}</span>
                         <b class="level">{{ s.level }}</b>
                     </div>
@@ -297,7 +298,7 @@ async function changePage(page: number) {
                 </div>
                 <div v-if="isPlayedChart(s) && !deletable" v-show="expandedRow === rowDomKey(s)" :id="rowDetailsId(s)" class="score-card-details">
                     <div class="score-card-detail-copy">
-                        <span v-if="!hideSongOnMobile" class="score-card-artist">{{ t('table.artist', { artist: s.artist }) }}</span>
+                        <span v-if="!hideSongWhenNarrow" class="score-card-artist">{{ t('table.artist', { artist: s.artist }) }}</span>
                         <span v-if="s.maxChain !== undefined">Max Chain {{ s.maxChain }}</span>
                         <span v-if="timeKey === 'updatedAt' && rowTime(s) !== undefined">
                             {{ t('table.updatedAt') }}

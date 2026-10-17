@@ -415,7 +415,7 @@ defineExpose({ open })
 .bind-done {
     margin-top: 10px;
 }
-@media (max-width: 680px) {
+@media (--mobile) {
     .bind-dialog .dialog-actions {
         flex-wrap: wrap;
     }

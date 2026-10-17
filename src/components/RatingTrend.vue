@@ -75,5 +75,5 @@ function pick(event: PointerEvent) {
 .rating-trend svg text { fill: var(--muted); font-size: 13px; }
 .trend-grid { stroke: currentColor; opacity: .12; }
 .trend-value { font-variant-numeric: tabular-nums; margin: 0 24px; }
-@media (max-width: 680px) { .rating-trend svg { min-height: 160px; } }
+@media (--mobile) { .rating-trend svg { min-height: 160px; } }
 </style>

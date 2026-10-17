@@ -144,7 +144,7 @@ const { t } = useI18n()
     flex-shrink: 0;
     max-width: 360px;
 }
-@media (max-width: 680px) {
+@media (--mobile) {
     .excel-actions {
         justify-content: flex-start;
         max-width: 100%;

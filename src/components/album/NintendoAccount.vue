@@ -341,7 +341,7 @@ async function confirmUnbind() {
     font-size: 11px;
     line-height: 1.8;
 }
-@media (max-width: 680px) {
+@media (--mobile) {
     .account-intro {
         flex-wrap: wrap;
         gap: 14px;

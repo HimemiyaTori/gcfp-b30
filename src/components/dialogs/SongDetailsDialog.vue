@@ -329,7 +329,7 @@ defineExpose({ open })
                         :pagination="pagination"
                         :error="error"
                         :loading="loading"
-                        hide-song-on-mobile
+                        hide-song-when-narrow
                         time-key="importedAt"
                         :empty-title="t('table.noHistory')"
                         empty-description=""
@@ -605,7 +605,7 @@ dd {
 :global(.dark .song-dialog .chart-detail.master .chart-watermark) {
     color: #f0d8f8;
 }
-@media (max-width: 680px) {
+@media (--mobile) {
     .song-history h2 {
         font-size: 14px;
     }

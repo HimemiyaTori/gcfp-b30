@@ -21,7 +21,7 @@
     transform-origin: left center;
     transition: transform var(--motion-progress, 400ms) var(--motion-ease-out);
 }
-@media (max-width: 680px) {
+@media (--mobile) {
     .notice-motion-enter-from,
     .notice-motion-leave-to { transform: translateY(-16px); }
 }

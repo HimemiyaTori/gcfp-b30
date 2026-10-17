@@ -24,7 +24,7 @@ try {
     await page.getByRole('heading', { name: '成绩一览', exact: true }).waitFor()
     await page.waitForFunction(() => !document.body.textContent.includes('正在加载本地成绩'))
     // 通过真实仓储准备多页成绩及长曲名，验收手机上的用户操作
-    await page.evaluate(async () => {
+    const longSong = await page.evaluate(async () => {
         const { scoreRepository } = await import('/src/db/scoreRepository.ts')
         const { songService } = await import('/src/core/song/songService.ts')
         const all = songService.songs.flatMap(song => song.charts.filter(chart => chart.mode === 'basic').map(chart => ({ song, chart })))
@@ -34,6 +34,7 @@ try {
         for (const [index, { song, chart }] of chosen.entries()) {
             await scoreRepository.addManual(song.id, chart.id, 980000 + index * 1000, { fc: true, maxChain: 7 })
         }
+        return chosen.at(-1).song.title
     })
     await page.getByRole('navigation', { name: '成绩分页' }).waitFor()
     assert.equal(await cards.count(), 30)
@@ -171,8 +172,50 @@ try {
     await page.getByRole('heading', { name: '暂时没有成绩', exact: true }).waitFor()
     assert.equal(await page.locator('.table-pagination').count(), 0)
     await fits()
+    // 电脑端历史在日语和英语界面下完整展示长曲名对应的所有列
+    await page.setViewportSize({ width: 1280, height: 960 })
+    for (const [language, songLanguage] of [['日本語', 'ja'], ['English', 'en']]) {
+        await go('settings')
+        await page.locator('.ui-settings-options').getByRole('button', { name: language, exact: true }).click()
+        await go('home')
+        const recent = page.locator('.history-table')
+        const row = recent.locator('tbody tr').filter({ hasText: longSong[songLanguage] || longSong.ja }).first()
+        await row.waitFor()
+        async function historyFits(target) {
+            const { available, content } = await target.locator('.table-scroll').evaluate(element => ({ available: element.clientWidth, content: element.scrollWidth }))
+            assert.ok(content <= available + 1, `${language}历史的时间和操作列应无需横向滚动：${content}/${available}`)
+        }
+        await historyFits(recent)
+        await row.getByRole('button').first().click()
+        const songHistory = details.locator('.history-table')
+        await songHistory.locator('tbody tr').first().waitFor()
+        await historyFits(songHistory)
+        assert.equal(await songHistory.locator('thead .song-column').isVisible(), true)
+        await songHistory.scrollIntoViewIfNeeded()
+        await page.screenshot({ path: `.preview/desktop-history-${songLanguage}.png`, animations: 'disabled' })
+        // 歌曲弹窗变窄时隐藏重复曲目信息，保留完整的成绩列和删除入口
+        for (const width of [1000, 900, 800, 700, 681]) {
+            await page.setViewportSize({ width, height: 960 })
+            await historyFits(songHistory)
+            assert.equal(await songHistory.locator('thead .song-column').isVisible(), false)
+            assert.equal(await songHistory.locator('tbody .song-link').first().isVisible(), false)
+            if (width === 800) {
+                await songHistory.scrollIntoViewIfNeeded()
+                await page.screenshot({ path: `.preview/desktop-history-narrow-${songLanguage}.png`, animations: 'disabled' })
+            }
+        }
+        await songHistory.locator('tbody tr').first().locator('td').last().getByRole('button').click()
+        await page.waitForFunction(() => document.querySelectorAll('dialog[open]').length === 2)
+        await page.keyboard.press('Escape')
+        await page.waitForFunction(() => document.querySelectorAll('dialog[open]').length === 1)
+        await page.setViewportSize({ width: 1280, height: 960 })
+        await historyFits(songHistory)
+        assert.equal(await songHistory.locator('thead .song-column').isVisible(), true)
+        await page.keyboard.press('Escape')
+        await details.waitFor({ state: 'hidden' })
+    }
     assert.deepEqual(errors, [])
-    console.log('Mobile scores acceptance passed: list, sort, pagination, filters, edit/add persistence, B30, history deletion, languages, themes, narrow screens and desktop')
+    console.log('Score layout acceptance passed: mobile lists, sort, filters, persistence, B30, deletion, languages, themes, narrow screens and desktop history columns')
 } finally {
     await browser.close()
 }
