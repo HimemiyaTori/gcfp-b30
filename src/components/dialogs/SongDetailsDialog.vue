@@ -329,6 +329,7 @@ defineExpose({ open })
                         :pagination="pagination"
                         :error="error"
                         :loading="loading"
+                        hide-song-on-mobile
                         time-key="importedAt"
                         :empty-title="t('table.noHistory')"
                         empty-description=""

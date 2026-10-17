@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ArrowDown, ArrowUp, ArrowUpDown, Music2, Pencil, Plus, Info, Trash2 } from 'lucide-vue-next'
-import { computed } from 'vue'
+import { ArrowDown, ArrowUp, ArrowUpDown, Ellipsis, Music2, Pencil, Plus, Info, Trash2 } from 'lucide-vue-next'
+import { computed, nextTick, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { songLanguage } from '../composables/useSettings'
 import { isPlayedChart, type ChartListRow, type UnplayedChartRow } from '../core/score/catalog'
@@ -14,6 +14,7 @@ const props = withDefaults(defineProps<{
     sort: ScoreTableSort
     positions?: ReadonlyMap<number, number>
     hideMode?: boolean
+    hideSongOnMobile?: boolean
     ranked?: boolean
     editable?: boolean
     deletable?: boolean
@@ -31,6 +32,9 @@ const props = withDefaults(defineProps<{
     rowKey: 'id',
 })
 const { t, locale } = useI18n()
+const controlsId = useId()
+const expandedRow = ref<ReturnType<typeof rowDomKey> | null>(null)
+const mobileControls = ref<HTMLElement>()
 
 const emit = defineEmits<{
     edit: [score: ScoreRow]
@@ -50,6 +54,13 @@ function recordId(row: ChartListRow) {
 }
 function rowTime(row: ChartListRow) {
     return isPlayedChart(row) ? row[props.timeKey] : undefined
+}
+function rowDetailsId(row: ChartListRow) {
+    return `${controlsId}-details-${rowDomKey(row)}`
+}
+function rowPosition(row: ChartListRow) {
+    const id = recordId(row)
+    return id == null ? undefined : props.positions?.get(id)
 }
 
 const formatters = computed(() => ({
@@ -82,6 +93,20 @@ const columns = computed(() => {
     if (props.ranked) columns.unshift({ keys: ['position'], labels: [t('table.position')], numeric: false })
     return columns
 })
+const sortOptions = computed(() => columns.value.flatMap(column =>
+    column.keys.map((key, i) => ({ key, label: column.labels[i]! })),
+))
+const selectedSortLabel = computed(() => sortOptions.value.find(option => option.key === props.sort.key)?.label ?? '')
+const mobileSort = computed({
+    get: () => props.sort.key,
+    set: (key: ScoreTableSortKey) => emit('sort', key),
+})
+async function changePage(page: number) {
+    expandedRow.value = null
+    emit('page', page)
+    await nextTick()
+    if (window.matchMedia('(max-width: 680px)').matches) mobileControls.value?.scrollIntoView({ block: 'start' })
+}
 </script>
 
 <template>
@@ -89,6 +114,17 @@ const columns = computed(() => {
         {{ error }} <button type="button" @click="$emit('retry')">{{ t('common.retry') }}</button>
     </p>
     <p v-if="loading" role="status" class="table-loading">{{ t('table.loading') }}</p>
+    <div ref="mobileControls" class="score-sort-controls">
+        <label :for="`${controlsId}-sort`">{{ t('table.sortBy') }}</label>
+        <select :id="`${controlsId}-sort`" v-model="mobileSort">
+            <option v-for="option in sortOptions" :key="option.key" :value="option.key">{{ option.label }}</option>
+        </select>
+        <button type="button" :aria-label="sortLabel(selectedSortLabel, sort.key)" @click="emit('sort', sort.key)">
+            <ArrowUp v-if="sort.ascending" :size="15" />
+            <ArrowDown v-else :size="15" />
+            {{ t(sort.ascending ? 'table.ascending' : 'table.descending') }}
+        </button>
+    </div>
     <div class="table-scroll" :aria-busy="loading">
         <table class="score-table">
             <thead>
@@ -189,6 +225,91 @@ const columns = computed(() => {
                 </tr>
             </tbody>
         </table>
+        <ul v-if="items.length" class="score-list" :aria-label="t('table.list')">
+            <li v-for="s in items" :key="rowDomKey(s)" class="score-list-item">
+                <div class="score-card-summary">
+                    <span v-if="ranked" class="score-card-position" :class="{ podium: (rowPosition(s) ?? Infinity) <= 3 }">
+                        {{ rowPosition(s) == null ? '—' : String(rowPosition(s)).padStart(2, '0') }}
+                    </span>
+                    <div v-if="hideSongOnMobile" class="score-card-chart">
+                        <span class="difficulty" :class="s.difficulty.toLowerCase()">{{ s.difficulty }}</span>
+                        <b class="level">{{ s.level }}</b>
+                    </div>
+                    <button v-else type="button" class="score-card-song" @click="emit('song', s)">
+                        <SongCover :src="s.coverSourceUrl" :size="44" />
+                        <span class="score-card-copy">
+                            <strong>{{ s[songLanguage] }}</strong>
+                            <span class="score-card-chart">
+                                <span class="difficulty" :class="s.difficulty.toLowerCase()">{{ s.difficulty }}</span>
+                                <b class="level">{{ s.level }}</b>
+                                <span v-if="!hideMode" class="score-card-mode">{{ s.mode }}</span>
+                            </span>
+                        </span>
+                    </button>
+                    <span class="score-card-rating">
+                        <strong>{{ isPlayedChart(s) ? s.rating.toFixed(2) : '—' }}</strong>
+                        <small>Rating</small>
+                    </span>
+                </div>
+                <div class="score-card-footer">
+                    <div v-if="isPlayedChart(s)" class="score-card-result">
+                        <span class="score-num">{{ s.score.toLocaleString('en-US') }}</span>
+                        <span class="rank">{{ getRankByScore(s.score) }}</span>
+                        <span v-if="s.ap || s.fc" class="score-card-status">{{ s.ap ? 'AP' : 'FC' }}</span>
+                    </div>
+                    <span v-else class="score-card-unplayed">{{ t('table.unplayed') }}</span>
+                    <div class="score-card-actions">
+                        <template v-if="editable">
+                            <button v-if="isPlayedChart(s)" type="button" class="icon-button" :aria-label="t('table.edit')" @click="emit('edit', s)">
+                                <Pencil :size="17" />
+                            </button>
+                            <button v-else type="button" class="icon-button" :aria-label="t('table.add')" @click="emit('add', s)">
+                                <Plus :size="18" />
+                            </button>
+                        </template>
+                        <button
+                            v-if="deletable && isPlayedChart(s)"
+                            type="button"
+                            class="icon-button score-card-delete"
+                            :disabled="!canWrite || loading"
+                            :aria-label="t('table.removeHistory')"
+                            @click="emit('remove', s)">
+                            <Trash2 :size="17" />
+                        </button>
+                        <button
+                            v-else-if="isPlayedChart(s)"
+                            type="button"
+                            class="icon-button"
+                            :aria-label="t('table.more')"
+                            :aria-expanded="expandedRow === rowDomKey(s)"
+                            :aria-controls="rowDetailsId(s)"
+                            @click="expandedRow = expandedRow === rowDomKey(s) ? null : rowDomKey(s)">
+                            <Ellipsis :size="20" />
+                        </button>
+                    </div>
+                </div>
+                <div v-if="timeKey === 'importedAt' && rowTime(s) !== undefined" class="score-card-time">
+                    <time :datetime="new Date(rowTime(s)!).toISOString()">
+                        {{ formatDate(rowTime(s)!) }} {{ formatters.time.format(rowTime(s)!) }}
+                    </time>
+                    <span v-if="isPlayedChart(s) && s.correctedAt">{{ t('table.corrected') }}</span>
+                    <span v-if="deletable && isPlayedChart(s) && s.maxChain !== undefined">Max Chain {{ s.maxChain }}</span>
+                </div>
+                <div v-if="isPlayedChart(s) && !deletable" v-show="expandedRow === rowDomKey(s)" :id="rowDetailsId(s)" class="score-card-details">
+                    <div class="score-card-detail-copy">
+                        <span v-if="!hideSongOnMobile" class="score-card-artist">{{ t('table.artist', { artist: s.artist }) }}</span>
+                        <span v-if="s.maxChain !== undefined">Max Chain {{ s.maxChain }}</span>
+                        <span v-if="timeKey === 'updatedAt' && rowTime(s) !== undefined">
+                            {{ t('table.updatedAt') }}
+                            <time :datetime="new Date(rowTime(s)!).toISOString()">{{ formatDate(rowTime(s)!) }} {{ formatters.time.format(rowTime(s)!) }}</time>
+                        </span>
+                    </div>
+                    <button type="button" class="score-card-view" @click="emit('song', s)">
+                        <Info :size="16" />{{ t('table.viewDetails') }}
+                    </button>
+                </div>
+            </li>
+        </ul>
         <div v-if="!items.length && !loading && !error" class="empty">
             <Music2 :size="32" />
             <h3>{{ emptyTitle ?? t('table.empty') }}</h3>
@@ -201,10 +322,10 @@ const columns = computed(() => {
         :aria-label="timeKey === 'importedAt' ? t('table.historyPages') : t('table.pages')">
         <span>{{ t('table.page', { page: pagination.page, count: pagination.pageCount }) }}<template v-if="pagination.total !== undefined"> · {{ t('table.entries', { count: pagination.total }, pagination.total) }}</template></span>
         <div class="row gap-2">
-            <button type="button" :disabled="pagination.page === 1 || loading" @click="$emit('page', pagination.page - 1)">
+            <button type="button" :disabled="pagination.page === 1 || loading" @click="changePage(pagination.page - 1)">
                 {{ t('table.previous') }}
             </button>
-            <button type="button" :disabled="pagination.page === pagination.pageCount || loading" @click="$emit('page', pagination.page + 1)">
+            <button type="button" :disabled="pagination.page === pagination.pageCount || loading" @click="changePage(pagination.page + 1)">
                 {{ t('table.next') }}
             </button>
         </div>

@@ -38,7 +38,7 @@ try {
     async function go(name) {
         await page.evaluate(name => { location.hash = `#${name}` }, name)
         await page.getByRole('heading', { name: name === 'home' ? '录入新成绩' : '成绩一览', exact: true }).waitFor()
-        await page.locator(name === 'home' ? '.rating-trend' : '.score-table').first().waitFor()
+        await page.locator(name === 'home' ? '.rating-trend' : '.table-scroll').first().waitFor()
     }
     await upload([['1-basic-easy', 1000000]])
     assert.equal((await state()).history.length, 1)
@@ -158,8 +158,8 @@ try {
     await page.locator('.rating-mode-toggle').click()
     assert.match(await trend.locator('.trend-value').textContent(), /0.00 RT/)
     await page.locator('.rating-mode-toggle').click()
-    await page.locator('.history-table tbody tr').first().getByRole('button').first().click()
-    await details.locator('tbody tr').first().getByRole('button', { name: '删除历史成绩' }).click()
+    await page.locator('.history-table .score-list-item').first().getByRole('button').first().click()
+    await details.locator('.score-list-item').first().getByRole('button', { name: '删除历史成绩' }).click()
     await page.getByRole('button', { name: '确认删除', exact: true }).click()
     await page.getByRole('button', { name: '确认删除', exact: true }).waitFor({ state: 'hidden' })
     assert.equal((await state()).best[0].score, 1000000)
