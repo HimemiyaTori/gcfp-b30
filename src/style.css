@@ -294,6 +294,21 @@ small {
 .topbar svg {
     color: var(--muted);
 }
+.github-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 32px;
+    width: 32px;
+    height: 38px;
+    border-radius: 8px;
+}
+.github-link:hover {
+    background: var(--soft);
+}
+.github-link:hover svg {
+    color: var(--accent);
+}
 .avatar-link {
     display: inline-grid;
     border-radius: 50%;
@@ -2027,6 +2042,11 @@ button.recognition-toast-open:hover .recognition-toast-link {
 @media (max-width: 360px) {
     .game-logo {
         width: 118px;
+    }
+    .topbar-mobile-controls .song-language-compact,
+    .topbar-mobile-controls .sidebar-theme-control {
+        flex-basis: 32px;
+        width: 32px;
     }
 }
 

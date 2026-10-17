@@ -42,7 +42,8 @@
         "collapse": "サイドバーを閉じる"
     },
     "header": {
-        "home": "Groove Coaster Future Performers B30 ホーム"
+        "home": "Groove Coaster Future Performers B30 ホーム",
+        "github": "GitHub"
     },
     "display": {
         "songLanguage": "楽曲情報の言語：{current}",

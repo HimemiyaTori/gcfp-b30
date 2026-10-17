@@ -42,7 +42,8 @@
         "collapse": "收合側邊欄"
     },
     "header": {
-        "home": "Groove Coaster Future Performers B30 首頁"
+        "home": "Groove Coaster Future Performers B30 首頁",
+        "github": "GitHub"
     },
     "display": {
         "songLanguage": "曲目資訊語言：{current}",

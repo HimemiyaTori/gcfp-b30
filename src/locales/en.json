@@ -42,7 +42,8 @@
         "collapse": "Collapse sidebar"
     },
     "header": {
-        "home": "Groove Coaster Future Performers B30 home"
+        "home": "Groove Coaster Future Performers B30 home",
+        "github": "GitHub"
     },
     "display": {
         "songLanguage": "Song info language: {current}",
