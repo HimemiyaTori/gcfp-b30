@@ -19,14 +19,21 @@ import type { ScoreRow } from '../../db/models'
 import ScoreTable from '../ScoreTable.vue'
 import SongCover from '../SongCover.vue'
 import ScoreDeleteDialog from './ScoreDeleteDialog.vue'
-const basicChartFields: (keyof Chart)[] = [
-    'note', 'special', 'combo', 'circle', 'goldCircle', 'hold', 'goldHold',
-    'arrow', 'goldArrow', 'square', 'goldSquare',
+const basicChartFields: { key: keyof Chart; special?: keyof Chart }[] = [
+    { key: 'combo' },
+    { key: 'note', special: 'special' },
+    { key: 'circle', special: 'goldCircle' },
+    { key: 'hold', special: 'goldHold' },
+    { key: 'arrow', special: 'goldArrow' },
+    { key: 'square', special: 'goldSquare' },
 ]
-const advancedChartFields: (keyof Chart)[] = [
+const advancedChartFields: typeof basicChartFields = [
     ...basicChartFields,
-    'advNote', 'blueCircle', 'redCircle', 'advHold', 'advArrow', 'blueArrow',
-    'redArrow',
+    { key: 'advNote' },
+    { key: 'leftRightCircle' },
+    { key: 'advHold' },
+    { key: 'advArrow' },
+    { key: 'leftRightArrow' },
 ]
 const { t } = useI18n()
 const props = defineProps<{ canWrite: boolean; scores: ScoreRow[] }>()
@@ -43,7 +50,9 @@ const { rows, sort, toggleSort, page, pagination, error, loading, reload } =
     useScoreHistory({ songId, mode, pageSize: 30, enabled: active })
 const song = computed(() => songService.getSong(songId.value))
 const chartFields = computed(() =>
-    mode.value.toUpperCase() === 'BASIC' ? basicChartFields : advancedChartFields,
+    mode.value.toUpperCase() === 'BASIC'
+        ? basicChartFields
+        : advancedChartFields,
 )
 const charts = computed(
     () =>
@@ -210,7 +219,9 @@ defineExpose({ open })
                                         ?.score.toLocaleString('en-US') ?? '--'
                                 }}
                             </p>
-                            <span class="chart-caption">{{ t('song.best') }}</span>
+                            <span class="chart-caption">{{
+                                t('song.best')
+                            }}</span>
                             <div class="chart-metrics">
                                 <div>
                                     <strong
@@ -254,20 +265,40 @@ defineExpose({ open })
                         }}</span>
                     </div>
                     <dl v-if="notesOpen">
-                        <template v-for="field in chartFields" :key="field">
+                        <template v-for="field in chartFields" :key="field.key">
                             <dt
                                 :class="{
-                                    'is-empty': chart[field] == null,
+                                    'is-empty':
+                                        !chart[field.key] &&
+                                        (!field.special ||
+                                            !chart[field.special]),
                                 }"
                             >
-                                {{ t(`song.fields.${field}`) }}
+                                {{
+                                    t(
+                                        `song.fields.${field.key}${field.special ? 'WithSpecial' : ''}`,
+                                    )
+                                }}
                             </dt>
                             <dd
                                 :class="{
-                                    'is-empty': chart[field] == null,
+                                    'is-empty': !chart[field.key],
                                 }"
                             >
-                                {{ chart[field] ?? '--' }}
+                                {{ chart[field.key] ?? '--' }}
+                                <span
+                                    v-if="
+                                        field.special &&
+                                        (chart[field.key] != null ||
+                                            chart[field.special] != null)
+                                    "
+                                    class="chart-special-count"
+                                    :class="{
+                                        'is-empty': !chart[field.special],
+                                    }"
+                                >
+                                    {{ ` (${chart[field.special] ?? '--'})` }}
+                                </span>
                             </dd>
                         </template>
                     </dl>
@@ -279,9 +310,13 @@ defineExpose({ open })
                         <History :size="18" />
                         <h2>{{ t('song.history') }}</h2>
                     </div>
-                    <span class="count-badge"
-                        >{{ t('table.entries', { count: pagination.total }, pagination.total) }}</span
-                    >
+                    <span class="count-badge">{{
+                        t(
+                            'table.entries',
+                            { count: pagination.total },
+                            pagination.total,
+                        )
+                    }}</span>
                 </div>
                 <div class="history-table">
                     <ScoreTable
@@ -525,6 +560,9 @@ dd {
     margin: 0;
     text-align: right;
     font-variant-numeric: tabular-nums;
+    color: var(--text);
+}
+.chart-special-count {
     color: var(--text);
 }
 .chart-detail .is-empty {

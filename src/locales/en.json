@@ -216,23 +216,26 @@
         "history": "Score history",
         "fields": {
             "note": "Notes",
+            "noteWithSpecial": "Notes (Special)",
             "special": "Special note",
             "combo": "Total combo",
             "circle": "Circle",
+            "circleWithSpecial": "Circle (Special)",
             "goldCircle": "Special circle",
             "hold": "Hold",
+            "holdWithSpecial": "Hold (Special)",
             "goldHold": "Special hold",
             "arrow": "Arrow",
+            "arrowWithSpecial": "Arrow (Special)",
             "goldArrow": "Special arrow",
             "square": "Square",
+            "squareWithSpecial": "Square (Special)",
             "goldSquare": "Special square",
             "advNote": "Dual note",
-            "blueCircle": "Blue circle",
-            "redCircle": "Red circle",
+            "leftRightCircle": "Left/right circle",
             "advHold": "Dual hold",
             "advArrow": "Dual arrow",
-            "blueArrow": "Blue arrow",
-            "redArrow": "Red arrow"
+            "leftRightArrow": "Left/right arrow"
         }
     },
     "editor": {

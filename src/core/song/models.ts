@@ -8,8 +8,8 @@ export interface Chart {
     note?: number; special?: number; combo?: number
     circle?: number; goldCircle?: number; hold?: number; goldHold?: number
     arrow?: number; goldArrow?: number; square?: number; goldSquare?: number
-    advNote?: number; blueCircle?: number; redCircle?: number; advHold?: number
-    advArrow?: number; blueArrow?: number; redArrow?: number
+    advNote?: number; leftRightCircle?: number; advHold?: number
+    advArrow?: number; leftRightArrow?: number
 }
 export interface Song {
     id: string

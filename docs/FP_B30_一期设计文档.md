@@ -370,12 +370,10 @@ interface Chart {
 
     // ADV 难度专用
     advNote?: number
-    blueCircle?: number
-    redCircle?: number
+    leftRightCircle?: number
     advHold?: number
     advArrow?: number
-    blueArrow?: number
-    redArrow?: number
+    leftRightArrow?: number
 }
 ```
 
@@ -1381,7 +1379,7 @@ T01～T04 的数值、坐标和性能限制通过真实样本及运行结果确�
 
 ## 20. 阶段 2、3 实施规格（2026-09-25）
 
-阶段 2、3 已接入：124 首歌曲、992 张谱面；SongService、Fuse.js 搜索、Dexie 成绩持久化和真实手动 CRUD。保留当前维护中的 songs.json 内容，不在本次实施中重新抓取或改写曲库。曲目资料的准确性、收录完整性及封面下载不视为本次已逐首核验的结论。
+截至本节制定日，阶段 2、3 已接入 124 首歌曲、992 张谱面；SongService、Fuse.js 搜索、Dexie 成绩持久化和真实手动 CRUD 均已接入。曲库物量更新（2026-10-17）：根据 GrooveCoaster.Link 的 FP 曲库页补录 124 首歌曲共 496 张 Basic 谱面的目标数、连击数及圆形 / 方块 / 线 / 箭头物量；Basic 不提供 Special 数。势炎（Song ID 80）的 4 张 Advanced 谱面也已按曲库页拆分物量；其余曲目的 Advanced 物量、曲库完整性及封面下载未逐首核验。
 
 ### 20.1 稳定 ID 和曲库维护（T06）
 

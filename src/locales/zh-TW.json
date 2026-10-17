@@ -216,23 +216,26 @@
         "history": "歷史成績",
         "fields": {
             "note": "Note數",
+            "noteWithSpecial": "Note數（特殊）",
             "special": "特殊Note",
             "combo": "總連擊",
             "circle": "圓形",
+            "circleWithSpecial": "圓形（特殊）",
             "goldCircle": "特殊圓形",
             "hold": "長條",
+            "holdWithSpecial": "長條（特殊）",
             "goldHold": "特殊長條",
             "arrow": "箭頭",
+            "arrowWithSpecial": "箭頭（特殊）",
             "goldArrow": "特殊箭頭",
             "square": "方形",
+            "squareWithSpecial": "方形（特殊）",
             "goldSquare": "特殊方形",
             "advNote": "雙押圓形",
-            "blueCircle": "藍色圓形",
-            "redCircle": "紅色圓形",
+            "leftRightCircle": "紅藍圓形",
             "advHold": "雙押長條",
             "advArrow": "雙押箭頭",
-            "blueArrow": "藍色箭頭",
-            "redArrow": "紅色箭頭"
+            "leftRightArrow": "紅藍箭頭"
         }
     },
     "editor": {
