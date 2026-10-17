@@ -116,6 +116,55 @@ try {
     await details.getByText('暂无历史成绩', { exact: true }).waitFor()
     await details.getByRole('button', { name: 'BASIC', exact: true }).click()
     await details.locator('tbody tr').first().waitFor()
+    // 暂时无法重新读取存储时，切换已缓存模式仍显示成绩或空状态，不插入加载提示
+    await page.evaluate(async () => {
+        const { database } = await import('/src/db/database.ts')
+        window.cachedSongHistoryWhere = database.scoreHistory.where
+        database.scoreHistory.where = () => { throw new Error('模拟歌曲历史重新读取不可用') }
+        window.songHistoryLoadingShown = false
+        window.songHistoryObserver = new MutationObserver(() => {
+            if (document.querySelector('.song-dialog .table-loading')) window.songHistoryLoadingShown = true
+        })
+        window.songHistoryObserver.observe(document.querySelector('.song-dialog'), { childList: true, subtree: true })
+    })
+    for (let index = 0; index < 3; index++) {
+        await details.getByRole('button', { name: 'ADVANCED', exact: true }).click()
+        await details.getByText('暂无历史成绩', { exact: true }).waitFor()
+        await details.getByRole('button', { name: 'BASIC', exact: true }).click()
+        await details.locator('tbody tr').nth(4).waitFor()
+        assert.equal(await details.locator('tbody tr').count(), 5)
+        assert.equal(await details.getByRole('alert').count(), 0)
+    }
+    assert.equal(await page.evaluate(() => window.songHistoryLoadingShown), false)
+    await page.evaluate(async () => {
+        const { database } = await import('/src/db/database.ts')
+        window.songHistoryObserver.disconnect()
+        database.scoreHistory.where = window.cachedSongHistoryWhere
+    })
+    // 另一标签页新增当前未显示模式的历史后，缓存自动更新，删除后切换不会恢复旧记录
+    const cacheWriter = await context.newPage()
+    await cacheWriter.goto(process.env.OCR_URL || 'http://127.0.0.1:5173')
+    await cacheWriter.getByRole('heading', { name: '录入新成绩' }).waitFor()
+    await cacheWriter.waitForFunction(() => !document.body.textContent.includes('正在加载本地成绩'))
+    await cacheWriter.evaluate(async () => {
+        const { scoreRepository } = await import('/src/db/scoreRepository.ts')
+        await scoreRepository.addManual('1', '1-advanced-hard', 1040000)
+    })
+    await details.getByRole('button', { name: 'ADVANCED', exact: true }).click()
+    await details.locator('tbody tr').first().getByText('1,040,000', { exact: false }).waitFor()
+    assert.equal(await details.locator('tbody tr').count(), 1)
+    assert.equal(await details.locator('.chart-detail.hard .chart-metrics strong').last().textContent(), '1')
+    await details.locator('tbody tr').first().getByRole('button', { name: '删除历史成绩' }).click()
+    await page.getByRole('button', { name: '确认删除', exact: true }).click()
+    await page.getByRole('button', { name: '确认删除', exact: true }).waitFor({ state: 'hidden' })
+    await details.getByText('暂无历史成绩', { exact: true }).waitFor()
+    await details.getByRole('button', { name: 'BASIC', exact: true }).click()
+    await details.locator('tbody tr').nth(4).waitFor()
+    await details.getByRole('button', { name: 'ADVANCED', exact: true }).click()
+    await details.getByText('暂无历史成绩', { exact: true }).waitFor()
+    await details.getByRole('button', { name: 'BASIC', exact: true }).click()
+    await details.locator('tbody tr').nth(4).waitFor()
+    await cacheWriter.close()
     // 删除同分补录会撤销其 Max Chain，删除最高分会回退剩余历史
     const chain = details.locator('tbody tr').filter({ hasText: 'EASY' }).filter({ hasText: 'Max Chain 0' }).filter({ hasText: '1,000,000' })
     await chain.getByRole('button', { name: '删除历史成绩' }).click()
@@ -264,9 +313,23 @@ try {
     await page.locator('.history-table tbody tr').first().getByRole('button').first().click()
     await page.waitForFunction(() => document.querySelectorAll('.song-dialog tbody tr').length === 30)
     assert.equal(await details.locator('tbody tr').count(), 30)
+    // 缓存包含歌曲全部历史，存储暂时不可读时仍可排序和翻页
+    await page.evaluate(async () => {
+        const { database } = await import('/src/db/database.ts')
+        window.cachedSongHistoryWhere = database.scoreHistory.where
+        database.scoreHistory.where = () => { throw new Error('模拟歌曲历史重新读取不可用') }
+    })
+    await details.getByRole('button', { name: /^Score：/ }).click()
+    await details.locator('tbody tr').first().getByText('900,034', { exact: false }).waitFor()
+    await details.getByRole('button', { name: /^Score：/ }).click()
+    await details.locator('tbody tr').first().getByText('900,000', { exact: false }).waitFor()
+    await details.getByRole('button', { name: /^成绩时间：/ }).click()
+    await details.locator('tbody tr').first().getByText('900,034', { exact: false }).waitFor()
     await details.getByRole('button', { name: '下一页' }).click()
     await page.waitForFunction(() => document.querySelectorAll('.song-dialog tbody tr').length === 5)
     assert.equal(await details.locator('tbody tr').count(), 5)
+    assert.equal(await details.getByRole('alert').count(), 0)
+    await page.evaluate(async () => { (await import('/src/db/database.ts')).database.scoreHistory.where = window.cachedSongHistoryWhere })
     // 删空末页后回到有效页，关闭重开恢复默认历史排序和第一页
     for (let remaining = 4; remaining >= 0; remaining--) {
         await details.locator('tbody tr').first().getByRole('button', { name: '删除历史成绩' }).click()
@@ -308,5 +371,5 @@ try {
     await page.getByRole('heading', { name: '本地数据' }).waitFor()
     assert.deepEqual(await state(), { history: [], best: [], snapshots: [] })
     assert.deepEqual(errors, [])
-    console.log('History acceptance passed: real XLSX import/rollback, cross-tab refresh, local best replay, frozen daily trends, cached sorting/pagination, read retry and mobile')
+    console.log('History acceptance passed: real XLSX import/rollback, cross-tab refresh, local best replay, frozen daily trends, live song cache/mode switching, cached sorting/pagination, read retry and mobile')
 } finally { await browser.close() }

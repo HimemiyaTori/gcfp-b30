@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { liveQuery } from 'dexie'
 import { ChevronDown, History, X } from 'lucide-vue-next'
-import { computed, onUnmounted, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useScoreHistory } from '../../composables/useScoreHistory'
 import { songLanguage } from '../../composables/useSettings'
@@ -14,7 +13,6 @@ import {
     songService,
 } from '../../core/song/songService'
 import { songCategories } from '../../data/categories'
-import { database } from '../../db/database'
 import type { ScoreRow } from '../../db/models'
 import ScoreTable from '../ScoreTable.vue'
 import SongCover from '../SongCover.vue'
@@ -43,11 +41,9 @@ const dialog = ref<HTMLDialogElement>(),
 const songId = ref(''),
     mode = ref('BASIC'),
     active = ref(false),
-    notesOpen = ref(false),
-    playCounts = ref(new Map<string, number>())
-let playSubscription: { unsubscribe(): void } | undefined
-const { rows, sort, toggleSort, page, pagination, error, loading, reload } =
-    useScoreHistory({ songId, mode, pageSize: 30, enabled: active })
+    notesOpen = ref(false)
+const { rows, sort, toggleSort, page, pagination, playCounts, error, loading, reload } =
+    useScoreHistory({ songId, mode, pageSize: 30, enabled: active, cacheSong: true })
 const song = computed(() => songService.getSong(songId.value))
 const chartFields = computed(() =>
     mode.value.toUpperCase() === 'BASIC'
@@ -78,30 +74,6 @@ const vocalName = computed(() =>
 const packName = computed(() =>
     formatSongPack(song.value?.pack, songLanguage.value),
 )
-watch([songId, active], () => {
-    playSubscription?.unsubscribe()
-    playSubscription = undefined
-    const id = songId.value
-    if (!active.value || !id) {
-        playCounts.value = new Map()
-        return
-    }
-    playSubscription = liveQuery(() =>
-        database.scoreHistory.where('songId').equals(id).toArray(),
-    ).subscribe({
-        next(records) {
-            if (songId.value !== id) return
-            const counts = new Map<string, number>()
-            for (const record of records)
-                counts.set(
-                    record.chartId,
-                    (counts.get(record.chartId) ?? 0) + 1,
-                )
-            playCounts.value = counts
-        },
-    })
-})
-onUnmounted(() => playSubscription?.unsubscribe())
 function closeOnOutside(event: MouseEvent) {
     const element = dialog.value
     if (!element) return
