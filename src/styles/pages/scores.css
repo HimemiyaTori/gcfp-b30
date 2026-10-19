@@ -1,0 +1,66 @@
+/* 成绩页面标题与谱面范围切换 */
+.scores-heading,
+.scores-heading-tools {
+    flex-wrap: wrap;
+}
+.scores-heading-tools {
+    justify-content: flex-end;
+}
+.scores-scope-hit,
+.scores-scope-hint {
+    display: none;
+}
+@media (--mobile) {
+    .scores-heading {
+        position: relative;
+        flex-wrap: nowrap;
+        gap: 8px;
+    }
+    .scores-heading > .row {
+        min-width: 0;
+    }
+    .scores-heading > .row h2 {
+        white-space: nowrap;
+    }
+    .scores-heading-tools {
+        flex-wrap: nowrap;
+        gap: 6px;
+    }
+    .scores-heading .segmented {
+        display: none;
+    }
+    .scores-scope-hit {
+        display: block;
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        background: transparent;
+    }
+    .scores-scope-hit:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: -2px;
+    }
+    .scores-heading:has(.scores-scope-hit:active) {
+        background: var(--field);
+    }
+    .scores-scope-hint {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        flex-shrink: 0;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--field);
+        color: var(--muted);
+    }
+    .scores-all .scores-scope-hint {
+        color: var(--accent);
+        border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+        background: var(--soft);
+    }
+    .scores-heading .count-badge {
+        white-space: nowrap;
+    }
+}

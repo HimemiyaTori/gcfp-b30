@@ -1,0 +1,60 @@
+/* B30 模式选择卡片、进度与说明 */
+.rating-explainer {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.8;
+    padding: 20px 4px;
+}
+.mode-rating-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 27px;
+}
+.mode-rating-card {
+    width: 100%;
+    text-align: left;
+    border: 2px solid transparent;
+    cursor: pointer;
+    font: inherit;
+    background: linear-gradient(120deg, #b9dfff, #d6e7ff);
+}
+.mode-rating-card.advanced {
+    background: linear-gradient(120deg, #e0d5ff, #ffd6e8);
+}
+.mode-rating-card.selected {
+    border-color: #5864aa;
+    box-shadow: 0 0 0 3px #858cce26;
+}
+.mode-rating-card:focus-visible {
+    outline: 3px solid #5864aa;
+    outline-offset: 4px;
+}
+.mode-rating-card .metric-bottom {
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.mode-progress {
+    height: 4px;
+    margin: 18px 0 12px;
+    border-radius: 4px;
+    background: #26315316;
+    overflow: hidden;
+}
+.mode-progress span {
+    display: block;
+    height: 100%;
+    background: #5864aa;
+    border-radius: inherit;
+}
+@media (--mobile) {
+    .mode-rating-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .mode-rating-card .big-rating {
+        font-size: 38px;
+    }
+}

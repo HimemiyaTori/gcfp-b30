@@ -1,0 +1,505 @@
+/* 成绩表、移动端成绩卡片、排序与分页 */
+.table-scroll {
+    overflow: auto;
+}
+.score-sort-controls,
+.score-list {
+    display: none;
+}
+.score-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    white-space: nowrap;
+    font-size: 13px;
+}
+.score-table th {
+    background: var(--field);
+    font-weight: 400;
+    color: var(--muted);
+    font-size: 11px;
+    padding: 11px 24px;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+}
+.score-table td {
+    padding: 15px 24px;
+    border-bottom: 1px solid var(--line);
+}
+.score-table tr:last-child td {
+    border-bottom: 0;
+}
+.score-table tbody tr:hover {
+    background: var(--field);
+}
+.score-table .num {
+    text-align: right;
+}
+.score-table th svg {
+    display: inline;
+    vertical-align: middle;
+}
+.song-art {
+    width: 38px;
+    height: 38px;
+    border-radius: 5px;
+    background: linear-gradient(
+        145deg,
+        color-mix(in srgb, var(--art), white 20%),
+        var(--art)
+    );
+    color: #ffffffc9;
+    display: grid;
+    place-items: center;
+    font-size: 24px;
+    font-family: Georgia, serif;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.song-art:after {
+    content: '';
+    position: absolute;
+    width: 46px;
+    height: 46px;
+    border: 1px solid #ffffff40;
+    transform: rotate(35deg);
+    left: 10px;
+    top: 8px;
+}
+.score-table td:has(.song-link) {
+    max-width: 400px;
+}
+.song-link {
+    max-width: 360px;
+}
+.song-copy {
+    max-width: 310px;
+    min-width: 0;
+    overflow: hidden;
+}
+.history-table .song-link {
+    max-width: 240px;
+}
+.history-table .song-copy {
+    max-width: 190px;
+}
+.contextual-score-table {
+    container-type: inline-size;
+    container-name: song-history;
+}
+@container song-history (max-width: 900px) {
+    .score-table .song-column {
+        display: none;
+    }
+    .contextual-score-table .score-table th,
+    .contextual-score-table .score-table td {
+        padding-inline: 12px;
+    }
+}
+@container song-history (max-width: 720px) {
+    .contextual-score-table .score-table th,
+    .contextual-score-table .score-table td {
+        padding-inline: 10px;
+    }
+    .contextual-score-table .score-table .updated-time {
+        display: block;
+        margin-left: 0;
+        margin-top: 4px;
+    }
+}
+.song-copy strong,
+.song-copy small {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.song-copy strong {
+    font-weight: 550;
+}
+.song-copy small {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 6px;
+}
+.difficulty {
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    font-weight: 650;
+    border-radius: 3px;
+    padding: 3px 5px;
+    background: #f3e8f5;
+    color: #9c6baa;
+}
+.difficulty.hard {
+    background: #faeceb;
+    color: #c5837f;
+}
+.difficulty.normal {
+    background: #eaf1fb;
+    color: #7599bd;
+}
+.difficulty.easy {
+    background: #ebf2dc;
+    color: #8ca950;
+}
+.level {
+    font-size: 13px;
+    font-weight: 550;
+}
+.mode {
+    font-size: 9px;
+    letter-spacing: 0.7px;
+    margin-top: 6px;
+    color: var(--muted);
+}
+.score-num {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.5px;
+    font-weight: 550;
+}
+.rank {
+    font-size: 14px;
+    letter-spacing: 0.3px;
+    color: #b48a42;
+    font-weight: 650;
+}
+.rating-num {
+    font-size: 15px;
+    color: var(--accent);
+    font-weight: 650;
+}
+.score-table .updated-at {
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+}
+.score-table .updated-date {
+    color: var(--text);
+    font-weight: 600;
+}
+.dark .score-table .updated-date {
+    color: #fff;
+}
+.score-table .updated-time {
+    margin-left: 5px;
+}
+.score-table .position {
+    padding-right: 0;
+    width: 50px;
+    color: var(--muted);
+    font-size: 13px;
+}
+.score-table .position.podium {
+    color: #b09048;
+    font-weight: 700;
+}
+.table-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 12px;
+}
+.table-pagination button {
+    padding: 7px 12px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--field);
+    color: var(--text);
+}
+.table-pagination button:not(:disabled):hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+.table-pagination button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+@media (max-width: 1200px) {
+    .score-table td,
+    .score-table th {
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+    .song-link {
+        max-width: 275px;
+    }
+    .song-copy {
+        max-width: 225px;
+    }
+}
+@media (--mobile) {
+    .table-scroll {
+        overflow: visible;
+    }
+    .score-table {
+        display: none;
+    }
+    .score-sort-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 16px;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 12px;
+        scroll-margin-top: 92px;
+    }
+    .score-sort-controls label {
+        display: block;
+        flex-shrink: 0;
+        margin: 0;
+        font-size: 12px;
+    }
+    .score-sort-controls .select-field {
+        flex: 1;
+        min-width: 0;
+    }
+    .score-sort-controls select {
+        min-height: 44px;
+        padding-block: 8px;
+        padding-left: 12px;
+        font-size: 16px;
+    }
+    .score-sort-controls button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        flex-shrink: 0;
+        min-height: 44px;
+        padding: 8px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--field);
+        color: var(--text);
+    }
+    .score-list {
+        display: block;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+    .score-list-item {
+        padding: 14px 16px 12px;
+        border-bottom: 1px solid var(--line);
+    }
+    .score-list-item:last-child {
+        border-bottom: 0;
+    }
+    .score-card-summary {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 44px;
+    }
+    .score-card-position {
+        flex: 0 0 20px;
+        color: var(--muted);
+        font-size: 13px;
+        font-variant-numeric: tabular-nums;
+    }
+    .score-card-position.podium {
+        color: #b09048;
+        font-weight: 700;
+    }
+    .score-card-song {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+        min-width: 0;
+        min-height: 44px;
+        padding: 0;
+        background: transparent;
+        text-align: left;
+    }
+    .score-card-copy {
+        flex: 1;
+        min-width: 0;
+    }
+    .score-card-copy strong {
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow-wrap: anywhere;
+        font-size: 14px;
+        font-weight: 550;
+        line-height: 1.45;
+    }
+    .score-card-chart {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 5px 6px;
+        flex: 1;
+        min-width: 0;
+    }
+    .score-card-copy .score-card-chart {
+        margin-top: 6px;
+    }
+    .score-card-chart .difficulty {
+        font-size: 11px;
+    }
+    .score-card-mode {
+        font-size: 11px;
+        color: var(--muted);
+    }
+    .score-card-rating {
+        flex-shrink: 0;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+    }
+    .score-card-rating strong {
+        color: var(--accent);
+        font-size: 20px;
+        font-weight: 650;
+    }
+    .score-card-rating small {
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 11px;
+    }
+    .score-card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 4px;
+    }
+    .score-card-result {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 5px 8px;
+        min-width: 0;
+        font-size: 15px;
+    }
+    .score-card-result .rank {
+        font-size: 13px;
+    }
+    .score-card-status {
+        padding: 2px 5px;
+        border-radius: 4px;
+        background: var(--soft);
+        color: var(--accent);
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .score-card-unplayed {
+        color: var(--muted);
+        font-size: 12px;
+    }
+    .score-card-actions {
+        display: flex;
+        flex-shrink: 0;
+        gap: 2px;
+        margin-right: -6px;
+    }
+    .score-card-actions .icon-button {
+        width: 44px;
+        height: 44px;
+    }
+    .score-card-time {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        color: var(--muted);
+        font-size: 12px;
+        font-variant-numeric: tabular-nums;
+    }
+    .score-card-details {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 12px;
+        margin-top: 10px;
+        padding-top: 12px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.6;
+        overflow-wrap: anywhere;
+    }
+    .score-card-detail-copy {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px 14px;
+        min-width: 0;
+    }
+    .score-card-artist {
+        width: 100%;
+    }
+    .score-card-actions .score-card-delete {
+        color: #c53950;
+    }
+    .score-card-view {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        min-height: 44px;
+        padding: 8px 10px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--field);
+        color: var(--accent);
+        white-space: nowrap;
+    }
+    .table-pagination {
+        flex-wrap: wrap;
+        padding: 15px 17px;
+    }
+    .table-pagination button {
+        min-height: 44px;
+    }
+}
+.sort-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.sort-numeric {
+    justify-content: flex-end;
+}
+.sort-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 0;
+    background: transparent;
+    color: var(--muted);
+    font-size: inherit;
+    white-space: nowrap;
+}
+.sort-button:hover,
+.sort-button.selected {
+    color: var(--accent);
+}
+.song-link {
+    background: none;
+    border: 0;
+    padding: 0;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+}
+.song-link:focus-visible {
+    outline: 2px solid #13a7bd;
+    outline-offset: 4px;
+    border-radius: 4px;
+}
+.table-loading {
+    padding: 12px 24px;
+    color: var(--muted);
+    font-size: 12px;
+}

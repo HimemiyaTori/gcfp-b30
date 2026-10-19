@@ -1,0 +1,73 @@
+/* 弹窗外框、表单说明与操作区域 */
+.editor-dialog {
+    width: min(530px, calc(100% - 32px));
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 13px;
+    padding: 28px;
+    box-shadow: 0 25px 100px #0002;
+}
+.editor-dialog::backdrop {
+    background: #13182d66;
+    backdrop-filter: blur(3px);
+}
+.editor-dialog h2 {
+    font-size: 21px;
+}
+.editor-dialog .muted {
+    font-size: 13px;
+    line-height: 1.7;
+    margin: 17px 0 25px;
+}
+.editor-dialog label {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 13px;
+    margin-top: 20px;
+}
+.editor-dialog input,
+.editor-dialog select {
+    width: 100%;
+}
+.editor-dialog input {
+    font-size: 22px;
+    font-variant-numeric: tabular-nums;
+}
+.editor-dialog input[type='number'] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+.editor-dialog input[type='number']::-webkit-inner-spin-button,
+.editor-dialog input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.form-note {
+    font-size: 12px;
+    line-height: 1.9;
+    color: var(--muted);
+    background: var(--field);
+    padding: 14px;
+    margin-top: 20px;
+    border-radius: 6px;
+}
+.dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 25px;
+}
+.editor-dialog {
+    max-height: calc(100dvh - 32px);
+    overflow-y: auto;
+}
+@media (--mobile) {
+    .editor-dialog {
+        padding: 20px;
+    }
+}
+.editor-dialog input[type='search'] {
+    font-size: 13px;
+}

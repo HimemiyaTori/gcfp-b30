@@ -1,0 +1,195 @@
+/* 按钮、表单控件、面板与通用状态 */
+.muted {
+    color: var(--muted);
+}
+.icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 31px;
+    height: 31px;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--muted);
+}
+.icon-button:hover {
+    background: var(--soft);
+    color: var(--accent);
+}
+.eyebrow {
+    color: var(--accent);
+    font-size: 11px;
+    letter-spacing: 2px;
+    font-weight: 650;
+    margin-bottom: 12px;
+}
+.demo-label {
+    font-size: 10px;
+    letter-spacing: 1.4px;
+    color: var(--muted);
+    white-space: nowrap;
+}
+.demo-label span {
+    display: block;
+    text-align: right;
+    letter-spacing: 1px;
+    margin-top: 5px;
+    font-size: 11px;
+}
+.text-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--accent);
+    background: transparent;
+    padding: 0;
+    white-space: nowrap;
+}
+.text-link:hover {
+    text-decoration: underline;
+}
+.panel {
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    background: var(--panel);
+    overflow: hidden;
+}
+.section-title {
+    padding: 21px 24px;
+    min-height: 65px;
+    gap: 14px;
+}
+.section-title svg {
+    color: var(--accent);
+}
+.micro-label {
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+}
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    transition: filter 0.2s;
+}
+.button:hover {
+    filter: brightness(1.08);
+}
+.primary {
+    background: var(--brand-gradient);
+    color: #172039;
+    font-weight: 650;
+    box-shadow: 0 3px 6px #679aeb25;
+}
+.secondary {
+    background: var(--field);
+    border: 1px solid var(--line);
+}
+.count-badge {
+    color: var(--muted);
+    font-size: 11px;
+    background: var(--field);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    padding: 3px 6px;
+}
+.section-subtitle {
+    font-size: 11px;
+    margin-left: 6px;
+}
+.segmented {
+    display: flex;
+    gap: 3px;
+    padding: 4px;
+    background: var(--field);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+}
+.segmented button {
+    padding: 9px 19px;
+    font-size: 13px;
+    background: transparent;
+    border-radius: 4px;
+    color: var(--muted);
+}
+.segmented .selected {
+    background: var(--panel);
+    color: var(--accent);
+    box-shadow: 0 1px 4px #0000000c;
+}
+.segmented.compact button {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+.success {
+    color: var(--accent);
+}
+.failed,
+.warning {
+    color: #b58349;
+}
+.running {
+    color: var(--muted);
+}
+.spin {
+    animation: spin 1.2s linear infinite;
+}
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+.empty {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    padding: 70px 20px;
+    color: var(--muted);
+}
+.empty h3 {
+    font-size: 15px;
+    margin: 20px 0 10px;
+    color: var(--text);
+}
+.empty p {
+    font-size: 13px;
+}
+.error,
+.warning {
+    font-size: 13px;
+    line-height: 1.8;
+    margin-top: 10px;
+}
+.error {
+    color: #c65f5f;
+}
+@media (max-width: 1200px) {
+    .section-subtitle {
+        display: none;
+    }
+}
+@media (--mobile) {
+    .eyebrow {
+        font-size: 10px;
+        margin-bottom: 7px;
+    }
+    .section-title {
+        padding: 18px;
+        min-height: 59px;
+    }
+    .section-title h2 {
+        font-size: 14px;
+    }
+    .micro-label {
+        font-size: 9px;
+    }
+}
+.danger-button {
+    color: #c53950;
+}

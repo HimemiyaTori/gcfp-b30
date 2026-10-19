@@ -1,0 +1,130 @@
+/* 主题变量、基础元素与减少动态效果偏好 */
+:root {
+    font-family: Inter, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    color: #24283e;
+    background: #f6f7fc;
+    font-synthesis: none;
+    --bg: #f6f7fc;
+    --panel: #fff;
+    --text: #24283e;
+    --muted: #7d829a;
+    --line: #e6e8f2;
+    --accent: #087eae;
+    --brand-cyan: #19cbea;
+    --brand-pink: #f15bb5;
+    --brand-gradient: linear-gradient(
+        110deg,
+        var(--brand-cyan) 0%,
+        #83b8ef 48%,
+        var(--brand-pink) 100%
+    );
+    --soft-gradient: linear-gradient(
+        115deg,
+        #ebfaff 0%,
+        #f3f3fd 52%,
+        #fff0f8 100%
+    );
+    --soft: #eaf5ff;
+    --field: #f8f9fd;
+    --shadow: 0 3px 14px #2935621f;
+}
+:root.dark {
+    color-scheme: dark;
+    --bg: #121421;
+    --panel: #1b1e30;
+    --text: #e8ebfa;
+    --muted: #a0a7c4;
+    --line: #2c314b;
+    --accent: #64d5f3;
+    --soft-gradient: linear-gradient(115deg, #192f43 0%, #272a43 52%, #38243c);
+    --soft: #222d47;
+    --field: #202438;
+    color: var(--text);
+    background: var(--bg);
+}
+* {
+    box-sizing: border-box;
+}
+body {
+    margin: 0;
+}
+button,
+input,
+select {
+    font: inherit;
+}
+button,
+a,
+input,
+select {
+    -webkit-tap-highlight-color: transparent;
+}
+button,
+a {
+    touch-action: manipulation;
+}
+button {
+    cursor: pointer;
+}
+a {
+    color: inherit;
+    text-decoration: none;
+}
+button {
+    border: 0;
+}
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+    outline: 3px solid #68bce9;
+    outline-offset: 4px;
+}
+h1,
+h2,
+h3,
+p {
+    margin: 0;
+}
+button {
+    color: inherit;
+}
+svg {
+    flex-shrink: 0;
+}
+small {
+    display: block;
+}
+h1 {
+    font-size: 27px;
+    letter-spacing: -0.7px;
+    font-weight: 650;
+}
+h2 {
+    font-size: 15px;
+    font-weight: 650;
+}
+input,
+select {
+    color: var(--text);
+    background: var(--field);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 11px 12px;
+    font-size: 13px;
+}
+input::placeholder {
+    color: var(--muted);
+}
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}

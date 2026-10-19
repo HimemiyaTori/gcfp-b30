@@ -1,0 +1,150 @@
+/* 成绩编辑中的歌曲选择、谱面选择与预览 */
+.song-options {
+    max-height: 160px;
+    overflow-y: auto;
+    margin-top: 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+.song-options button {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: left;
+    padding: 11px 12px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+    font-size: 12px;
+    gap: 10px;
+}
+.song-options button.selected {
+    background: var(--soft-gradient);
+    color: var(--accent);
+}
+.song-options small {
+    font-size: 10px;
+    margin-top: 4px;
+    color: var(--muted);
+}
+.selected-song {
+    margin-top: 14px;
+    padding: 12px;
+    background: var(--field);
+    border-radius: 7px;
+}
+.selected-song small {
+    font-size: 10px;
+    color: var(--muted);
+    margin-bottom: 5px;
+}
+.selected-song strong {
+    font-size: 13px;
+}
+.chart-picker {
+    margin: 18px 0 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+}
+.editor-control-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+.editor-control-row > label {
+    min-width: 0;
+}
+.chart-picker legend {
+    font-size: 12px;
+    margin-bottom: 10px;
+}
+.chart-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.chart-buttons button {
+    padding: 9px 12px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--field);
+    font-size: 11px;
+}
+.chart-buttons button.selected {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--soft-gradient);
+}
+.chart-picker:disabled button {
+    cursor: default;
+    opacity: 0.65;
+}
+.chart-picker:disabled button.selected {
+    opacity: 1;
+}
+.live-metrics {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 12px;
+    margin-top: 16px;
+    padding: 16px;
+    background: var(--soft-gradient);
+    border-radius: 9px;
+}
+.live-metrics small {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 8px;
+}
+.live-metrics strong {
+    font-size: 23px;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+}
+.live-metrics strong span {
+    font-size: 16px;
+    color: var(--muted);
+}
+@media (--mobile) {
+    .chart-buttons button {
+        flex: 1;
+        padding-inline: 8px;
+        white-space: nowrap;
+    }
+}
+.song-picker-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+    color: inherit;
+}
+.song-picker-copy {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+.song-picker-copy small,
+.song-picker-copy strong {
+    display: block;
+}
+.song-picker-toggle > svg {
+    flex-shrink: 0;
+    transition: transform 180ms ease;
+}
+.picker-chevron-open {
+    transform: rotate(180deg);
+}
+.song-search-panel {
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    margin-top: 8px;
+}
+@media (prefers-reduced-motion: reduce) {
+    .song-picker-toggle > svg {
+        transition: none;
+    }
+}

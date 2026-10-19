@@ -1,0 +1,646 @@
+/* 应用外框、导航、顶部栏与页脚 */
+.app-shell {
+    min-height: 100vh;
+    --sidebar-duration: 400ms;
+    --sidebar-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --sidebar-width: 230px;
+}
+.sidebar {
+    width: var(--sidebar-width);
+    position: fixed;
+    inset: 0 auto 0 0;
+    overflow-x: hidden;
+    border-right: 1px solid var(--line);
+    background: var(--panel);
+    padding: 35px 22px 20px;
+    z-index: 10;
+    transition:
+        width var(--sidebar-duration) var(--sidebar-ease),
+        padding var(--sidebar-duration) var(--sidebar-ease);
+}
+.brand {
+    padding: 0 3px;
+}
+.brand-mark {
+    flex-shrink: 0;
+    background: var(--brand-gradient);
+    color: #fff;
+    width: 38px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px 12px 12px 3px;
+    box-shadow: 0 4px 12px #529de630;
+}
+.brand strong {
+    font-size: 14px;
+    letter-spacing: 1.1px;
+    line-height: 1.25;
+    display: block;
+}
+.brand strong span {
+    display: block;
+    font-size: 17px;
+    letter-spacing: 1.7px;
+}
+.brand small {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    margin-top: 5px;
+}
+.sidebar-caption {
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin: 50px 14px 17px;
+}
+.nav-item {
+    height: 48px;
+    padding: 0 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--muted);
+    position: relative;
+    transition: background 0.2s;
+}
+.nav-item:hover {
+    background: var(--field);
+}
+.nav-item.active {
+    background: var(--soft-gradient);
+    color: var(--accent);
+    font-weight: 650;
+}
+.active-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin-left: auto;
+}
+.nav-badge {
+    font-size: 12px;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    padding: 1px 5px;
+    margin-left: auto;
+}
+.nav-badge + .active-dot {
+    margin-left: 4px;
+}
+.sidebar-controls {
+    margin-top: auto;
+    padding-top: 24px;
+}
+.ui-language-control,
+.sidebar-control-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+.ui-language-icon {
+    flex: 0 0 auto;
+    width: 19px;
+    height: 19px;
+    background: var(--muted);
+    -webkit-mask: url('/icons/多语言.svg') center / contain no-repeat;
+    mask: url('/icons/多语言.svg') center / contain no-repeat;
+}
+.ui-language-options {
+    display: grid;
+    min-width: 0;
+    flex: 1;
+    gap: 3px;
+    padding: 3px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--field);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.ui-language-options button {
+    min-width: 0;
+    height: 32px;
+    padding: 0 2px;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--muted);
+    font-size: 11px;
+    white-space: nowrap;
+}
+.ui-language-options button:hover {
+    color: var(--accent);
+}
+.ui-language-options button.selected {
+    background: var(--panel);
+    color: var(--accent);
+    box-shadow: 0 1px 4px #0000000c;
+}
+.song-language-compact {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    background: var(--soft);
+    color: var(--accent);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+.sidebar-theme-control,
+.sidebar-collapse-control {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 36px;
+    width: 36px;
+    height: 40px;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--muted);
+}
+.sidebar-theme-control {
+    flex-basis: 44px;
+    width: 44px;
+    height: 44px;
+}
+.sidebar-collapse-control {
+    margin-left: auto;
+}
+.sidebar-theme-control:hover,
+.sidebar-collapse-control:hover,
+.song-language-compact:hover {
+    background: var(--soft);
+    color: var(--accent);
+}
+.workspace {
+    margin-left: var(--sidebar-width);
+    transition: margin-left var(--sidebar-duration) var(--sidebar-ease);
+}
+.topbar-mobile-controls {
+    display: none;
+}
+.topbar {
+    height: 77px;
+    border-bottom: 1px solid var(--line);
+    padding: 0 42px;
+    background: var(--panel);
+    font-size: 13px;
+}
+.topbar svg {
+    color: var(--muted);
+}
+.github-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 32px;
+    width: 32px;
+    height: 38px;
+    border-radius: 8px;
+}
+.github-link:hover {
+    background: var(--soft);
+}
+.github-link:hover svg {
+    color: var(--accent);
+}
+.avatar-link {
+    display: inline-grid;
+    border-radius: 50%;
+    cursor: pointer;
+}
+.avatar-link:hover .avatar {
+    box-shadow: 0 0 0 2px var(--accent);
+}
+.avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #f9e7f4;
+    color: #a44989;
+    display: grid;
+    place-items: center;
+    font-size: 12px;
+    font-weight: 650;
+}
+main {
+    max-width: 1500px;
+    margin: auto;
+    padding: 38px 42px 0;
+}
+.page-heading {
+    gap: 20px;
+    margin-bottom: 30px;
+}
+.page-heading p {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 13px;
+    line-height: 1.7;
+}
+.page-footer {
+    font-size: 10px;
+    color: var(--muted);
+    padding: 26px 0 24px;
+    gap: 20px;
+    letter-spacing: 0.5px;
+}
+.footer-dot {
+    margin: 0 8px;
+    color: var(--line);
+}
+@media (min-width: 1550px) {
+    main {
+        padding-top: 45px;
+    }
+}
+@media (max-width: 1200px) {
+    .app-shell {
+        --sidebar-width: 205px;
+    }
+    .sidebar {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+    main {
+        padding: 30px 25px 0;
+    }
+    .topbar {
+        padding: 0 25px;
+    }
+}
+@media (--desktop) {
+    .sidebar-collapsed {
+        --sidebar-width: 78px;
+    }
+    .sidebar-copy {
+        white-space: nowrap;
+        flex-shrink: 0;
+        opacity: 1;
+        transform: translateX(0);
+        visibility: visible;
+        transition:
+            opacity 180ms ease-out 140ms,
+            transform 240ms var(--sidebar-ease) 140ms,
+            visibility 0s;
+    }
+    .sidebar-collapsed .sidebar-copy {
+        opacity: 0;
+        transform: translateX(-8px);
+        visibility: hidden;
+        pointer-events: none;
+        transition:
+            opacity 100ms ease-in,
+            transform 140ms ease-in,
+            visibility 0s 140ms;
+    }
+    .sidebar .brand,
+    .sidebar .nav-item {
+        flex-shrink: 0;
+        transition:
+            padding var(--sidebar-duration) var(--sidebar-ease),
+            background 200ms ease;
+    }
+    .sidebar .active-dot {
+        flex-shrink: 0;
+        transition: opacity 100ms ease;
+    }
+    .sidebar-controls {
+        position: relative;
+        padding-top: 0;
+        flex-shrink: 0;
+    }
+    .sidebar .ui-language-control {
+        position: absolute;
+        bottom: 56px;
+        left: 0;
+        width: 100%;
+        min-width: 172px;
+    }
+    .sidebar .ui-language-options {
+        position: relative;
+        display: block;
+        height: 75px;
+        transition: height var(--sidebar-duration) var(--sidebar-ease);
+    }
+    .sidebar .ui-language-options button {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: calc((100% - 9px) / 2);
+        transition:
+            left var(--sidebar-duration) var(--sidebar-ease),
+            top var(--sidebar-duration) var(--sidebar-ease),
+            width var(--sidebar-duration) var(--sidebar-ease);
+    }
+    .sidebar .ui-language-options button:nth-child(even) {
+        left: calc(50% + 1.5px);
+    }
+    .sidebar .ui-language-options button:nth-child(n + 3) {
+        top: 38px;
+    }
+    .sidebar-control-row {
+        position: relative;
+        height: 44px;
+        transition: height var(--sidebar-duration) var(--sidebar-ease);
+    }
+    .sidebar-control-row > button {
+        position: absolute;
+        bottom: 0;
+        margin: 0;
+        width: 44px;
+        height: 44px;
+        transition:
+            left var(--sidebar-duration) var(--sidebar-ease),
+            bottom var(--sidebar-duration) var(--sidebar-ease),
+            background 200ms ease;
+    }
+    .sidebar-control-row .song-language-compact {
+        left: 0;
+    }
+    .sidebar-control-row .sidebar-theme-control {
+        left: 51px;
+    }
+    .sidebar-control-row .sidebar-collapse-control {
+        left: calc(100% - 44px);
+    }
+    .sidebar-collapse-control svg {
+        transition: transform var(--sidebar-duration) var(--sidebar-ease);
+    }
+    .sidebar-collapsed .sidebar {
+        padding-inline: 12px;
+    }
+    .sidebar-collapsed .brand {
+        padding-inline: 7px;
+    }
+    .sidebar-collapsed .nav-item {
+        padding-inline: 17px;
+    }
+    .sidebar-collapsed .active-dot {
+        opacity: 0;
+    }
+    .sidebar-collapsed .sidebar-control-row {
+        height: 140px;
+    }
+    .sidebar-collapsed .sidebar-control-row > button {
+        left: 4px;
+    }
+    .sidebar-collapsed .song-language-compact {
+        bottom: 96px;
+    }
+    .sidebar-collapsed .sidebar-theme-control {
+        bottom: 48px;
+    }
+    .sidebar-collapsed .sidebar-collapse-control svg {
+        transform: rotate(180deg);
+    }
+    .sidebar-collapsed .nav-item .nav-badge {
+        display: block;
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        margin-left: 0;
+        padding: 0 3px;
+        background: var(--panel);
+        font-size: 10px;
+    }
+}
+/* 主区域宽 1500px、侧栏宽 350px，左右至少保留 70px 间距 */
+@media (min-width: 1990px) {
+    .app-shell:not(.sidebar-collapsed) {
+        --sidebar-width: 350px;
+    }
+    .app-shell:not(.sidebar-collapsed) .sidebar .ui-language-options {
+        height: 40px;
+    }
+    .app-shell:not(.sidebar-collapsed) .sidebar .ui-language-options button {
+        top: 3px;
+        width: calc((100% - 15px) / 4);
+    }
+    .app-shell:not(.sidebar-collapsed)
+        .sidebar
+        .ui-language-options
+        button:nth-child(2) {
+        left: calc(25% + 2.25px);
+    }
+    .app-shell:not(.sidebar-collapsed)
+        .sidebar
+        .ui-language-options
+        button:nth-child(3) {
+        left: calc(50% + 1.5px);
+    }
+    .app-shell:not(.sidebar-collapsed)
+        .sidebar
+        .ui-language-options
+        button:nth-child(4) {
+        left: calc(75% + 0.75px);
+    }
+}
+@media (--desktop) and (max-height: 580px) {
+    .app-shell:not(.sidebar-collapsed) .sidebar .ui-language-control {
+        display: none;
+    }
+    .sidebar-collapsed .sidebar-control-row {
+        height: 44px;
+    }
+    .sidebar-collapsed .sidebar-control-row .song-language-compact,
+    .sidebar-collapsed .sidebar-control-row .sidebar-theme-control {
+        display: none;
+    }
+}
+@media (max-width: 960px) {
+    .page-heading h1 {
+        font-size: 24px;
+    }
+}
+@media (--mobile) {
+    .nav-item .nav-badge {
+        display: none;
+    }
+    .sidebar {
+        inset: auto 0 0;
+        width: 100%;
+        height: 65px;
+        flex-direction: row;
+        align-items: center;
+        padding: 4px 10px 6px;
+        border-right: 0;
+        border-top: 1px solid var(--line);
+        transition: none;
+    }
+    .brand {
+        display: none;
+    }
+    .sidebar-caption {
+        display: none;
+    }
+    .sidebar nav {
+        margin: 0;
+        flex-direction: row;
+        justify-content: space-around;
+        gap: 2px;
+        flex: 1;
+    }
+    .nav-item {
+        height: 52px;
+        flex: 1;
+        flex-direction: column;
+        justify-content: center;
+        gap: 4px !important;
+        font-size: 11px;
+        border-radius: 7px;
+    }
+    .nav-item > span {
+        display: block;
+    }
+    .nav-item .active-dot {
+        display: none;
+    }
+    .sidebar-controls {
+        display: none;
+    }
+    .workspace {
+        margin-left: 0;
+        padding: 76px 0 65px;
+        transition: none;
+    }
+    .topbar {
+        height: 76px;
+        padding: 0 18px;
+        font-size: 12px;
+    }
+    .topbar-mobile-controls {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .topbar-mobile-controls .song-language-compact,
+    .topbar-mobile-controls .sidebar-theme-control {
+        flex: 0 0 38px;
+        width: 38px;
+        height: 38px;
+    }
+    .topbar .gap-4 {
+        gap: 10px;
+    }
+    main {
+        padding: 25px 16px 0;
+    }
+    .page-heading {
+        margin-bottom: 23px;
+        align-items: flex-start;
+    }
+    .page-heading h1 {
+        font-size: 21px;
+        line-height: 1.5;
+    }
+    .page-heading p {
+        font-size: 12px;
+        line-height: 1.9;
+        max-width: 280px;
+        margin-top: 8px;
+    }
+    .page-heading > .demo-label {
+        display: none;
+    }
+    .page-heading > .button {
+        padding: 9px 11px;
+        margin-top: 20px;
+        white-space: nowrap;
+    }
+    .page-footer {
+        font-size: 9px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 22px 0;
+    }
+}
+/* Future Performers 主题色：青色到粉色渐变，两个主题共用 */
+.topbar {
+    height: 90px;
+    position: relative;
+    gap: 16px;
+}
+.topbar::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 -1px;
+    height: 2px;
+    background: var(--brand-gradient);
+    opacity: 0.6;
+}
+.game-identity {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+}
+.game-logo {
+    display: block;
+    width: 166px;
+    height: auto;
+}
+.game-edition {
+    border-left: 1px solid var(--line);
+    padding-left: 16px;
+    font-size: 18px;
+    font-weight: 750;
+    letter-spacing: 2px;
+    color: var(--text);
+}
+.active-dot {
+    background: var(--brand-gradient);
+}
+.brand-mark {
+    color: #172039;
+}
+@media (--mobile) {
+    .topbar {
+        position: fixed;
+        inset: 0 0 auto;
+        z-index: 20;
+        height: 76px;
+        gap: 10px;
+        padding-inline: 16px;
+    }
+    .game-identity {
+        gap: 10px;
+    }
+    .game-logo {
+        width: 136px;
+    }
+    .game-edition {
+        padding-left: 10px;
+        font-size: 14px;
+        letter-spacing: 1px;
+    }
+    .topbar .avatar-link {
+        display: none;
+    }
+    .topbar .gap-4 {
+        gap: 7px;
+    }
+}
+@media (max-width: 380px) {
+    .game-logo {
+        width: 118px;
+    }
+    .topbar-mobile-controls .song-language-compact,
+    .topbar-mobile-controls .sidebar-theme-control {
+        flex-basis: 32px;
+        width: 32px;
+    }
+}
+@media (max-width: 380px) {
+    .nav-item {
+        flex-direction: row;
+        min-width: 0;
+    }
+    .nav-item > span:first-of-type {
+        display: none;
+    }
+}
