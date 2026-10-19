@@ -9,6 +9,7 @@ import { album, retryFailed, scan, unbind } from '../../core/album/controller'
 import { useRecognitionSummary } from '../../db/recognitionRepository'
 import { errorMessage } from '../../i18n'
 import { useRecognitionStore } from '../../stores/recognition'
+import { formatDisplayDateTime } from '../../core/dateTime'
 const task = useRecognitionStore().tasks.album
 const emit = defineEmits<{ notify: [message: string, title?: string]; view: [] }>()
 const { t, locale } = useI18n()
@@ -26,7 +27,7 @@ const done = computed(() => task.jobs.filter((job) => !['queued', 'running'].inc
 const lastRun = useRecognitionSummary('album')
 const failures = computed(() => album.retryableItems)
 const format = (time?: number | null) =>
-    time ? new Date(time).toLocaleString(locale.value, { dateStyle: 'medium', timeStyle: 'short' }) : t('account.never')
+    time ? formatDisplayDateTime(time, locale.value, { dateStyle: 'medium', timeStyle: 'short' }) : t('account.never')
 let ticker: ReturnType<typeof setInterval> | undefined
 watch(
     () => album.state.nextAllowedAt,

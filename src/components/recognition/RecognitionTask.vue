@@ -9,6 +9,7 @@ import { loadRecognition } from '../../db/recognitionRepository'
 import { useRecognitionStore, type RecognitionRun } from '../../stores/recognition'
 import type { RecognitionSource } from '../../db/models'
 import type { ImportJob } from '../../core/ocr/models'
+import { formatDisplayDateTime } from '../../core/dateTime'
 const props = defineProps<{ source: RecognitionSource }>()
 const emit = defineEmits<{ cancel: []; notify: [message: string, title?: string]; manualAdd: [] }>()
 const { t, locale } = useI18n()
@@ -128,7 +129,7 @@ defineExpose({ open, close })
             :checking="running && task.phase === 'checking'"
             :success="success"
             :eyebrow="album ? 'NINTENDO ALBUM' : 'SCREENSHOT IMPORT'"
-            :note="stored ? t('ocr.lastRun', { time: new Date(stored.finishedAt).toLocaleString(locale) }) : t(album ? 'sync.note' : 'ocr.localNote')"
+            :note="stored ? t('ocr.lastRun', { time: formatDisplayDateTime(stored.finishedAt, locale) }) : t(album ? 'sync.note' : 'ocr.localNote')"
             :footnote="running ? t(album ? 'sync.running' : 'ocr.running') : t(album ? 'sync.summary' : 'ocr.summary', { skipped, failed: failures })"
             :title-id="titleId"
             :slow-hint="!stored && task.slow && !hintDismissed"

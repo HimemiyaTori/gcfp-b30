@@ -23,6 +23,7 @@ import RatingTrend, { type RatingGrain } from '../components/RatingTrend.vue'
 import RollingNumber from '../components/common/RollingNumber.vue'
 import type { RecognitionSource, ScoreRow } from '../db/models'
 import type { getModeB30, RatingMode } from '../core/rating/calculator'
+import { formatDisplayDateTime } from '../core/dateTime'
 defineProps<{
     scores: ScoreRow[]
     historyCount: number
@@ -197,7 +198,7 @@ function drop(event: DragEvent) {
                     v-if="lastRun && !recognition.activeSource"
                     type="button"
                     class="text-link"
-                    :title="lastRun && new Date(lastRun.finishedAt).toLocaleString(locale)"
+                    :title="lastRun && formatDisplayDateTime(lastRun.finishedAt, locale)"
                     @click="emit('viewLast')"
                 >
                     <History :size="14" />{{ t('home.lastRun', { count: lastRun.total }, lastRun.total) }}

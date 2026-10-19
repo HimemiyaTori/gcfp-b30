@@ -12,6 +12,7 @@ import { currentLanguage, errorMessage, t } from '../../i18n'
 import type { ImportJob } from '../ocr/models'
 import { pinia } from '../../stores'
 import { useRecognitionStore } from '../../stores/recognition'
+import { formatDisplayDateTime } from '../dateTime'
 const recognition = useRecognitionStore(pinia)
 const task = recognition.tasks.album
 const MARKER = 'groove-nintendo-bound'
@@ -102,7 +103,7 @@ async function recordError(error: unknown) {
     })
 }
 function label(time: number | null) {
-    return time && Number.isFinite(new Date(time).getTime()) ? new Date(time).toLocaleString(currentLanguage()) : t('album.unknownTime')
+    return time && Number.isFinite(new Date(time).getTime()) ? formatDisplayDateTime(time, currentLanguage()) : t('album.unknownTime')
 }
 async function digest(blob: Blob) {
     return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', await blob.arrayBuffer())), b => b.toString(16).padStart(2, '0')).join('')

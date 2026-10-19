@@ -18,6 +18,24 @@ const positions = computed(() => new Map(b30.value.map((row, index) => [row.id, 
 const { rows, sort, toggleSort, resetSort } = useScoreTable(filteredB30, { sortKey: 'position', ascending: true, ranked: true })
 watch(b30Mode, resetSort)
 const { t } = useI18n()
+
+function ratingDescription(summary: ReturnType<typeof getModeB30>) {
+    const { items } = summary
+    if (items.length === 30) {
+        const averageLevel = items.reduce(
+            (sum, item) => sum + Number(item.level.replace('+', '')) + (item.level.endsWith('+') ? 0.5 : 0),
+            0,
+        ) / items.length
+        const averageScore = items.reduce((sum, item) => sum + item.score, 0) / items.length
+        return t('b30.averages', {
+            level: averageLevel.toFixed(2),
+            score: Math.round(averageScore).toLocaleString('en-US'),
+        })
+    }
+    return summary.count
+        ? `${t('b30.collected', { count: summary.count }, summary.count)} · ${t('b30.remaining', { count: 30 - items.length }, 30 - items.length)}`
+        : t('b30.empty')
+}
 </script>
 
 <template>
@@ -71,11 +89,7 @@ const { t } = useI18n()
                 ></span>
             </div>
             <div class="metric-bottom">
-                <span>{{
-                    summary.count
-                        ? `${t('b30.collected', { count: summary.count }, summary.count)} · ${summary.items.length < 30 ? t('b30.remaining', { count: 30 - summary.items.length }, 30 - summary.items.length) : t('b30.full')}`
-                        : t('b30.empty')
-                }}</span>
+                <span>{{ ratingDescription(summary) }}</span>
                 <span>{{
                     b30Mode === summary.mode
                         ? t('b30.current')

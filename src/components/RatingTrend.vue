@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import type { RatingSnapshot } from '../db/models'
 import type { RatingMode } from '../core/rating/calculator'
 import { dayDate } from '../core/rating/calendar'
+import { formatDisplayDate } from '../core/dateTime'
 export type RatingGrain = 'day' | 'month' | 'year'
 const props = defineProps<{ snapshots: RatingSnapshot[]; mode: RatingMode }>()
 const grain = defineModel<RatingGrain>('grain', { required: true })
@@ -46,7 +47,7 @@ const x = (index: number) => points.value.length < 2 ? width.value / 2 : 48 + in
 const y = (value: number) => 210 - (value - bounds.value.min) / (bounds.value.max - bounds.value.min) * 180
 const line = computed(() => points.value.map((point, index) => `${x(index)},${y(point.rating)}`).join(' '))
 const focus = computed(() => points.value[selected.value])
-const label = (time: number) => new Intl.DateTimeFormat(locale.value, { year: 'numeric', ...(grain.value !== 'year' ? { month: 'numeric' } : {}), ...(grain.value === 'day' ? { day: 'numeric' } : {}) }).format(time)
+const label = (time: number) => formatDisplayDate(time, locale.value, grain.value)
 function pick(event: PointerEvent) {
     const rect = (event.currentTarget as SVGSVGElement).getBoundingClientRect()
     const fraction = ((event.clientX - rect.left) / rect.width * width.value - 48) / (width.value - 68)

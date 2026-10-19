@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import type { ScoreRow } from '../../db/models'
 import { songLanguage } from '../../composables/useSettings'
 import { scoreRepository } from '../../db/scoreRepository'
+import { formatDisplayDateTime } from '../../core/dateTime'
 const props = defineProps<{ canWrite: boolean }>()
 const emit = defineEmits<{ notify: [message: string, title?: string] }>()
 const { t, locale } = useI18n()
@@ -43,7 +44,7 @@ defineExpose({ open })
         <h2>{{ t('deleteHistory.title') }}</h2>
         <p class="muted">
             {{ deleting?.[songLanguage] }} · {{ deleting?.difficulty }}
-            {{ deleting?.level }} · {{ deleting?.score.toLocaleString(locale) }} · {{ deleting?.importedAt ? new Date(deleting.importedAt).toLocaleString(locale) : "--" }}
+            {{ deleting?.level }} · {{ deleting?.score.toLocaleString(locale) }} · {{ deleting?.importedAt ? formatDisplayDateTime(deleting.importedAt, locale) : "--" }}
         </p>
         <div class="form-note">
             {{ t('deleteHistory.description') }}

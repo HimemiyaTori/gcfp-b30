@@ -118,7 +118,7 @@
         "view": "查看 {mode} Best 30",
         "collected": "已收錄 {count} 張譜面",
         "remaining": "還差 {count} 張填滿 B30",
-        "full": "已填滿 B30",
+        "averages": "平均等級 {level} · 平均分數 {score}",
         "empty": "尚無成績 · 登錄此模式成績後自動計算",
         "current": "目前榜單",
         "open": "查看榜單 →",

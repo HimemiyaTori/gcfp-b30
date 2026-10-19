@@ -118,7 +118,7 @@
         "view": "View {mode} Best 30",
         "collected": "{count} chart collected | {count} charts collected",
         "remaining": "{count} more chart to fill B30 | {count} more charts to fill B30",
-        "full": "B30 complete",
+        "averages": "Avg. level {level} · Avg. score {score}",
         "empty": "No scores yet · Calculated once you add scores in this mode",
         "current": "Current list",
         "open": "View list →",

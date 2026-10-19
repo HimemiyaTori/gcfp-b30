@@ -6,8 +6,10 @@ import { songLanguage } from '../composables/useSettings'
 import { MOBILE_MEDIA_QUERY } from '../breakpoints'
 import { isPlayedChart, type ChartListRow, type UnplayedChartRow } from '../core/score/catalog'
 import { getRankByScore } from '../core/rating/rank'
+import { formatDisplayDate } from '../core/dateTime'
 import type { ScoreTableSort, ScoreTableSortKey } from '../core/scoreSort'
 import SongCover from './SongCover.vue'
+import SelectField from './common/SelectField.vue'
 import type { ScoreRow } from '../db/models'
 
 const props = withDefaults(defineProps<{
@@ -70,6 +72,7 @@ const formatters = computed(() => ({
     time: new Intl.DateTimeFormat(locale.value, { hour: '2-digit', minute: '2-digit', hour12: false }),
 }))
 function formatDate(timestamp: number) {
+    if (locale.value === 'en') return formatDisplayDate(timestamp, locale.value)
     const date = new Date(timestamp)
     return (date.getFullYear() === new Date().getFullYear()
         ? formatters.value.monthDay
@@ -117,9 +120,11 @@ async function changePage(page: number) {
     <p v-if="loading" role="status" class="table-loading">{{ t('table.loading') }}</p>
     <div ref="mobileControls" class="score-sort-controls">
         <label :for="`${controlsId}-sort`">{{ t('table.sortBy') }}</label>
-        <select :id="`${controlsId}-sort`" v-model="mobileSort">
-            <option v-for="option in sortOptions" :key="option.key" :value="option.key">{{ option.label }}</option>
-        </select>
+        <SelectField>
+            <select :id="`${controlsId}-sort`" v-model="mobileSort">
+                <option v-for="option in sortOptions" :key="option.key" :value="option.key">{{ option.label }}</option>
+            </select>
+        </SelectField>
         <button type="button" :aria-label="sortLabel(selectedSortLabel, sort.key)" @click="emit('sort', sort.key)">
             <ArrowUp v-if="sort.ascending" :size="15" />
             <ArrowDown v-else :size="15" />

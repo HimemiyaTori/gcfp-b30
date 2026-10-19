@@ -4,6 +4,7 @@ import B30Poster from '../../components/B30Poster.vue'
 import { currentLanguage, t } from '../../i18n'
 import type { getModeB30 } from '../rating/calculator'
 import { loadPosterFonts } from './fonts'
+import { formatDisplayDateTime } from '../dateTime'
 
 // 导出前把同源素材固化为数据 URL，缺图保留组件中的文字或音符占位
 async function embedImages(root: HTMLElement) {
@@ -56,7 +57,7 @@ export async function exportB30(summary: ReturnType<typeof getModeB30>, language
     const app = createApp(B30Poster, {
         summary,
         language,
-        generatedAt: now.toLocaleString(currentLanguage(), { hour12: false }),
+        generatedAt: formatDisplayDateTime(now.getTime(), currentLanguage(), { hour12: false }),
         footnote: t('b30Export.footnote'),
     })
     try {

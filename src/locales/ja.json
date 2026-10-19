@@ -118,7 +118,7 @@
         "view": "{mode} のベスト 30 を表示",
         "collected": "{count} 譜面を登録済み",
         "remaining": "B30 まであと {count} 譜面",
-        "full": "B30 達成",
+        "averages": "平均レベル {level} · 平均スコア {score}",
         "empty": "スコアなし · このモードのスコアを登録すると自動計算されます",
         "current": "表示中",
         "open": "ランキングを見る →",

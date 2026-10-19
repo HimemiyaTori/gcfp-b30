@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { songLanguage } from '../composables/useSettings'
 import { sanitizeLevelInput } from '../core/score/filter'
 import { songCategories, type SongCategory } from '../data/categories'
+import SelectField from './common/SelectField.vue'
 
 const props = defineProps<{ hideMode?: boolean }>()
 const { t } = useI18n()
@@ -67,27 +68,33 @@ function writeLevel(event: Event, target: 'min' | 'max') {
             :class="{ 'filter-controls-single-mode': hideMode }"
         >
             <SlidersHorizontal class="filter-icon" :size="16" />
-            <select v-model="category" class="category-select" :aria-label="t('filters.category')">
-                <option value="ALL">{{ t('filters.allCategories') }}</option>
-                <option
-                    v-for="item in songCategories"
-                    :key="item.id"
-                    :value="item.id">
-                    {{ item[songLanguage] }}
-                </option>
-            </select>
-            <select v-if="!hideMode" v-model="mode" :aria-label="t('filters.mode')">
-                <option value="ALL">{{ t('filters.allModes') }}</option>
-                <option>BASIC</option>
-                <option>ADVANCED</option>
-            </select>
-            <select v-model="difficulty" :aria-label="t('filters.difficulty')">
-                <option value="ALL">{{ t('filters.allDifficulties') }}</option>
-                <option>MASTER</option>
-                <option>HARD</option>
-                <option>NORMAL</option>
-                <option>EASY</option>
-            </select>
+            <SelectField class="category-select">
+                <select v-model="category" :aria-label="t('filters.category')">
+                    <option value="ALL">{{ t('filters.allCategories') }}</option>
+                    <option
+                        v-for="item in songCategories"
+                        :key="item.id"
+                        :value="item.id">
+                        {{ item[songLanguage] }}
+                    </option>
+                </select>
+            </SelectField>
+            <SelectField v-if="!hideMode">
+                <select v-model="mode" :aria-label="t('filters.mode')">
+                    <option value="ALL">{{ t('filters.allModes') }}</option>
+                    <option>BASIC</option>
+                    <option>ADVANCED</option>
+                </select>
+            </SelectField>
+            <SelectField>
+                <select v-model="difficulty" :aria-label="t('filters.difficulty')">
+                    <option value="ALL">{{ t('filters.allDifficulties') }}</option>
+                    <option>MASTER</option>
+                    <option>HARD</option>
+                    <option>NORMAL</option>
+                    <option>EASY</option>
+                </select>
+            </SelectField>
             <div class="level-range" role="group" :aria-label="t('filters.level')">
                 <input
                     :value="levelMin"
