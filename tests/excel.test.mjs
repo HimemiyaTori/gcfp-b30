@@ -81,8 +81,10 @@ test('saved XLSX round trip preserves both modes, zero scores, achievements, unk
 test('saved XLSX uses chart combo limits, a missing-combo fallback and chart totals above 2000', async () => {
     const known = song.charts.find(chart => chart.mode === 'advanced')
     const larger = song.charts.find(chart => chart.mode === 'advanced' && chart.id !== known.id)
-    const previousCombo = larger.combo
-    // 用曲库资料准备超过兜底值的真实文件，验收上限以谱面总连击数为准
+    const previousCombos = [chart, known, larger].map(target => [target, target.combo])
+    // 显式准备缺失、普通和超过兜底值的资料，避免曲库更新改变真实文件验收场景
+    delete chart.combo
+    known.combo = 321
     larger.combo = 2400
     try {
         const workbook = createScoreWorkbook([
@@ -112,7 +114,10 @@ test('saved XLSX uses chart combo limits, a missing-combo fallback and chart tot
         assert.equal(rejected.rows.length, 0)
         assert.deepEqual(rejected.issues.map(issue => [issue.sheet, issue.row]), targets.map(target => [target.sheet.name, target.row]))
     } finally {
-        larger.combo = previousCombo
+        for (const [target, combo] of previousCombos) {
+            if (combo === undefined) delete target.combo
+            else target.combo = combo
+        }
     }
 })
 
