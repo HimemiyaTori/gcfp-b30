@@ -2,9 +2,9 @@
 
 一期已完成验收，二期已接入 Excel、B30 成绩图、历史成绩与 Rating 趋势、曲库查询及多语言界面。现有曲库为 124 首歌曲、992 张谱面，保留维护者提供的原始数据与稳定 ID。
 
-后续开发以 [二期设计文档](docs/FP_B30_二期设计文档.md) 为主；共同业务规则和已完成的验收记录见 [一期设计与验收归档](docs/FP_B30_一期设计文档.md)。
+本地功能以 [二期设计文档](docs/FP_B30_二期设计文档.md) 为基线，账号与历史同步开发按 [三期设计文档](docs/FP_B30_三期设计文档.md) 推进；共同业务规则和一期验收记录见 [一期设计与验收归档](docs/FP_B30_一期设计文档.md)。
 
-Nintendo 相册方案见 [三期设计文档](docs/FP_B30_三期设计文档.md)。Cloudflare 版通过同源 Worker 绑定 Nintendo 账号、读取相册，前端 OCR 识别后直接录入；用户于 2026-10-17 确认 3A、3B 实际使用正常。首页截图与相册识别统一由 Pinia 管理，支持切页后后台处理、右下角进度提示及重新打开识别弹窗。3C 站内账号、多设备同步未开放。默认构建保持纯前端，设置页仍为「偏好设置」。
+Nintendo 相册方案见 [三期设计文档](docs/FP_B30_三期设计文档.md)。Cloudflare 版通过同源 Worker 绑定 Nintendo 账号、读取相册，前端 OCR 识别后直接录入；用户于 2026-10-17 确认 3A、3B 实际使用正常。首页截图与相册识别统一由 Pinia 管理，支持切页后后台处理、右下角进度提示及重新打开识别弹窗。3C 站内账号、多设备同步未开放；已确定采用 Workers + D1，同步全部有效成绩历史，当前最佳、Rating、B30 和每日快照／趋势由本机计算，趋势不跨设备同步。普通 `yarn build` 保持纯前端，设置页仍为「偏好设置」。
 
 ## 运行
 
@@ -16,7 +16,7 @@ yarn install
 yarn dev
 ```
 
-默认地址 http://127.0.0.1:5173 。验证命令：
+`yarn dev` 先构建服务端版本，再启动本地 Worker，默认地址 http://127.0.0.1:8787 。需要纯前端 Vite 开发服务时运行 `yarn dev:local`，默认地址 http://127.0.0.1:5173 ；已有服务端构建时可用 `yarn dev:server` 启动 Worker。Nintendo 绑定配置见下文。验证命令：
 
 ```sh
 yarn test
@@ -73,7 +73,7 @@ Windows 下先完成 `yarn build`，再启动 `yarn dev:local` 执行普通浏�
 
 Excel 的读取位于 `src/core/excel/reader.ts`，生成位于 `template.ts`，浏览器下载位于 `download.ts`；表头、文件限制和预览模型单独共享，导入不加载 ExcelJS，导出不加载 SheetJS。OCR 任务模型位于 `src/core/ocr/models.ts`，仓储不反向依赖 composable；相册请求和任务错误通过稳定错误码判断，展示时翻译。生产构建中的 OCR Worker 与 WASM 统一输出到 `ocr/`，与资源准备脚本共用地址，避免重复发布。
 
-启动 `yarn dev:local` 后运行 `yarn test:limits`，通过真实表单、下载与重新上传验收谱面上限、2000 兜底、超限阻止写入、旧数据库升级与刷新持久化；超过 2000 的谱面总连击数由真实 XLSX 文件验收覆盖。
+运行 `yarn test`，通过实际 XLSX 写入和读取验收谱面总连击数上限、资料缺失时的 2000 兜底、超过 2000 的实际总连击数以及超限输入报错。验收显式准备缺失、普通和高上限三类资料，结束后还原曲库对象，不依赖生产曲库恰好存在缺失字段。
 
 ## Excel 使用与验证
 
@@ -116,7 +116,7 @@ Excel 的读取位于 `src/core/excel/reader.ts`，生成位于 `template.ts`，
 
 原图默认经 Worker 有界流式中转；真实浏览器验证 CDN 可跨域读取后可设 `MEDIA_DIRECT=1`。Nintendo App 协议版本由 `NINTENDO_APP_VERSION` 配置。会话暂用 30 天，Coral 缓存按上游有效期；更换 Cookie 主密钥或版本会要求重新绑定。绑定页提供第三方处理说明和源码链接，协议来源见 [worker/NOTICE.md](worker/NOTICE.md)。上线修改版需把源码链接改为实际部署版本。
 
-普通 `yarn build` / `yarn dev` 不启用相册。GitHub Pages 构建剔除相册前端模块；Cloudflare 未绑定用户日常浏览不发 API 请求，点击「绑定 Nintendo 账号」才查询绑定状态。绑定状态标记不含凭据。服务器故障不会影响本地成绩与手动导入。
+普通 `yarn build` / `yarn dev:local` 默认不启用相册；`yarn build:server` / `yarn dev` 启用服务端能力。GitHub Pages 构建剔除相册前端模块；Cloudflare 未绑定用户日常浏览不发 API 请求，点击「绑定 Nintendo 账号」才查询绑定状态。绑定状态标记不含凭据。服务器故障不会影响本地成绩与手动导入。
 
 验收命令：
 
