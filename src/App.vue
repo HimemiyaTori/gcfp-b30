@@ -24,16 +24,18 @@ import B30Page from './pages/B30Page.vue'
 import HomePage from './pages/HomePage.vue'
 import ScoresPage from './pages/ScoresPage.vue'
 import SettingsPage from './pages/SettingsPage.vue'
-import type { AlbumState } from './db/albumModels'
+import type { AccountProfile } from './db/accountContext'
 import type { RecognitionSource } from './db/models'
 import { useRecognitionStore } from './stores/recognition'
 const recognition = useRecognitionStore()
-const nintendoAccount = shallowRef<{ state: AlbumState }>()
-const NintendoAccount = import.meta.env.VITE_SERVER === '1' ? defineAsyncComponent(() => import('./components/album/NintendoAccount.vue')) : undefined
+const account = shallowRef<{ user?: AccountProfile }>()
+const SiteAccount = import.meta.env.VITE_SERVER === '1' ? defineAsyncComponent(() => import('./components/account/SiteAccount.vue')) : undefined
 const AlbumSync = import.meta.env.VITE_SERVER === '1' ? defineAsyncComponent(() => import('./components/album/AlbumSync.vue')) : undefined
-if (import.meta.env.VITE_SERVER === '1') void import('./core/album/controller').then(module => {
-    nintendoAccount.value = module.album
-    module.initializeAlbum()
+if (import.meta.env.VITE_SERVER === '1') void import('./core/account/controller').then(async module => {
+    account.value = module.siteAccount
+    await module.initializeAccount()
+    const album = await import('./core/album/controller')
+    album.initializeAlbum()
 })
 const { t } = useI18n()
 const page = ref<Page>('home')
@@ -115,7 +117,7 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
             :count="scores.length"
         />
         <div class="workspace">
-            <AppHeader :account="nintendoAccount?.state" />
+            <AppHeader :account="account?.user" />
             <main>
                 <div class="page-heading between">
                     <div>
@@ -195,8 +197,8 @@ watch(page, () => window.scrollTo({ top: 0, behavior: 'smooth' }))
                     @export="excel?.download(false)"
                     @template="excel?.download(true)"
                 >
-                    <template v-if="NintendoAccount" #account>
-                        <component :is="NintendoAccount" @notify="notify" @view="albumSync?.open()" />
+                    <template v-if="SiteAccount" #account>
+                        <component :is="SiteAccount" @notify="notify" @view="albumSync?.open()" />
                     </template>
                 </SettingsPage>
                 <p v-if="databaseLoading" role="status">

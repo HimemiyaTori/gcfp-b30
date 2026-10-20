@@ -1,8 +1,6 @@
 import assert from 'node:assert/strict'
-import { randomBytes } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
-import { createServer } from 'node:http'
-import worker from '../worker/index.ts'
+import { createAccountServer } from './account-server.mjs'
 
 // 模拟外部 Nintendo 与第三方响应，通过真实 HTTP 请求验收公开 API 和 Cookie 行为
 const realFetch = globalThis.fetch
@@ -196,123 +194,19 @@ const mockFetch = async (url, init) => {
         })
     throw new Error('Unexpected external endpoint')
 }
-globalThis.fetch = runtimeMode ? realFetch : mockFetch
-const env = {
-    COOKIE_KEY: randomBytes(32).toString('base64url'),
-    COOKIE_KEY_VERSION: '1',
-    NXAPI_CLIENT_ID: 'test-client',
-    NXAPI_CLIENT_SECRET: 'test-secret',
-    GCFP_APPLICATION_IDS: 'test-gcfp',
-    MEDIA_HOSTS: 'media.example.test',
-    API_LIMIT: { limit: async () => ({ success: true }) },
-    ASSETS: { fetch: async () => new Response('static') },
-}
-let runtime
-if (runtimeMode) {
-    const [{ Miniflare }, { build }] = await Promise.all([
-        import('miniflare'),
-        import('esbuild'),
-    ])
-    const built = await build({
-        entryPoints: ['worker/index.ts'],
-        bundle: true,
-        write: false,
-        format: 'esm',
-        platform: 'neutral',
-        target: 'es2022',
-    })
-    // 只注入测试绑定与外部响应，产品路由、加解密适配和 Cookie 均在真实 Workerd 中运行
-    const wrapper = `import worker from './project-worker.js';
-        export default { fetch(request) {
-            const env = { ...request.cf.hostMetadata.testEnv };
-            env.API_LIMIT = { limit: async () => ({ success: true }) };
-            env.ASSETS = { fetch: async () => new Response('static') };
-            return worker.fetch(request, env);
-        } };`
-    runtime = new Miniflare({
-        workers: [
-            {
-                config: {
-                    name: 'album-acceptance',
-                    compatibilityDate: '2026-10-06',
-                    manifest: {
-                        mainModule: 'wrapper.js',
-                        modules: {
-                            'wrapper.js': { type: 'esm', contents: wrapper },
-                            'project-worker.js': {
-                                type: 'esm',
-                                contents: built.outputFiles[0].text,
-                            },
-                        },
-                    },
-                },
-                dev: {
-                    outboundService: {
-                        type: 'fetcher',
-                        handler: async (request) =>
-                            mockFetch(request.url, {
-                                method: request.method,
-                                headers: request.headers,
-                                body: request.body
-                                    ? await request.text()
-                                    : undefined,
-                            }),
-                    },
-                },
-            },
-        ],
-    })
-}
-const server = createServer(async (incoming, outgoing) => {
-    const chunks = []
-    for await (const chunk of incoming) chunks.push(chunk)
-    const url = `${workerRequestOrigin || `http://127.0.0.1:${server.address().port}`}${incoming.url}`
-    const init = {
-        method: incoming.method,
-        headers: incoming.headers,
-        body: chunks.length ? Buffer.concat(chunks) : undefined,
-    }
-    const response = runtime
-        ? await runtime.dispatchFetch(url, {
-              ...init,
-              cf: {
-                  hostMetadata: { testEnv: JSON.parse(JSON.stringify(env)) },
-              },
-          })
-        : await worker.fetch(new Request(url, init), env)
-    outgoing.writeHead(response.status, {
-        ...Object.fromEntries(response.headers),
-        'set-cookie': response.headers.getSetCookie(),
-    })
-    outgoing.end(Buffer.from(await response.arrayBuffer()))
-})
-await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
-const origin = `http://127.0.0.1:${server.address().port}`
-const jar = new Map()
+const app = await createAccountServer({ runtimeMode, externalFetch: mockFetch })
+const env = app.env
+env.NXAPI_CLIENT_SECRET = 'test-secret'
+const { origin } = app
+const device = app.device()
+const { jar } = device
 async function api(path, method = 'GET', body, extra = {}) {
-    const response = await realFetch(origin + path, {
-        method,
-        headers: {
-            Origin: origin,
-            Cookie: [...jar]
-                .map(([key, value]) => `${key}=${value}`)
-                .join('; '),
-            ...(body ? { 'Content-Type': 'application/json' } : {}),
-            ...extra,
-        },
-        body: body ? JSON.stringify(body) : undefined,
-    })
-    for (const cookie of response.headers.getSetCookie()) {
-        assert.match(cookie, /HttpOnly; Secure; SameSite=Strict; Path=\//)
-        const [pair] = cookie.split(';'),
-            index = pair.indexOf('=')
-        if (pair.slice(index + 1))
-            jar.set(pair.slice(0, index), pair.slice(index + 1))
-        else jar.delete(pair.slice(0, index))
-        assert.ok(cookie.length < 4096)
-    }
-    return response
+    // 准备已过冷却的时刻，逐个验收外部响应；跨设备冷却由账号 HTTP 验收覆盖
+    if (path === '/api/album/media') await app.db.prepare('UPDATE nintendo_bindings SET next_allowed_at = 0').run()
+    return device.api(path, method, body, extra)
 }
+await device.signIn('album@example.test')
+
 try {
     assert.equal(
         (await (await api('/api/nintendo/binding')).json()).status,
@@ -332,7 +226,7 @@ try {
     const start = await (
         await api('/api/nintendo/auth/start', 'POST', { consent: true })
     ).json()
-    const state = new URL(start.url).searchParams.get('state')
+    let state = new URL(start.url).searchParams.get('state')
     assert.equal(
         (
             await api('/api/nintendo/auth/complete', 'POST', {
@@ -341,6 +235,7 @@ try {
         ).status,
         400,
     )
+    state = new URL((await (await api('/api/nintendo/auth/start', 'POST', { consent: true })).json()).url).searchParams.get('state')
     redirectSessionToken = true
     const redirected = await api('/api/nintendo/auth/complete', 'POST', {
         callback: `npf71b963c1b7b6d119://auth#state=${state}&session_token_code=test-code`,
@@ -348,6 +243,7 @@ try {
     assert.equal(redirected.status, 502)
     assert.deepEqual(await redirected.json(), { error: 'upstream_redirect' })
     redirectSessionToken = false
+    state = new URL((await (await api('/api/nintendo/auth/start', 'POST', { consent: true })).json()).url).searchParams.get('state')
     const linked = await api('/api/nintendo/auth/complete', 'POST', {
         callback: `npf71b963c1b7b6d119://auth#state=${state}&session_token_code=test-code`,
     })
@@ -433,10 +329,11 @@ try {
     oversized = false
     expiredCoral = true
     assert.equal((await api('/api/album/media', 'POST', {})).status, 200)
-    const session = jar.get('__Host-nintendo-session')
-    jar.set('__Host-nintendo-session', session + 'x')
+    const sessionName = [...jar.keys()].find(name => name.includes('session_token'))
+    const session = jar.get(sessionName)
+    jar.set(sessionName, session + 'x')
     assert.equal((await api('/api/album/media', 'POST', {})).status, 401)
-    jar.set('__Host-nintendo-session', session)
+    jar.set(sessionName, session)
     await api('/api/nintendo/binding', 'DELETE')
     assert.equal(
         (await (await api('/api/nintendo/binding')).json()).status,
@@ -451,7 +348,7 @@ try {
         401,
     )
     // 通过真实 HTTP 请求模拟远程代理改写 URL，显式来源仍精确校验浏览器地址
-    workerRequestOrigin = 'https://preview.example.test'
+    workerRequestOrigin = app.control.requestOrigin = 'https://preview.example.test'
     assert.equal(
         (await api('/api/nintendo/auth/start', 'POST', { consent: true }))
             .status,
@@ -525,7 +422,5 @@ try {
         `Album ${runtimeMode ? 'Workerd' : 'Node'} HTTP acceptance passed: NSO avatar preference and account persistence, encrypted JSON-labelled responses, separate login encryption, malformed payload diagnostics, token recovery, rate limits, confidential/public clients, remote proxy origins, filtered album, original image, expiry, invalid tickets, size limit and unlink`,
     )
 } finally {
-    globalThis.fetch = realFetch
-    await new Promise((resolve) => server.close(resolve))
-    await runtime?.dispose()
+    await app.close()
 }

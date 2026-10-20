@@ -38,7 +38,24 @@ jobs:
             - name: Install dependencies
               run: corepack yarn install --immutable
 
-            - name: Build
+            - name: Verify files and Worker HTTP
+              run: |
+                  corepack yarn test
+                  corepack yarn check:worker
+                  corepack yarn test:account-runtime
+                  corepack yarn test:album-runtime
+
+            - name: Build server version
+              run: corepack yarn build:server
+
+            - name: Verify account flows in browser
+              env:
+                  OCR_BROWSER: chromium
+              run: |
+                  corepack yarn playwright install --with-deps chromium
+                  corepack yarn test:account-browser
+
+            - name: Build GitHub Pages version
               run: corepack yarn build
 
             - name: Setup Pages

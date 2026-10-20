@@ -477,7 +477,7 @@
         "note": "開啟本站時會自動檢查相簿中的新截圖，距上次更新不足 3 分鐘時不再檢查；兩次更新至少間隔 10 秒。雲端相簿只保留最近 30 天、最多 100 個檔案，請定期開啟本站同步。",
         "source": "原始碼與授權",
         "unbindTitle": "解除 Nintendo 帳號綁定？",
-        "unbindDescription": "將清除此瀏覽器保存的 Nintendo 登入憑證，並停止自動更新。已登錄的成績會保留；之後重新綁定時，已處理過的截圖不會重複登錄。",
+        "unbindDescription": "這會移除目前站內帳號的 Nintendo 綁定，並停止所有裝置使用此綁定更新相簿。已錄入的本機成績與處理記錄會保留。",
         "unbindConfirm": "確認解除",
         "unbindPending": "正在解除…",
         "unbound": "已解除 Nintendo 帳號綁定，已登錄的成績仍然保留。"
@@ -496,11 +496,11 @@
             },
             "thirdParty": {
                 "title": "資料經手方",
-                "text": "Cloudflare 會在傳輸中經手登入憑證、相簿清單和截圖；第三方服務 nxapi-znca-api 會處理 Nintendo 身分權杖、Coral 權杖及加密前後的請求內容。本站伺服器不保存這些資料。"
+                "text": "Cloudflare 會在傳輸中經手登入憑證、相簿清單和截圖；第三方服務 nxapi-znca-api 會處理 Nintendo 身分權杖、Coral 權杖及加密前後的請求內容。Nintendo 憑據依下述方式加密儲存，相簿清單與截圖不持久保存。"
             },
             "storage": {
                 "title": "憑證與成績保存",
-                "text": "登入憑證加密後保存在本瀏覽器的 Cookie 中，30 天內有效，網頁指令碼無法讀取；辨識出的成績只保存在本機。"
+                "text": "Nintendo 登入憑據與續期快取會加密儲存在本站伺服器並關聯目前站內帳號，網頁腳本無法讀取；在其他裝置登入本站帳號後可自動恢復綁定，登出不會解除綁定。辨識成績目前僅保存在本機。"
             },
             "scope": {
                 "title": "讀取範圍",
@@ -557,6 +557,67 @@
             "checking": "正在檢查 Nintendo 相簿…",
             "importing": "正在登錄相簿截圖",
             "view": "查看詳情"
+        }
+    },
+    "siteAccount": {
+        "title": "站內帳號",
+        "welcome": "登入 Groove Archive",
+        "description": "透過電子郵件驗證碼登入，登入後可綁定 Nintendo 帳號，在其他裝置恢復綁定與授權",
+        "login": "登入 / 註冊",
+        "logout": "登出",
+        "loginTitle": "電子郵件登入 / 註冊",
+        "loginDescription": "首次登入會自動建立帳號，無須設定密碼或暱稱",
+        "email": "電子郵件",
+        "code": "驗證碼",
+        "sendCode": "傳送驗證碼",
+        "resendIn": "{seconds} 秒後重傳",
+        "waitToRetry": "稍後重試",
+        "retryAt": "可在 {time} 後重試",
+        "codeSent": "驗證碼已傳送，10 分鐘內有效，請同時檢查垃圾郵件",
+        "continue": "登入",
+        "nickname": "暱稱（選填）",
+        "nicknamePlaceholder": "留空時顯示電子郵件",
+        "save": "儲存暱稱",
+        "saved": "帳號資料已儲存",
+        "uploadAvatar": "上傳頭像",
+        "avatarHint": "支援 PNG、JPEG、WebP，最多 10 MB；頭像會置中裁切並壓縮後上傳",
+        "resetAvatar": "使用預設頭像",
+        "uploading": "正在壓縮並上傳頭像…",
+        "expired": "登入已過期，此裝置的帳號資料仍保留。重新登入後可繼續使用 Nintendo 相簿",
+        "relogin": "重新登入",
+        "logoutDescription": "登出後停止目前辨識並返回訪客資料。此帳號的本機成績與 NS 綁定會保留，重新登入即可恢復",
+        "localNote": "站內資料與 NS 綁定隨帳號儲存；成績與每日趨勢儲存在目前裝置",
+        "migrationDescription": "偵測到舊版儲存在此瀏覽器的 Nintendo 綁定，可移入目前站內帳號",
+        "migrationConsent": "同意將 Nintendo 憑據加密儲存在本站伺服器，供此帳號在不同裝置恢復綁定與續期",
+        "migrate": "移入 Nintendo 綁定",
+        "reauthorize": "重新授權",
+        "errors": {
+            "request_failed": "帳號操作失敗，請稍後重試",
+            "network_error": "網路連線失敗，請檢查網路後重試",
+            "account_not_configured": "帳號服務尚未設定，請聯絡管理員",
+            "email_not_configured": "驗證碼郵件服務尚未設定，請聯絡管理員",
+            "invalid_email": "請輸入有效的電子郵件地址",
+            "invalid_otp": "驗證碼無效，請檢查或重新取得",
+            "otp_expired": "驗證碼已過期，請重新取得",
+            "too_many_attempts": "驗證失敗次數已達上限，請重新取得驗證碼",
+            "too_many_requests": "操作過於頻繁，請稍後重試",
+            "email_cooldown": "請至少等待 60 秒後重新傳送驗證碼",
+            "email_budget_exhausted": "本站免費郵件額度已用完，請在恢復後重試；已收到的有效驗證碼仍可登入",
+            "email_provider_limited": "郵件服務暫時限流，請稍後重試",
+            "email_send_failed": "驗證碼傳送失敗，請稍後重新取得",
+            "email_send_uncertain": "郵件傳送結果尚不確定，請先檢查收件匣，稍後可重試",
+            "login_required": "請先登入站內帳號",
+            "account_changed": "帳號已在其他頁面切換，請重新整理",
+            "protocol_mismatch": "頁面版本需要更新，請重新整理；本機資料仍保留",
+            "invalid_nickname": "暱稱最多 40 個字元，不能含控制字元",
+            "invalid_avatar": "請選擇不超過 10 MB 的 PNG、JPEG 或 WebP 圖片",
+            "too_large": "頭像過大，請選擇較小的圖片",
+            "storage_unavailable": "瀏覽器儲存無法使用，請允許本站儲存資料後重試",
+            "rate_limited": "請求過於頻繁，請稍後重試",
+            "binding_conflict": "此站內帳號已綁定其他 NS 帳號，請先解除綁定",
+            "nintendo_in_use": "此 NS 帳號已屬於其他站內帳號，無法重複綁定",
+            "binding_changed": "NS 綁定已變更，請重新整理後重試",
+            "legacy_binding_missing": "舊版綁定已失效，請重新綁定 Nintendo 帳號"
         }
     }
 }

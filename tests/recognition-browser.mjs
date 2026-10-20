@@ -22,6 +22,7 @@ const navigate = async (page, hash) => {
 
 try {
     const context = await browser.newContext({ locale: 'zh-CN', viewport: { width: 1280, height: 960 } })
+    await context.addInitScript(() => localStorage.setItem('groove-account-profile', JSON.stringify({ id: 'recognition-site-user', email: 'recognition@example.test', nickname: '' })))
     let releaseModel, releaseImage
     const modelGate = new Promise(resolve => { releaseModel = resolve })
     const imageGate = new Promise(resolve => { releaseImage = resolve })
@@ -33,6 +34,8 @@ try {
     })
     await context.route('**/api/**', async route => {
         const path = new URL(route.request().url()).pathname
+        if (path === '/api/account') return route.fulfill({ json: { user: { id: 'recognition-site-user', email: 'recognition@example.test', nickname: '' } } })
+        if (path === '/api/nintendo/binding') return route.fulfill({ json: { configured: true, status: 'unbound' } })
         if (path === '/api/album/content') {
             if (imageBlocked) await imageGate
             if (pendingContent) await pendingContent

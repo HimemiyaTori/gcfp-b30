@@ -20,13 +20,21 @@
         "dev:local": "node scripts/prepare-ocr.mjs && node scripts/prepare-covers.mjs && vite --host 127.0.0.1",
         "dev:server": "wrangler dev --local",
         "check:worker": "tsc -p worker/tsconfig.json",
+        "types:worker": "wrangler types worker/env.d.ts --env-interface CloudflareBindings --include-runtime false",
+        "db:migrate:local": "wrangler d1 migrations apply gcfp-accounts --local",
+        "auth:schema": "tsx scripts/generate-auth-schema.mjs",
+        "test:account": "tsx tests/account-worker.mjs --node",
+        "test:account-runtime": "tsx tests/account-worker.mjs",
+        "test:account-browser": "tsx tests/account-browser.mjs",
         "test:album": "node tests/album-browser.mjs",
         "test:album-worker": "tsx tests/album-worker.mjs",
         "test:album-runtime": "tsx tests/album-worker.mjs --runtime"
     },
     "dependencies": {
+        "@better-auth/infra": "^0.4.20",
         "@paddleocr/paddleocr-js": "0.4.2",
         "@vue/devtools-api": "^8.2.1",
+        "better-auth": "1.6.23",
         "dexie": "^4.4.6",
         "exceljs": "4.4.0",
         "fuse.js": "^7.5.0",
@@ -42,6 +50,7 @@
         "@paddleocr/paddleocr-js/onnxruntime-web": "1.24.3"
     },
     "devDependencies": {
+        "@cloudflare/workers-types": "^5.20261019.1",
         "@types/node": "^22",
         "@vitejs/plugin-vue": "^5.2.4",
         "esbuild": "0.25.12",

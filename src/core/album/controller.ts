@@ -13,9 +13,11 @@ import type { ImportJob } from '../ocr/models'
 import { pinia } from '../../stores'
 import { useRecognitionStore } from '../../stores/recognition'
 import { formatDisplayDateTime } from '../dateTime'
+import { accountContext } from '../../db/accountContext'
+import { refreshAccount, siteAccount } from '../account/controller'
 const recognition = useRecognitionStore(pinia)
 const task = recognition.tasks.album
-const MARKER = 'groove-nintendo-bound'
+const MARKER = `groove-nintendo-bound:${accountContext.userId ?? 'guest'}`
 // 打开网页时距上次更新不足 3 分钟不自动更新，任意两次更新至少间隔 10 秒
 export const AUTO_UPDATE_INTERVAL = 3 * 60000
 export const UPDATE_COOLDOWN = 10000
@@ -24,6 +26,7 @@ const retryable: AlbumStage[] = ['failed', 'retry_wait', 'canceled']
 export interface AlbumJob extends ImportJob { mediaId: string }
 export const album = reactive({
     configured: undefined as boolean | undefined,
+    legacyAvailable: false,
     state: initialAlbumState(),
     retryableItems: [] as AlbumItem[],
     importedCount: 0,
@@ -43,10 +46,11 @@ async function localBinding(binding: Omit<Binding, 'configured'> & { configured?
         // 换绑或解绑后清除旧账号的更新记录与识别结果，新绑定可立即更新
         if (changed) await database.recognitionRuns.delete('album')
         await database.albumState.put(changed
-            ? { ...state, accountId: binding.accountId, bindingId: binding.bindingId, nickname: binding.nickname, avatarUrl: binding.avatarUrl, bindingGeneration: state.bindingGeneration + 1, nextAllowedAt: 0, lastCheckedAt: undefined, lastImportedAt: undefined, mediaCount: undefined }
-            : { ...state, nickname: binding.nickname, avatarUrl: binding.avatarUrl })
+            ? { ...state, accountId: binding.accountId, bindingId: binding.bindingId, nickname: binding.nickname, avatarUrl: binding.avatarUrl, bindingGeneration: state.bindingGeneration + 1, nextAllowedAt: binding.nextAllowedAt ?? 0, lastCheckedAt: binding.lastCheckedAt ?? undefined, lastImportedAt: undefined, mediaCount: undefined }
+            : { ...state, nickname: binding.nickname, avatarUrl: binding.avatarUrl, nextAllowedAt: Math.max(state.nextAllowedAt, binding.nextAllowedAt ?? 0), lastCheckedAt: binding.lastCheckedAt ?? state.lastCheckedAt })
     })
     if (binding.configured !== undefined) album.configured = binding.configured
+    if ('legacyAvailable' in binding) album.legacyAvailable = !!binding.legacyAvailable
     marker(binding.status === 'active')
 }
 export async function refreshBinding() {
@@ -67,7 +71,17 @@ export async function finishBinding(callback: string) {
         return binding
     })
     album.error = ''
+    await refreshAccount()
     return binding
+}
+export async function migrateBinding() {
+    let migrationId = sessionStorage.getItem('groove-nintendo-migration')
+    if (!migrationId) { migrationId = crypto.randomUUID(); sessionStorage.setItem('groove-nintendo-migration', migrationId) }
+    await credentialLock(async () => {
+        const binding = await request<Binding>('nintendo/binding/migrate', 'POST', { consent: true, migrationId })
+        await localBinding(binding)
+    })
+    await refreshAccount()
 }
 export async function unbind() {
     aborter?.abort()
@@ -88,13 +102,14 @@ async function save(item: AlbumItem) {
 }
 async function recordError(error: unknown) {
     album.error = errorMessage(error)
+    if (error instanceof AlbumError && ['login_required', 'account_changed'].includes(error.code)) {
+        aborter?.abort()
+        await refreshAccount()
+        return
+    }
     if (error instanceof AlbumError && error.code === 'reauth_required') {
         aborter?.abort()
-        // 登录失效后清除 Cookie 与本地绑定，由用户重新绑定
-        await credentialLock(async () => {
-            await request('nintendo/binding', 'DELETE').catch(() => {})
-            await localBinding({ status: 'unbound' })
-        }).catch(() => {})
+        // 上游授权失效保留账号绑定，让用户重新授权，不自动撤销其他设备的绑定
         return
     }
     if (error instanceof AlbumError && error.retryAt > Date.now()) await database.transaction('rw', database.albumState, async () => {
@@ -128,6 +143,7 @@ async function fetchMedia(manual: boolean, signal: AbortSignal) {
         if (!latest || latest.datasetEpoch !== state.datasetEpoch || latest.bindingGeneration !== state.bindingGeneration) throw new DomainError('album.stale')
         await database.albumState.put({ ...latest, avatarUrl: result.avatarUrl ?? latest.avatarUrl, lastCheckedAt: Date.now(), mediaCount: result.media.length })
     })
+    void refreshAccount()
     return { result, state }
 }
 async function collect(result: MediaResponse, state: AlbumState) {
@@ -238,6 +254,7 @@ async function importQueue(queue: AlbumItem[], visible: AlbumMedia[], state: Alb
     }
 }
 export async function scan(manual = false) {
+    if (!siteAccount.authenticated) return
     if (!recognition.begin('album', 'checking')) return
     album.error = ''
     canceled = false
@@ -330,7 +347,7 @@ export function initializeAlbum() {
         })
         onCleanup(() => subscription.unsubscribe())
     }, { immediate: true })
-    let bound = false
-    try { bound = localStorage.getItem(MARKER) === '1' } catch {}
-    if (bound) void refreshBinding().then(() => whenVisible(() => void scan())).catch(recordError)
+    if (siteAccount.authenticated) void refreshBinding().then(binding => {
+        if (binding.status === 'active') whenVisible(() => void scan())
+    }).catch(recordError)
 }

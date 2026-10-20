@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n'
 import AnimatedProgress from '../common/AnimatedProgress.vue'
 import AccountAvatar from '../common/AccountAvatar.vue'
 import NintendoBindDialog from './NintendoBindDialog.vue'
-import { album, retryFailed, scan, unbind } from '../../core/album/controller'
+import { album, migrateBinding, retryFailed, scan, unbind } from '../../core/album/controller'
 import { useRecognitionSummary } from '../../db/recognitionRepository'
 import { errorMessage } from '../../i18n'
 import { useRecognitionStore } from '../../stores/recognition'
@@ -16,6 +16,7 @@ const { t, locale } = useI18n()
 const bindDialog = ref<InstanceType<typeof NintendoBindDialog>>()
 const unbindDialog = ref<HTMLDialogElement>()
 const unbinding = ref(false)
+const migrating = ref(false), migrationConsent = ref(false), migrationError = ref('')
 const unbindError = ref('')
 const now = ref(Date.now())
 const features = ['auto', 'local', 'private'] as const
@@ -60,13 +61,24 @@ async function confirmUnbind() {
         unbinding.value = false
     }
 }
+async function migrate() {
+    migrating.value = true; migrationError.value = ''
+    try { await migrateBinding(); void scan(true) } catch (error) { migrationError.value = errorMessage(error) }
+    finally { migrating.value = false }
+}
 </script>
 
 <template>
     <section class="panel settings-panel account-panel">
         <div class="section-title between">
-            <h2>{{ t('account.section') }}</h2>
+            <h2>{{ t('account.nintendo') }}</h2>
             <span class="micro-label">NINTENDO ACCOUNT</span>
+        </div>
+        <div v-if="album.legacyAvailable" class="legacy-migration">
+            <p>{{ t('siteAccount.migrationDescription') }}</p>
+            <label><input v-model="migrationConsent" type="checkbox" />{{ t('siteAccount.migrationConsent') }}</label>
+            <button class="button secondary" :disabled="!migrationConsent || migrating" @click="migrate">{{ t('siteAccount.migrate') }}</button>
+            <p v-if="migrationError" class="error" role="alert">{{ migrationError }}</p>
         </div>
         <div v-if="!bound" class="account-intro">
             <span class="account-mark" aria-hidden="true"><Gamepad2 :size="26" /></span>
@@ -92,6 +104,7 @@ async function confirmUnbind() {
                     <p>{{ t('account.boundDescription') }}</p>
                 </div>
                 <div class="account-actions">
+                    <button class="button secondary" :disabled="task.busy" @click="bindDialog?.open(true)">{{ t('siteAccount.reauthorize') }}</button>
                     <button
                         class="button primary"
                         :disabled="task.busy || cooldown > 0 || album.configured === false"
@@ -183,6 +196,10 @@ async function confirmUnbind() {
 </template>
 
 <style scoped>
+.legacy-migration { display: grid; gap: 12px; margin: 20px 26px; padding: 16px; border: 1px solid var(--line); border-radius: 10px; font-size: 13px; line-height: 1.8; }
+.legacy-migration label { display: flex; align-items: flex-start; gap: 8px; }
+.legacy-migration input { margin-top: 5px; }
+.legacy-migration .button { justify-self: start; }
 .account-intro {
     display: flex;
     align-items: center;

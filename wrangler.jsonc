@@ -1,7 +1,16 @@
 {
     "name": "gcfp-b30",
     "compatibility_date": "2026-10-06",
+    "compatibility_flags": ["nodejs_compat"],
     "main": "worker/index.ts",
+    "d1_databases": [
+        {
+            "database_id": "036d0163-a558-43a3-ba45-31848df82618",
+            "binding": "DB",
+            "database_name": "gcfp-accounts",
+            "migrations_dir": "worker/migrations"
+        }
+    ],
     "assets": {
         "directory": "./dist",
         "binding": "ASSETS",
@@ -13,7 +22,9 @@
         "GCFP_APPLICATION_IDS": "01003f80212d8000",
         "MEDIA_HOSTS": "media-dl.wc.lp1.nega.srv.nintendo.net",
         "MEDIA_DIRECT": "0",
-        "NXAPI_CLIENT_ID": "iHSLjtzf3_pYvqNUYFIWZA"
+        "NXAPI_CLIENT_ID": "iHSLjtzf3_pYvqNUYFIWZA",
+        "EMAIL_DAILY_LIMIT": "90",
+        "EMAIL_MONTHLY_LIMIT": "2900"
     },
     "ratelimits": [
         {

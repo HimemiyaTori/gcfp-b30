@@ -25,7 +25,7 @@ const notices = [
 ] as const
 const linkValid = computed(() => /^npf[0-9a-z]+:\/\/auth\b/i.test(callback.value.trim()))
 let timer: ReturnType<typeof setTimeout> | undefined
-function open() {
+function open(reauthorize = false) {
     clearTimeout(timer)
     step.value = 'notice'
     agreed.value = false
@@ -36,7 +36,7 @@ function open() {
     // 进入绑定流程时查询一次服务状态，并恢复丢失的已绑定标记
     void refreshBinding()
         .then((binding) => {
-            if (binding.status === 'active' && step.value === 'notice') close()
+            if (!reauthorize && binding.status === 'active' && step.value === 'notice') close()
         })
         .catch(() => {})
 }

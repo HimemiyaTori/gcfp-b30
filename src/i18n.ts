@@ -3,7 +3,7 @@ import zhCN from './locales/zh-CN.json'
 import zhTW from './locales/zh-TW.json'
 import ja from './locales/ja.json'
 import en from './locales/en.json'
-import { AlbumError, DomainError } from './core/errors'
+import { AccountError, AlbumError, DomainError } from './core/errors'
 
 export const uiLanguages = [
     { id: 'zh-CN', label: '简体中文' },
@@ -49,8 +49,14 @@ export const t = i18n.global.t
 export const currentLanguage = () => i18n.global.locale.value as UiLanguage
 
 export function errorMessage(error: unknown, fallback = 'album.failed') {
+    if (error instanceof AccountError) {
+        const key = `siteAccount.errors.${error.code}`
+        return i18n.global.te(key) ? t(key) : t('siteAccount.errors.request_failed')
+    }
     if (error instanceof AlbumError) {
         const key = `album.errors.${error.code}`
+        const accountKey = `siteAccount.errors.${error.code}`
+        if (!i18n.global.te(key) && i18n.global.te(accountKey)) return t(accountKey)
         return i18n.global.te(key) ? t(key) : t('album.apiError', { code: error.code })
     }
     if (error instanceof DomainError) return t(error.code, error.params)

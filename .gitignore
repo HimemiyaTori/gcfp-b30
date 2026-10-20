@@ -12,6 +12,7 @@ dist/
 .pnp.*
 .dev.vars
 .dev.vars.*
+!.dev.vars.example
 .wrangler/
 
 public/covers/

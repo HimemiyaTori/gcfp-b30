@@ -2,6 +2,7 @@ import Dexie, { type Table } from 'dexie'
 import type { ScoreRecord, ScoreHistory, RatingSnapshot, RatingCalculationMetadata, RecognitionRun, RecognitionSource } from './models'
 import type { AlbumItem, AlbumState, ChartProtection } from './albumModels'
 import { localDay } from '../core/rating/calendar'
+import { databaseName } from './accountContext'
 export class ScoreDatabase extends Dexie {
     scores!: Table<ScoreRecord, number>
     scoreHistory!: Table<ScoreHistory, number>
@@ -58,4 +59,4 @@ export class ScoreDatabase extends Dexie {
         })
     }
 }
-export const database = new ScoreDatabase()
+export const database = new ScoreDatabase(databaseName)

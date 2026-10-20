@@ -11,3 +11,6 @@ export class AlbumError extends Error {
         this.name = 'AlbumError'
     }
 }
+export class AccountError extends Error {
+    constructor(public code: string, public retryAt = 0) { super(code) }
+}

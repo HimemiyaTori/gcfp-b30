@@ -477,7 +477,7 @@
         "note": "Opening the site checks the album for new screenshots, except within 3 minutes of the last update. Updates are at least 10 seconds apart. The cloud album keeps at most 100 files for 30 days, so open the site regularly to sync.",
         "source": "Source and licenses",
         "unbindTitle": "Unlink Nintendo Account?",
-        "unbindDescription": "This removes the Nintendo sign-in saved in this browser and stops automatic updates. Recorded scores are kept, and screenshots that were already processed will not be imported again if you link later.",
+        "unbindDescription": "This removes the Nintendo link from your site account and stops album updates using this link on every device. Recorded local scores and processing records are kept.",
         "unbindConfirm": "Unlink",
         "unbindPending": "Unlinking…",
         "unbound": "Nintendo Account unlinked. Recorded scores are kept."
@@ -496,11 +496,11 @@
             },
             "thirdParty": {
                 "title": "Who handles your data",
-                "text": "Cloudflare handles sign-in credentials, the album list and screenshots in transit. The third-party service nxapi-znca-api processes Nintendo identity tokens, Coral tokens and request contents before and after encryption. This site does not store them on its server."
+                "text": "Cloudflare handles sign-in credentials, the album list and screenshots in transit. The third-party service nxapi-znca-api processes Nintendo identity tokens, Coral tokens and request contents before and after encryption. Nintendo credentials are encrypted as described below; album lists and screenshots are not persisted."
             },
             "storage": {
                 "title": "Credentials and scores",
-                "text": "Sign-in credentials are encrypted and stored in a cookie in this browser for 30 days, unreadable by page scripts. Recognized scores are saved only on this device."
+                "text": "Encrypted Nintendo credentials and renewal cache are stored on this server under your site account, unreadable by page scripts. Signing in on another device restores the link. Signing out does not unlink Nintendo. Recognized scores currently stay on this device."
             },
             "scope": {
                 "title": "What is read",
@@ -557,6 +557,67 @@
             "checking": "Checking Nintendo album…",
             "importing": "Importing album screenshots",
             "view": "Details"
+        }
+    },
+    "siteAccount": {
+        "title": "Site account",
+        "welcome": "Sign in to Groove Archive",
+        "description": "Sign in with an email code, then link Nintendo to restore your link and authorization on other devices.",
+        "login": "Sign in / Register",
+        "logout": "Sign out",
+        "loginTitle": "Email sign in / Register",
+        "loginDescription": "Your first sign in creates an account. No password is needed, and a nickname is optional.",
+        "email": "Email",
+        "code": "Verification code",
+        "sendCode": "Send code",
+        "resendIn": "Resend in {seconds}s",
+        "waitToRetry": "Try again later",
+        "retryAt": "Try again after {time}",
+        "codeSent": "Code sent. It expires in 10 minutes. Check your spam folder too.",
+        "continue": "Sign in",
+        "nickname": "Nickname (optional)",
+        "nicknamePlaceholder": "Leave blank to display your email",
+        "save": "Save nickname",
+        "saved": "Account profile saved",
+        "uploadAvatar": "Upload avatar",
+        "avatarHint": "PNG, JPEG or WebP, up to 10 MB. Your avatar is center-cropped and compressed before upload.",
+        "resetAvatar": "Use default avatar",
+        "uploading": "Compressing and uploading avatar…",
+        "expired": "Your session expired. Local account data is kept. Sign in again to use Nintendo albums.",
+        "relogin": "Sign in again",
+        "logoutDescription": "Signing out stops recognition and returns to guest data. Local account scores and the NS link are kept for your next sign in.",
+        "localNote": "Your profile and NS link follow your account. Scores and daily trends stay on this device.",
+        "migrationDescription": "A Nintendo link from the previous version is saved in this browser. You can move it into this site account.",
+        "migrationConsent": "Allow encrypted Nintendo credentials to be stored on this server to restore the link and renew authorization on other devices.",
+        "migrate": "Move Nintendo link",
+        "reauthorize": "Authorize again",
+        "errors": {
+            "request_failed": "Account request failed. Please try again.",
+            "network_error": "Connection failed. Check your network and try again.",
+            "account_not_configured": "The account service is not configured. Contact the site administrator.",
+            "email_not_configured": "Verification email is not configured. Contact the site administrator.",
+            "invalid_email": "Enter a valid email address.",
+            "invalid_otp": "Invalid code. Check it or request a new one.",
+            "otp_expired": "The code expired. Request a new one.",
+            "too_many_attempts": "Too many failed attempts. Request a new code.",
+            "too_many_requests": "Too many requests. Please try again later.",
+            "email_cooldown": "Wait at least 60 seconds before requesting another code.",
+            "email_budget_exhausted": "The free email allowance has been used up. Try again after it resets. Valid codes already received still work.",
+            "email_provider_limited": "The email service is rate limited. Try again later.",
+            "email_send_failed": "Email delivery failed. Request a new code later.",
+            "email_send_uncertain": "Delivery is unconfirmed. Check your inbox before trying again later.",
+            "login_required": "Sign in to your site account first.",
+            "account_changed": "The account changed in another tab. Reload this page.",
+            "protocol_mismatch": "Reload to update this page. Your local data is kept.",
+            "invalid_nickname": "Use up to 40 characters without control characters.",
+            "invalid_avatar": "Choose a PNG, JPEG or WebP image up to 10 MB.",
+            "too_large": "The avatar is too large. Choose a smaller image.",
+            "storage_unavailable": "Browser storage is unavailable. Allow this site to store data and try again.",
+            "rate_limited": "Too many requests. Try again later.",
+            "binding_conflict": "This site account has a different NS link. Unlink it first.",
+            "nintendo_in_use": "This NS account is linked to another site account.",
+            "binding_changed": "The NS link changed. Reload and try again.",
+            "legacy_binding_missing": "The previous link expired. Link Nintendo again."
         }
     }
 }

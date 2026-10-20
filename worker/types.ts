@@ -1,6 +1,4 @@
-export interface Env {
-    ASSETS: { fetch(request: Request): Promise<Response> }
-    API_LIMIT: { limit(options: { key: string }): Promise<{ success: boolean }> }
+export interface Env extends Pick<CloudflareBindings, 'ASSETS' | 'API_LIMIT' | 'DB'> {
     COOKIE_KEY?: string
     COOKIE_KEY_VERSION?: string
     NXAPI_CLIENT_ID?: string
@@ -10,6 +8,11 @@ export interface Env {
     MEDIA_HOSTS?: string
     MEDIA_DIRECT?: string
     APP_ORIGIN?: string
+    BETTER_AUTH_SECRET?: string
+    RESEND_API_KEY?: string
+    EMAIL_FROM?: string
+    EMAIL_DAILY_LIMIT?: string
+    EMAIL_MONTHLY_LIMIT?: string
 }
 export class ApiError extends Error {
     constructor(public code: string, public status = 400, public retryAfter?: number, public diagnostic?: { stage: string; upstreamStatus?: number; contentType?: string; upstreamError?: string; coralStatus?: number }) { super(code) }

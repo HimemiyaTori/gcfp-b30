@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { computed } from 'vue'
-import type { AlbumState } from '../../db/albumModels'
+import type { AccountProfile } from '../../db/accountContext'
 import { navigation } from '../../navigation'
 import AccountAvatar from '../common/AccountAvatar.vue'
 import DisplayControls from './DisplayControls.vue'
-const props = defineProps<{ account?: Pick<AlbumState, 'accountId' | 'nickname' | 'avatarUrl'> }>()
+const props = defineProps<{ account?: AccountProfile }>()
 const { t } = useI18n()
-const name = computed(() => props.account?.accountId ? props.account.nickname || t('account.nintendo') : '')
+const name = computed(() => props.account ? props.account.nickname || props.account.email : '')
 const initial = computed(() => name.value ? Array.from(name.value)[0]?.toUpperCase() ?? 'N' : 'FP')
 const settingsLabel = navigation.find((item) => item.id === 'settings')!.label
 </script>
@@ -61,7 +61,7 @@ const settingsLabel = navigation.find((item) => item.id === 'settings')!.label
             >
                 <AccountAvatar
                     class="avatar"
-                    :src="account?.accountId ? account.avatarUrl : undefined"
+                    :src="account?.avatarUrl"
                     :fallback="initial"
                 />
             </a>

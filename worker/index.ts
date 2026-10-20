@@ -1,6 +1,9 @@
 import { CORAL, FLOW, SESSION, clearCookie, readCookie, seal, setCookie, unseal } from './cookies'
-import { Nintendo, completeAuth, startAuth, type Session, type CoralCache } from './nintendo'
+import { Nintendo, completeAuth, startAuth, type Session } from './nintendo'
 import { ApiError, MAX_IMAGE_BYTES, configured, jsonBody, type Env } from './types'
+import { authRoute, createAuth, requireUser } from './auth'
+import { bindingCredentials, bindingView, getBinding, reserveScan, saveBinding, saveCoral } from './bindings'
+import { accountView, avatarContent, removeAvatar, updateProfile, uploadAvatar } from './profile'
 const TICKET = 'album-download'
 function checkOrigin(request: Request, env: Env, url: URL) {
     let expectedOrigin = url.origin
@@ -19,6 +22,7 @@ function checkOrigin(request: Request, env: Env, url: URL) {
         console.warn('[worker] origin rejected', { requestOrigin: url.origin, expectedOrigin, receivedOrigin, fetchSite })
         throw new ApiError('origin_rejected', 403)
     }
+    return expectedOrigin
 }
 function mediaUrl(value: string, env: Env) {
     let url: URL
@@ -65,38 +69,74 @@ export default {
         const headers = new Headers({ 'Cache-Control': 'no-store', 'Content-Type': 'application/json', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' })
         const reply = (body: object, status = 200) => new Response(JSON.stringify(body), { status, headers })
         try {
-            checkOrigin(request, env, url)
+            const origin = checkOrigin(request, env, url)
             const route = `${request.method} ${url.pathname}`
+            if (route !== 'GET /api/account/avatar' && request.headers.get('X-App-Protocol-Version') !== '1') throw new ApiError('protocol_mismatch', 426)
+            if (!env.API_LIMIT) throw new ApiError('not_configured', 503)
+            if (!(await env.API_LIMIT.limit({ key: `ip:${request.headers.get('cf-connecting-ip') || 'local'}` })).success) throw new ApiError('rate_limited', 429, 60)
+            // 认证框架会吸收发信回调异常，按请求单独捕获后返回真实发送结果
+            let deliveryFailure: ApiError | undefined
+            const auth = createAuth(env, origin, error => { deliveryFailure = error })
+            if (url.pathname.startsWith('/api/auth/')) return reply(await authRoute(request, auth, env, headers, () => deliveryFailure))
+            const owner = await requireUser(request, auth, headers, route === 'GET /api/account')
+            if (route === 'GET /api/account') return reply({ ...await accountView(env, owner.user.id), expiresAt: owner.session.expiresAt })
+            if (route === 'PATCH /api/account') return reply(await updateProfile(request, env, owner))
+            if (route === 'PUT /api/account/avatar') return reply(await uploadAvatar(request, env, owner))
+            if (route === 'DELETE /api/account/avatar') return reply(await removeAvatar(env, owner))
+            if (route === 'GET /api/account/avatar') return await avatarContent(env, owner, headers)
+            const binding = await getBinding(env, owner.user.id)
             if (route === 'DELETE /api/nintendo/binding') {
+                await env.DB.batch([
+                    env.DB.prepare(`UPDATE nintendo_bindings SET nintendo_account_id = NULL, credentials = NULL, coral_cache = NULL,
+                        status = 'unbound', generation = generation + 1, binding_id = ?, next_allowed_at = 0
+                        WHERE user_id = ?`).bind(crypto.randomUUID(), owner.user.id),
+                    env.DB.prepare('DELETE FROM nintendo_auth_flows WHERE user_id = ?').bind(owner.user.id),
+                ])
                 for (const name of [SESSION, CORAL, FLOW]) clearCookie(headers, name)
                 return reply({ status: 'unbound' })
             }
-            if (!env.API_LIMIT) throw new ApiError('not_configured', 503)
-            if (!(await env.API_LIMIT.limit({ key: `ip:${request.headers.get('cf-connecting-ip') || 'local'}` })).success) throw new ApiError('rate_limited', 429, 60)
-            const session = await readCookie<Session>(request, env, SESSION)
-            if (route === 'GET /api/nintendo/binding') return reply({ configured: configured(env), status: session ? 'active' : 'unbound', ...(session ? { accountId: session.accountId, nickname: session.nickname, avatarUrl: session.avatarUrl, bindingId: session.bindingId } : {}) })
+            const legacy = await readCookie<Session>(request, env, SESSION)
+            if (route === 'GET /api/nintendo/binding') return reply(bindingView(binding, configured(env), !!legacy))
             if (!configured(env)) throw new ApiError('not_configured', 503)
+            if (route === 'POST /api/nintendo/binding/migrate') {
+                const body = await jsonBody(request)
+                if (body.consent !== true) throw new ApiError('consent_required')
+                if (typeof body.migrationId !== 'string' || !/^[\w-]{16,80}$/.test(body.migrationId)) throw new ApiError('invalid_request')
+                const receipt = await env.DB.prepare('SELECT binding_id FROM nintendo_binding_migrations WHERE user_id = ? AND migration_id = ?').bind(owner.user.id, body.migrationId).first<{ binding_id: string }>()
+                if (receipt && (binding?.binding_id !== receipt.binding_id || binding.status !== 'active')) throw new ApiError('binding_changed', 409)
+                if (!receipt && !legacy) throw new ApiError('legacy_binding_missing', 409)
+                const saved = receipt ? binding! : await saveBinding(env, owner, legacy!, body.migrationId)
+                for (const name of [SESSION, CORAL, FLOW]) clearCookie(headers, name)
+                return reply(bindingView(saved, true))
+            }
             if (route === 'POST /api/nintendo/auth/start') {
                 const body = await jsonBody(request)
                 if (body.consent !== true) throw new ApiError('consent_required')
                 const flow = await startAuth()
-                await setCookie(headers, env, FLOW, { state: flow.state, verifier: flow.verifier }, 600)
+                const flowId = crypto.randomUUID()
+                await env.DB.prepare('INSERT INTO nintendo_auth_flows (id, user_id, session_id, expires_at) VALUES (?, ?, ?, ?)').bind(flowId, owner.user.id, owner.session.id, Date.now() + 600000).run()
+                await setCookie(headers, env, FLOW, { state: flow.state, verifier: flow.verifier, flowId, userId: owner.user.id, sessionId: owner.session.id }, 600)
                 return reply({ url: flow.url })
             }
             if (route === 'POST /api/nintendo/auth/complete') {
-                const flow = await readCookie<{ state: string; verifier: string }>(request, env, FLOW)
-                if (!flow) throw new ApiError('auth_expired')
+                const flow = await readCookie<{ state: string; verifier: string; flowId: string; userId: string; sessionId: string }>(request, env, FLOW)
+                if (!flow || flow.userId !== owner.user.id || flow.sessionId !== owner.session.id) throw new ApiError('auth_expired')
                 const body = await jsonBody(request)
                 if (typeof body.callback !== 'string') throw new ApiError('invalid_callback')
+                const consumed = await env.DB.prepare(`DELETE FROM nintendo_auth_flows WHERE id = ? AND user_id = ? AND session_id = ? AND expires_at > ? RETURNING id`)
+                    .bind(flow.flowId, owner.user.id, owner.session.id, Date.now()).first()
+                if (!consumed) throw new ApiError('auth_expired')
                 const bound = await completeAuth(body.callback, flow)
-                await setCookie(headers, env, SESSION, bound, 30 * 86400)
-                clearCookie(headers, FLOW); clearCookie(headers, CORAL)
-                return reply({ status: 'active', configured: true, accountId: bound.accountId, nickname: bound.nickname, avatarUrl: bound.avatarUrl, bindingId: bound.bindingId })
+                const saved = await saveBinding(env, owner, bound)
+                for (const name of [SESSION, CORAL, FLOW]) clearCookie(headers, name)
+                return reply(bindingView(saved, true))
             }
-            if (!session) throw new ApiError('reauth_required', 401)
+            if (!binding || binding.status !== 'active') throw new ApiError('reauth_required', 401)
+            const { session, cache: previousCache } = await bindingCredentials(env, binding)
             if (!(await env.API_LIMIT.limit({ key: `account:${session.accountId}` })).success) throw new ApiError('rate_limited', 429, 60)
             if (route === 'POST /api/album/media') {
-                const { media, cache } = await new Nintendo(env).media(session, await readCookie<CoralCache>(request, env, CORAL))
+                await reserveScan(env, binding, owner)
+                const { media, cache } = await new Nintendo(env).media(session, previousCache)
                 const ids = (env.GCFP_APPLICATION_IDS || '').split(',').map(id => id.trim())
                 const selected = []
                 for (const item of media) {
@@ -106,20 +146,17 @@ export default {
                     mediaUrl(item.contentUri, env)
                     const expiresAt = item.expiresAt * 1000
                     if (expiresAt <= Date.now()) continue
-                    const ticket = await seal(env, TICKET, { url: item.contentUri, mediaId: item.id, accountId: session.accountId, bindingId: session.bindingId }, Math.min(expiresAt, Date.now() + 5 * 60000))
+                    const ticket = await seal(env, TICKET, { url: item.contentUri, mediaId: item.id, userId: owner.user.id, accountId: session.accountId, bindingId: session.bindingId, generation: binding.generation }, Math.min(expiresAt, Date.now() + 5 * 60000))
                     selected.push({ mediaId: item.id, applicationId: item.applicationId, capturedAt: Number.isFinite(item.capturedAt) ? item.capturedAt * 1000 : null, contentLength: item.contentLength, expiresAt, ...(env.MEDIA_DIRECT === '1' ? { contentUri: item.contentUri } : {}), ticket })
                 }
-                await setCookie(headers, env, CORAL, cache, Math.max(1, Math.floor((cache.expiresAt - Date.now()) / 1000)))
-                const avatarUrl = cache.avatarUrl || session.avatarUrl
-                if (avatarUrl && avatarUrl !== session.avatarUrl) {
-                    await setCookie(headers, env, SESSION, { ...session, avatarUrl }, Math.max(1, Math.floor((session.expiresAt - Date.now()) / 1000)))
-                }
+                const saved = await saveCoral(env, binding, owner, cache)
+                const avatarUrl = saved.avatar_url
                 return reply({ accountId: session.accountId, bindingId: session.bindingId, avatarUrl, media: selected })
             }
             if (route === 'POST /api/album/content') {
                 const body = await jsonBody(request)
-                const ticket = typeof body.ticket === 'string' ? await unseal<{ url: string; accountId: string; bindingId: string }>(env, TICKET, body.ticket) : undefined
-                if (!ticket || ticket.accountId !== session.accountId || ticket.bindingId !== session.bindingId) throw new ApiError('ticket_expired', 403)
+                const ticket = typeof body.ticket === 'string' ? await unseal<{ url: string; userId: string; accountId: string; bindingId: string; generation: number }>(env, TICKET, body.ticket) : undefined
+                if (!ticket || ticket.userId !== owner.user.id || ticket.accountId !== session.accountId || ticket.bindingId !== session.bindingId || ticket.generation !== binding.generation) throw new ApiError('ticket_expired', 403)
                 return await content(ticket.url, env, headers)
             }
             throw new ApiError('not_found', 404)

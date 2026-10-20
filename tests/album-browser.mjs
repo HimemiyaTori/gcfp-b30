@@ -19,6 +19,9 @@ try {
         locale: 'zh-CN',
         viewport: { width: 1280, height: 960 },
     })
+    await context.addInitScript(() => {
+        localStorage.setItem('groove-account-profile', JSON.stringify({ id: 'album-site-user', email: 'album@example.test', nickname: '' }))
+    })
     let bound = false,
         expiredTicket = true,
         brokenDownload = true
@@ -71,7 +74,8 @@ try {
             })
         }
         let data
-        if (path === '/api/nintendo/binding') {
+        if (path === '/api/account') data = { user: { id: 'album-site-user', email: 'album@example.test', nickname: '' } }
+        else if (path === '/api/nintendo/binding') {
             if (request.method() === 'DELETE') bound = false
             data = binding()
         } else if (path === '/api/nintendo/auth/start')
@@ -112,8 +116,8 @@ try {
     await page
         .getByRole('heading', { name: '账号与设置', exact: true })
         .waitFor()
-    // 未绑定用户浏览首页和设置页都不请求 API
-    assert.deepEqual(observed, [])
+    // 已登录但未绑定时仅恢复账号与绑定，不读取相册
+    assert.ok(observed.every(item => item === 'GET /api/account' || item === 'GET /api/nintendo/binding'))
     // 已保存的过去日期在旧图补录后保持原值
     const frozen = await page.evaluate(async () => {
         const { database } = await import('/src/db/database.ts')
@@ -337,7 +341,10 @@ try {
     )
     // 凭据锁被其他操作占用时，清空成绩仍能取消正在排队的更新
     const lockedContext = await browser.newContext({ locale: 'zh-CN' })
-    await lockedContext.route('**/api/**', route => route.fulfill({ json: { configured: true, status: 'active', accountId: 'locked-user', bindingId: 'locked-binding', media: [] } }))
+    await lockedContext.addInitScript(() => localStorage.setItem('groove-account-profile', JSON.stringify({ id: 'locked-site-user', email: 'locked@example.test', nickname: '' })))
+    await lockedContext.route('**/api/**', route => route.fulfill({ json: new URL(route.request().url()).pathname === '/api/account'
+        ? { user: { id: 'locked-site-user', email: 'locked@example.test', nickname: '' } }
+        : { configured: true, status: 'unbound', accountId: undefined, media: [] } }))
     const lockedPage = await lockedContext.newPage()
     lockedPage.on('pageerror', error => errors.push(error.message))
     await lockedPage.goto(`${origin}#settings`)

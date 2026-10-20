@@ -104,19 +104,25 @@ Excel 的读取位于 `src/core/excel/reader.ts`，生成位于 `template.ts`，
 
 `yarn test:daily-rating` 验收真实 schema 5 升级、每日快照合并与回落、无变化不写入、跨天冻结、同日双标签写入、计算版本重算、删光历史后的零 Rating、跨时区持久化及清空全部数据。`test:history` 同时覆盖排序结果复用、跨标签页更新和读取错误重试。
 
-## Nintendo 相册配置与验收（3A / 3B）
+## 站内账号与 Nintendo 相册
+
+邮箱验证码账号、可选昵称、自定义头像压缩上传和按账号保存的 Nintendo 绑定已接入。Nintendo 绑定需先登录站内账号，同账号在其他设备登录后恢复 NS 绑定及续期缓存。退出仅撤销当前设备会话，解绑影响该账号的所有设备。配置、D1 迁移、账号缓存隔离及验收见 [账号系统配置](docs/账号系统配置.md)。本轮尚未接入成绩历史云端同步，成绩和每日趋势仍在设备本地保存。
+
+下列 Nintendo 协议配置仍适用；运行前另需按上述配置文档完成 D1、认证密钥和发信服务。旧版游客绑定可在登录并同意服务端加密保存后迁入账号。
+
+## Nintendo 协议配置与验收
 
 1. `yarn build:server` 构建包含相册入口的前端，并检查 Worker 类型
 2. 将 `.dev.vars.example` 复制为 `.dev.vars`，把注册页给出的 Client ID 填入 `NXAPI_CLIENT_ID`。支持只有 Client ID 的公开客户端；`NXAPI_CLIENT_SECRET` 可留空或删除，仅服务方实际提供 Secret 的机密客户端才填写。Worker 请求 `ca:gf ca:er ca:dr`，客户端必须获准这些权限；在客户端详情的 Scope 表单中配置，若显示 Requires approval 则按服务方提示申请批准，不使用其他应用的身份
 3. 为 `COOKIE_KEY` 生成随机 32 字节 base64url 密钥，例如 `node -e "console.log(require('node:crypto').randomBytes(32).toString('base64url'))"`；不要提交或发送该密钥
 4. `wrangler.jsonc` 已配置 GCFP 游戏 ID 和媒体主机；部署时核对 `GCFP_APPLICATION_IDS` 和 `MEDIA_HOSTS`，使用逗号分隔的准确游戏 ID 和 HTTPS 主机名，禁止通配符
-5. `yarn dev:server` 启动本地 Worker，在同源页面的「账号与设置 → 账号」点击「绑定 Nintendo 账号」，确认须知后按弹窗中的登录、复制链接、回来粘贴三步完成绑定。Cookie 使用 Secure / HttpOnly，正式部署必须 HTTPS；本地使用浏览器认可的 localhost 环境
+5. `yarn dev:server` 启动本地 Worker，在「账号与设置」先通过邮箱验证码登录，再点击「绑定 Nintendo 账号」，确认须知后按弹窗中的登录、复制链接、回来粘贴三步完成绑定。站内 Cookie 使用 Secure / HttpOnly，正式部署必须 HTTPS；本地使用浏览器认可的 localhost 环境
 
 若本地 `workerd` 出站连接失败，可在 Wrangler 已登录的情况下运行 `yarn wrangler dev --remote --ip 127.0.0.1 --port 8787 --upstream-protocol http`，将 Worker 运行于 Cloudflare 临时预览环境。远程代理会改写 Worker 收到的请求 URL，因此需在 `.dev.vars` 中添加 `APP_ORIGIN="http://127.0.0.1:8787"`，并用该地址打开页面。来源必须精确匹配协议、主机和端口，`localhost` 与 `127.0.0.1` 不能混用。该配置只指定可信来源，不启用跨域访问；正式直连部署可留空，默认仍校验实际请求 URL 的来源。远程模式使用 Cloudflare 上的远程绑定。
 
-原图默认经 Worker 有界流式中转；真实浏览器验证 CDN 可跨域读取后可设 `MEDIA_DIRECT=1`。Nintendo App 协议版本由 `NINTENDO_APP_VERSION` 配置。会话暂用 30 天，Coral 缓存按上游有效期；更换 Cookie 主密钥或版本会要求重新绑定。绑定页提供第三方处理说明和源码链接，协议来源见 [worker/NOTICE.md](worker/NOTICE.md)。上线修改版需把源码链接改为实际部署版本。
+原图默认经 Worker 有界流式中转；真实浏览器验证 CDN 可跨域读取后可设 `MEDIA_DIRECT=1`。Nintendo App 协议版本由 `NINTENDO_APP_VERSION` 配置。站内会话为 30 天，活跃访问按天续期；Nintendo 长期凭据及 Coral 缓存加密存入账号绑定，Coral 按上游有效期更新。更换 Nintendo 加密主密钥或版本会要求重新授权。绑定页提供第三方处理说明和源码链接，协议来源见 [worker/NOTICE.md](worker/NOTICE.md)。上线修改版需把源码链接改为实际部署版本。
 
-普通 `yarn build` / `yarn dev:local` 默认不启用相册；`yarn build:server` / `yarn dev` 启用服务端能力。GitHub Pages 构建剔除相册前端模块；Cloudflare 未绑定用户日常浏览不发 API 请求，点击「绑定 Nintendo 账号」才查询绑定状态。绑定状态标记不含凭据。服务器故障不会影响本地成绩与手动导入。
+普通 `yarn build` / `yarn dev:local` 默认不启用账号与相册；`yarn build:server` / `yarn dev` 启用服务端能力。GitHub Pages 构建剔除账号和相册前端模块；Cloudflare 游客日常浏览不发 API 请求，主动进入账号区域才查询状态，已登录用户打开网页恢复会话与绑定。显示资料和绑定标记不含凭据。服务器故障不会影响本地成绩与手动导入。
 
 验收命令：
 
