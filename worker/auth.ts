@@ -5,10 +5,10 @@ import { consumeLimit, digest, emailCooldown, sendLoginEmail } from './email'
 import { ApiError, jsonBody, type Env } from './types'
 
 export function createAuth(env: Env, origin: string, onDeliveryFailure: (error: ApiError) => void = () => {}) {
-    if (!env.DB || !env.BETTER_AUTH_SECRET || env.BETTER_AUTH_SECRET.length < 32) throw new ApiError('account_not_configured', 503)
+    if (!env.DB || !env.BETTER_AUTH_API_KEY || env.BETTER_AUTH_API_KEY.length < 32) throw new ApiError('account_not_configured', 503)
     return betterAuth({
         appName: 'Groove Archive', baseURL: origin, basePath: '/api/auth',
-        secret: env.BETTER_AUTH_SECRET, database: env.DB,
+        secret: env.BETTER_AUTH_API_KEY, database: env.DB,
         trustedOrigins: [origin],
         session: { expiresIn: 30 * 86400, updateAge: 86400, cookieCache: { enabled: false } },
         advanced: {

@@ -8,7 +8,7 @@ export interface Env extends Pick<CloudflareBindings, 'ASSETS' | 'API_LIMIT' | '
     MEDIA_HOSTS?: string
     MEDIA_DIRECT?: string
     APP_ORIGIN?: string
-    BETTER_AUTH_SECRET?: string
+    BETTER_AUTH_API_KEY?: string
     RESEND_API_KEY?: string
     EMAIL_FROM?: string
     EMAIL_DAILY_LIMIT?: string

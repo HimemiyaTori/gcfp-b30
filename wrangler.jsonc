@@ -18,10 +18,11 @@
     },
     "vars": {
         "COOKIE_KEY_VERSION": "1",
-        "NINTENDO_APP_VERSION": "3.5.0",
+        "EMAIL_FROM": "Groove Archive <noreply@sakuya39.me>",
         "GCFP_APPLICATION_IDS": "01003f80212d8000",
-        "MEDIA_HOSTS": "media-dl.wc.lp1.nega.srv.nintendo.net",
         "MEDIA_DIRECT": "0",
+        "MEDIA_HOSTS": "media-dl.wc.lp1.nega.srv.nintendo.net",
+        "NINTENDO_APP_VERSION": "3.5.0",
         "NXAPI_CLIENT_ID": "iHSLjtzf3_pYvqNUYFIWZA",
         "EMAIL_DAILY_LIMIT": "90",
         "EMAIL_MONTHLY_LIMIT": "2900"
@@ -52,17 +53,28 @@
         },
         "vars": {
             "COOKIE_KEY_VERSION": "1",
-            "NINTENDO_APP_VERSION": "3.5.0",
+            "EMAIL_FROM": "Groove Archive <noreply@sakuya39.me>",
             "GCFP_APPLICATION_IDS": "01003f80212d8000",
-            "MEDIA_HOSTS": "media-dl.wc.lp1.nega.srv.nintendo.net",
             "MEDIA_DIRECT": "0",
-            "NXAPI_CLIENT_ID": "iHSLjtzf3_pYvqNUYFIWZA"
+            "MEDIA_HOSTS": "media-dl.wc.lp1.nega.srv.nintendo.net",
+            "NINTENDO_APP_VERSION": "3.5.0",
+            "NXAPI_CLIENT_ID": "iHSLjtzf3_pYvqNUYFIWZA",
+            "EMAIL_DAILY_LIMIT": "90",
+            "EMAIL_MONTHLY_LIMIT": "2900"
         },
         "ratelimits": [
             {
                 "name": "API_LIMIT",
                 "namespace_id": "1001",
                 "simple": { "limit": 120, "period": 60 }
+            }
+        ],
+        "d1_databases": [
+            {
+                "binding": "DB",
+                "database_id": "34af3310-9b95-4741-b505-95885a009e68",
+                "database_name": "accounts-preview",
+                "migrations_dir": "worker/migrations"
             }
         ]
     }

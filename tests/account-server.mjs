@@ -13,7 +13,7 @@ export async function createAccountServer({ runtimeMode = true, externalFetch, a
     const control = { mailMode: '', accountId: 'test-account-id', noAvatar: false, mediaExpired: false, requestOrigin: '' }
     const env = {
         COOKIE_KEY: randomBytes(32).toString('base64url'), COOKIE_KEY_VERSION: '1',
-        BETTER_AUTH_SECRET: randomBytes(48).toString('base64url'),
+        BETTER_AUTH_API_KEY: randomBytes(48).toString('base64url'),
         RESEND_API_KEY: 'test-resend', EMAIL_FROM: 'Groove Archive <login@example.test>',
         EMAIL_DAILY_LIMIT: '90', EMAIL_MONTHLY_LIMIT: '2900',
         NXAPI_CLIENT_ID: 'test-client', GCFP_APPLICATION_IDS: 'test-gcfp', MEDIA_HOSTS: 'media.example.test',

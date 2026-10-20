@@ -1,4 +1,4 @@
 COOKIE_KEY=""
-BETTER_AUTH_SECRET=""
+BETTER_AUTH_API_KEY=""
 RESEND_API_KEY=""
 EMAIL_FROM="Groove Archive <login@your-domain.example>"
