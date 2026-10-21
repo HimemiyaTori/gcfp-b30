@@ -76,8 +76,9 @@ export default {
             if (!(await env.API_LIMIT.limit({ key: `ip:${request.headers.get('cf-connecting-ip') || 'local'}` })).success) throw new ApiError('rate_limited', 429, 60)
             // 认证框架会吸收发信回调异常，按请求单独捕获后返回真实发送结果
             let deliveryFailure: ApiError | undefined
-            const auth = createAuth(env, origin, error => { deliveryFailure = error })
-            if (url.pathname.startsWith('/api/auth/')) return reply(await authRoute(request, auth, env, headers, () => deliveryFailure))
+            const registration = {}
+            const auth = createAuth(env, origin, error => { deliveryFailure = error }, registration)
+            if (url.pathname.startsWith('/api/auth/')) return reply(await authRoute(request, auth, env, headers, () => deliveryFailure, registration))
             const owner = await requireUser(request, auth, headers, route === 'GET /api/account')
             if (route === 'GET /api/account') return reply({ ...await accountView(env, owner.user.id), expiresAt: owner.session.expiresAt })
             if (route === 'PATCH /api/account') return reply(await updateProfile(request, env, owner))

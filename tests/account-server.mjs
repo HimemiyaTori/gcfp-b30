@@ -1,6 +1,6 @@
 import { createServer } from 'node:http'
 import { randomBytes } from 'node:crypto'
-import { readFile } from 'node:fs/promises'
+import { readFile, readdir } from 'node:fs/promises'
 import { resolve, extname, sep } from 'node:path'
 import { Miniflare } from 'miniflare'
 import { build } from 'esbuild'
@@ -80,7 +80,7 @@ export async function createAccountServer({ runtimeMode = true, externalFetch, a
         method: request.method, headers: request.headers, body: request.body ? await request.text() : undefined,
     }) } } }] })
     const db = await runtime.getD1Database('DB')
-    for (const name of ['0001_auth.sql', '0002_accounts.sql']) {
+    for (const name of (await readdir(new URL('../worker/migrations/', import.meta.url))).filter(name => name.endsWith('.sql')).sort()) {
         const sql = await readFile(new URL(`../worker/migrations/${name}`, import.meta.url), 'utf8')
         await db.batch(sql.split(';').map(part => part.trim()).filter(Boolean).map(part => db.prepare(part)))
     }
@@ -123,7 +123,17 @@ export async function createAccountServer({ runtimeMode = true, externalFetch, a
             }
             return response
         }
+        async function register(email, nickname = '', password = 'account-test-password') {
+            const sent = await api('/api/auth/email-otp/send-verification-otp', 'POST', { email, type: 'registration' })
+            if (!sent.ok) throw new Error(`registration send failed ${sent.status}: ${await sent.text()}`)
+            const verified = await api('/api/auth/register/verify', 'POST', { email, otp: emails.get(email) })
+            if (!verified.ok) throw new Error(`registration verify failed ${verified.status}: ${await verified.text()}`)
+            const completed = await api('/api/auth/register/complete', 'POST', { email, nickname, password })
+            if (!completed.ok) throw new Error(`registration failed ${completed.status}: ${await completed.text()}`)
+            return (await (await api('/api/account')).json()).user
+        }
         async function signIn(email) {
+            if (!await db.prepare('SELECT id FROM user WHERE email = ?').bind(email).first()) return register(email)
             const sent = await api('/api/auth/email-otp/send-verification-otp', 'POST', { email })
             if (!sent.ok) throw new Error(`send failed ${sent.status}: ${await sent.text()}`)
             if (!/^\d{6}$/.test(emails.get(email) || '')) throw new Error('Mock mailbox did not receive the OTP')
@@ -131,7 +141,7 @@ export async function createAccountServer({ runtimeMode = true, externalFetch, a
             if (!signed.ok) throw new Error(`login failed ${signed.status}: ${await signed.text()}`)
             return (await (await api('/api/account')).json()).user
         }
-        return { jar, api, signIn }
+        return { jar, api, signIn, register }
     }
     return { env, db, control, emails, origin, device, async close() {
         globalThis.fetch = realFetch

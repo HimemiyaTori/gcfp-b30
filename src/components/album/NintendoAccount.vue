@@ -11,6 +11,7 @@ import { errorMessage } from '../../i18n'
 import { useRecognitionStore } from '../../stores/recognition'
 import { formatDisplayDateTime } from '../../core/dateTime'
 const task = useRecognitionStore().tasks.album
+defineProps<{ embedded?: boolean }>()
 const emit = defineEmits<{ notify: [message: string, title?: string]; view: [] }>()
 const { t, locale } = useI18n()
 const bindDialog = ref<InstanceType<typeof NintendoBindDialog>>()
@@ -69,7 +70,7 @@ async function migrate() {
 </script>
 
 <template>
-    <section class="panel settings-panel account-panel">
+    <section class="account-panel" :class="embedded ? 'account-embedded' : 'panel settings-panel'">
         <div class="section-title between">
             <h2>{{ t('account.nintendo') }}</h2>
             <span class="micro-label">NINTENDO ACCOUNT</span>
@@ -196,6 +197,8 @@ async function migrate() {
 </template>
 
 <style scoped>
+.account-embedded { border-top: 1px solid var(--line); }
+.account-embedded .section-title { border-bottom: 0; padding-bottom: 0; }
 .legacy-migration { display: grid; gap: 12px; margin: 20px 26px; padding: 16px; border: 1px solid var(--line); border-radius: 10px; font-size: 13px; line-height: 1.8; }
 .legacy-migration label { display: flex; align-items: flex-start; gap: 8px; }
 .legacy-migration input { margin-top: 5px; }

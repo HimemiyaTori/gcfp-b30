@@ -1,4 +1,4 @@
-export interface AccountProfile { id: string; email: string; nickname: string; avatarUrl?: string }
+export interface AccountProfile { id: string; email: string; nickname: string; avatarUrl?: string; hasPassword?: boolean }
 export const ACCOUNT_KEY = 'groove-account-profile'
 
 export function storedAccount(): AccountProfile | undefined {

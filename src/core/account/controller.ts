@@ -5,7 +5,15 @@ import { accountRequest } from './api'
 import { errorMessage } from '../../i18n'
 
 interface AccountResponse { user: AccountProfile; expiresAt?: string }
-export const siteAccount = reactive({ user: storedAccount(), authenticated: false, loading: false, error: '', expired: false })
+interface AccountCompletion { userId: string; kind: 'register'; step: 'nintendo' | 'success' }
+const COMPLETION_KEY = 'groove-account-completion'
+function storedCompletion(): AccountCompletion | undefined {
+    try {
+        const value = JSON.parse(sessionStorage.getItem(COMPLETION_KEY) || 'null') as AccountCompletion | null
+        if (value?.userId === storedAccount()?.id && value?.kind === 'register' && ['nintendo', 'success'].includes(value?.step ?? '')) return value ?? undefined
+    } catch {}
+}
+export const siteAccount = reactive({ user: storedAccount(), authenticated: false, loading: false, error: '', expired: false, completion: storedCompletion() })
 let initialized: Promise<void> | undefined
 
 async function applyAccount(user?: AccountProfile) {
@@ -64,13 +72,41 @@ export function initializeAccount() {
     return initialized
 }
 
-export async function sendCode(email: string) {
-    await accountRequest('auth/email-otp/send-verification-otp', 'POST', { email, type: 'sign-in' })
+export async function sendCode(email: string, type: 'sign-in' | 'registration' = 'sign-in') {
+    await accountRequest('auth/email-otp/send-verification-otp', 'POST', { email, type })
 }
-export async function login(email: string, otp: string) {
-    await accountRequest('auth/sign-in/email-otp', 'POST', { email, otp })
+async function completeAuthentication(kind: 'login' | 'register') {
     const response = await accountRequest<AccountResponse>('account', 'GET', undefined, false)
+    if (kind === 'register') {
+        const completion: AccountCompletion = { userId: response.user.id, kind, step: 'nintendo' }
+        try { sessionStorage.setItem(COMPLETION_KEY, JSON.stringify(completion)) } catch { throw new AccountError('storage_unavailable') }
+        siteAccount.completion = completion
+    } else dismissCompletion()
     await applyAccount(response.user)
+}
+export async function loginWithCode(email: string, otp: string) {
+    await accountRequest('auth/sign-in/email-otp', 'POST', { email, otp })
+    await completeAuthentication('login')
+}
+export async function loginWithPassword(email: string, password: string) {
+    await accountRequest('auth/sign-in/email', 'POST', { email, password })
+    await completeAuthentication('login')
+}
+export async function verifyRegistration(email: string, otp: string) {
+    await accountRequest('auth/register/verify', 'POST', { email, otp })
+}
+export async function register(email: string, nickname: string, password: string) {
+    await accountRequest('auth/register/complete', 'POST', { email, nickname, password })
+    await completeAuthentication('register')
+}
+export function finishOnboarding() {
+    if (!siteAccount.completion) return
+    siteAccount.completion.step = 'success'
+    try { sessionStorage.setItem(COMPLETION_KEY, JSON.stringify(siteAccount.completion)) } catch {}
+}
+export function dismissCompletion() {
+    siteAccount.completion = undefined
+    try { sessionStorage.removeItem(COMPLETION_KEY) } catch {}
 }
 export async function logout() {
     if (siteAccount.user) {
@@ -78,6 +114,7 @@ export async function logout() {
             if (!(error instanceof AccountError) || error.code !== 'login_required') throw error
         }
     }
+    dismissCompletion()
     await applyAccount()
 }
 export async function saveNickname(nickname: string) {
@@ -86,5 +123,9 @@ export async function saveNickname(nickname: string) {
 }
 export async function saveAvatar(blob?: Blob) {
     const response = await accountRequest<AccountResponse>('account/avatar', blob ? 'PUT' : 'DELETE', blob)
+    await applyAccount(response.user)
+}
+export async function savePassword(newPassword: string, currentPassword?: string) {
+    const response = await accountRequest<AccountResponse>(`auth/${currentPassword === undefined ? 'set-password' : 'change-password'}`, 'POST', { newPassword, currentPassword })
     await applyAccount(response.user)
 }

@@ -219,12 +219,12 @@
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    background: #f9e7f4;
-    color: #a44989;
+    background: var(--soft-gradient);
+    color: var(--accent);
     display: grid;
     place-items: center;
     font-size: 12px;
-    font-weight: 650;
+    font-weight: 700;
 }
 main {
     max-width: 1500px;

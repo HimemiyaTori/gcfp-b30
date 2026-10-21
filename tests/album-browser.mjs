@@ -156,6 +156,8 @@ try {
     await finish.click()
     await bind.getByRole('heading', { name: '绑定成功' }).waitFor()
     await bind.getByText('测试玩家', { exact: true }).waitFor()
+    assert.equal(await bind.getByRole('button', { name: '完成', exact: true }).count(), 0)
+    await bind.waitFor({ state: 'hidden', timeout: 5000 })
 
     // 绑定后自动读取相册，只显示进度提示，点击提示打开首页同款识别弹窗
     const sync = page

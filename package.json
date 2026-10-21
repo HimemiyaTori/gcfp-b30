@@ -22,6 +22,7 @@
         "check:worker": "tsc -p worker/tsconfig.json",
         "types:worker": "wrangler types worker/env.d.ts --env-interface CloudflareBindings --include-runtime false",
         "db:migrate:local": "wrangler d1 migrations apply gcfp-accounts --local",
+        "db:migrate:preview": "wrangler d1 migrations apply PREVIEW_DB --remote --config wrangler.preview-migrations.jsonc",
         "auth:schema": "tsx scripts/generate-auth-schema.mjs",
         "test:account": "tsx tests/account-worker.mjs --node",
         "test:account-runtime": "tsx tests/account-worker.mjs",
@@ -31,6 +32,7 @@
         "test:album-runtime": "tsx tests/album-worker.mjs --runtime"
     },
     "dependencies": {
+        "@ark-ui/vue": "^5.39.3",
         "@better-auth/infra": "^0.4.20",
         "@paddleocr/paddleocr-js": "0.4.2",
         "@vue/devtools-api": "^8.2.1",

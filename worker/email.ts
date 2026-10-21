@@ -31,7 +31,7 @@ function quota(value: string | undefined, fallback: number, ceiling: number) {
     return parsed
 }
 
-export async function sendLoginEmail(env: Env, email: string, otp: string) {
+export async function sendLoginEmail(env: Env, email: string, otp: string, purpose: 'sign-in' | 'registration' = 'sign-in') {
     if (!env.RESEND_API_KEY || !env.EMAIL_FROM) throw new ApiError('email_not_configured', 503)
     const now = new Date()
     const day = `resend:day:${now.toISOString().slice(0, 10)}`
@@ -62,8 +62,8 @@ export async function sendLoginEmail(env: Env, email: string, otp: string) {
         response = await fetch('https://api.resend.com/emails', {
             method: 'POST', redirect: 'manual', signal: AbortSignal.timeout(15000),
             headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json', 'Idempotency-Key': id },
-            body: JSON.stringify({ from: env.EMAIL_FROM, to: [email], subject: 'Groove Archive 登录验证码',
-                text: `你的 Groove Archive 登录验证码是 ${otp}，10 分钟内有效。请勿将验证码告诉他人。如果不是你本人操作，请忽略此邮件。` }),
+            body: JSON.stringify({ from: env.EMAIL_FROM, to: [email], subject: `Groove Archive ${purpose === 'registration' ? '注册' : '登录'}验证码`,
+                text: `你的 Groove Archive ${purpose === 'registration' ? '注册' : '登录'}验证码是 ${otp}，10 分钟内有效。请勿将验证码告诉他人。如果不是你本人操作，请忽略此邮件。` }),
         })
     } catch {
         await env.DB.prepare("UPDATE email_send_attempts SET status = 'unknown' WHERE id = ?").bind(id).run()

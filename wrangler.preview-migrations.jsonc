@@ -1,0 +1,11 @@
+{
+    "$schema": "./node_modules/wrangler/config-schema.json",
+    "d1_databases": [
+        {
+            "binding": "PREVIEW_DB",
+            "database_id": "34af3310-9b95-4741-b505-95885a009e68",
+            "database_name": "accounts-preview",
+            "migrations_dir": "worker/migrations"
+        }
+    ]
+}

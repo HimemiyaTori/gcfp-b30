@@ -6,7 +6,7 @@ import AnimatedSuccess from '../common/AnimatedSuccess.vue'
 import { motionTiming } from '../common/motion'
 import { album, beginBinding, finishBinding, refreshBinding } from '../../core/album/controller'
 import { errorMessage } from '../../i18n'
-const emit = defineEmits<{ bound: [] }>()
+const emit = defineEmits<{ bound: []; closed: [bound: boolean] }>()
 const { t } = useI18n()
 const dialog = ref<HTMLDialogElement>()
 const step = ref<'notice' | 'login' | 'success'>('notice')
@@ -45,8 +45,11 @@ function close() {
     dialog.value?.close()
 }
 function closed() {
+    clearTimeout(timer)
     callback.value = ''
-    if (step.value !== 'success') return
+    const bound = step.value === 'success'
+    emit('closed', bound)
+    if (!bound) return
     step.value = 'notice'
     emit('bound')
 }
@@ -83,7 +86,7 @@ async function complete() {
         callback.value = ''
         nickname.value = binding.nickname || t('account.nintendo')
         step.value = 'success'
-        timer = setTimeout(close, motionTiming.successHold * 2 + motionTiming.successCircle + motionTiming.successCheck)
+        timer = setTimeout(close, motionTiming.successCircle + motionTiming.successCheck + motionTiming.successHold)
     } catch (cause) {
         error.value = errorMessage(cause)
     } finally {
@@ -107,7 +110,6 @@ defineExpose({ open })
             <h2 id="bind-title">{{ t('bind.success') }}</h2>
             <p>{{ nickname }}</p>
             <small>{{ t('bind.successNote') }}</small>
-            <button class="button primary bind-done" @click="close">{{ t('bind.done') }}</button>
         </div>
         <template v-else>
             <div class="eyebrow">NINTENDO ACCOUNT</div>
@@ -411,9 +413,6 @@ defineExpose({ open })
 }
 .bind-safety svg {
     margin-top: 3px;
-}
-.bind-done {
-    margin-top: 10px;
 }
 @media (--mobile) {
     .bind-dialog .dialog-actions {

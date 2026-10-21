@@ -5,9 +5,11 @@ import { ApiError, bytes, jsonBody, type Env } from './types'
 export const MAX_AVATAR_BYTES = 100 * 1024
 
 export async function accountView(env: Env, userId: string) {
-    const user = await env.DB.prepare('SELECT id, email, name, image FROM user WHERE id = ?').bind(userId).first<{ id: string; email: string; name: string; image: string | null }>()
+    const user = await env.DB.prepare(`SELECT id, email, name, image,
+        EXISTS(SELECT 1 FROM account WHERE userId = user.id AND providerId = 'credential' AND password IS NOT NULL AND password != '') AS hasPassword
+        FROM user WHERE id = ?`).bind(userId).first<{ id: string; email: string; name: string; image: string | null; hasPassword: number }>()
     if (!user) throw new ApiError('login_required', 401)
-    return { user: { id: user.id, email: user.email, nickname: user.name || '', avatarUrl: user.image || undefined } }
+    return { user: { id: user.id, email: user.email, nickname: user.name || '', avatarUrl: user.image || undefined, hasPassword: !!user.hasPassword } }
 }
 
 export async function updateProfile(request: Request, env: Env, owner: AuthSession) {
