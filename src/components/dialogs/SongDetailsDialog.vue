@@ -18,8 +18,8 @@ import ScoreTable from '../ScoreTable.vue'
 import SongCover from '../SongCover.vue'
 import ScoreDeleteDialog from './ScoreDeleteDialog.vue'
 const basicChartFields: { key: keyof Chart; special?: keyof Chart }[] = [
-    { key: 'combo' },
-    { key: 'note', special: 'special' },
+    { key: 'combo', special: 'special' },
+    { key: 'note' },
     { key: 'circle' },
     { key: 'hold' },
     { key: 'arrow' },
@@ -27,7 +27,7 @@ const basicChartFields: { key: keyof Chart; special?: keyof Chart }[] = [
 ]
 const advancedChartFields: typeof basicChartFields = [
     ...basicChartFields,
-    { key: 'advNote' },
+    { key: 'advCircle' },
     { key: 'leftRightCircle' },
     { key: 'advHold' },
     { key: 'advArrow' },

@@ -368,14 +368,16 @@ interface Chart {
     square?: number
     goldSquare?: number
 
-    // ADV 难度专用
-    advNote?: number
+    // ADV 模式独有
+    advCircle?: number
     leftRightCircle?: number
     advHold?: number
     advArrow?: number
     leftRightArrow?: number
 }
 ```
+
+`note` 为物量数，应等于 `circle + hold + arrow + advCircle + leftRightCircle + advHold + advArrow + leftRightArrow + square`。其中 `circle`、`hold`、`arrow` 都指 single。`special` 指连击数，不表示物量数。连击中 `advArrow` 按 2 倍计入，连击还包含 hold 和 advHold 的 duration，我们不记录 duration。adv 前缀官方称 dual。
 
 level 为谱面定数表示；整数代表普通等级，.5 代表游戏中的 + 等级。除明确展示定数的场景，UI 展示时要将 N.5 格式化为 N+。
 

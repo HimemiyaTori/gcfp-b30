@@ -8,7 +8,7 @@ export interface Chart {
     note?: number; special?: number; combo?: number
     circle?: number; goldCircle?: number; hold?: number; goldHold?: number
     arrow?: number; goldArrow?: number; square?: number; goldSquare?: number
-    advNote?: number; leftRightCircle?: number; advHold?: number
+    advCircle?: number; leftRightCircle?: number; advHold?: number
     advArrow?: number; leftRightArrow?: number
 }
 export interface SongUpdate {
