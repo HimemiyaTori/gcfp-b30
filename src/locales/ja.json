@@ -221,6 +221,10 @@
         "category": "ジャンル",
         "pack": "収録パック",
         "updateAt": "更新情報",
+        "updates": {
+            "free": "無料アップデート #{number}：{date}",
+            "dlc": "DLCアップデート #{number}：{date}"
+        },
         "charts": "譜面情報",
         "mode": "モード",
         "best": "ベストスコア",

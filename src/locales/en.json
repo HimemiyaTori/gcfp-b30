@@ -221,6 +221,10 @@
         "category": "Category",
         "pack": "Pack",
         "updateAt": "Update info",
+        "updates": {
+            "free": "Free Update #{number}: {date}",
+            "dlc": "DLC Update #{number}: {date}"
+        },
         "charts": "Charts",
         "mode": "Song mode",
         "best": "Best score",

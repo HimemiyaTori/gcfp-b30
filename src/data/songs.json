@@ -750,7 +750,7 @@
         "bpm": 65,
         "bpmMax": 190,
         "genre": "anime-pop",
-        "updateAt": "Free Update #9: 2026-08-06",
+        "updateAt": { "kind": "free", "number": 9, "date": "2026-08-06" },
         "searchAliases": [],
         "charts": [
             {
@@ -894,7 +894,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_080.webp",
         "bpm": 118,
         "genre": "anime-pop",
-        "updateAt": "Free Update #9: 2026-08-06",
+        "updateAt": { "kind": "free", "number": 9, "date": "2026-08-06" },
         "searchAliases": [],
         "charts": [
             {
@@ -1038,7 +1038,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_081.webp",
         "bpm": 132,
         "genre": "anime-pop",
-        "updateAt": "Free Update #9: 2026-08-06",
+        "updateAt": { "kind": "free", "number": 9, "date": "2026-08-06" },
         "searchAliases": [],
         "charts": [
             {
@@ -1771,7 +1771,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_026.webp",
         "bpm": 150,
         "genre": "virtual-singer",
-        "updateAt": "Free Update #8: 2026-07-23",
+        "updateAt": { "kind": "free", "number": 8, "date": "2026-07-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -1915,7 +1915,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_025.webp",
         "bpm": 192,
         "genre": "virtual-singer",
-        "updateAt": "Free Update #7: 2026-06-11",
+        "updateAt": { "kind": "free", "number": 7, "date": "2026-06-11" },
         "searchAliases": [],
         "charts": [
             {
@@ -2059,7 +2059,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_024.webp",
         "bpm": 220,
         "genre": "virtual-singer",
-        "updateAt": "Free Update #3: 2026-01-18",
+        "updateAt": { "kind": "free", "number": 3, "date": "2026-01-18" },
         "searchAliases": [],
         "charts": [
             {
@@ -2203,7 +2203,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_023.webp",
         "bpm": 150,
         "genre": "virtual-singer",
-        "updateAt": "Free Update #2: 2025-12-18",
+        "updateAt": { "kind": "free", "number": 2, "date": "2025-12-18" },
         "searchAliases": [],
         "charts": [
             {
@@ -4070,7 +4070,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_083.webp",
         "bpm": 145,
         "genre": "touhou",
-        "updateAt": "Free Update #10: 2026-09-17",
+        "updateAt": { "kind": "free", "number": 10, "date": "2026-09-17" },
         "searchAliases": [],
         "charts": [
             {
@@ -4214,7 +4214,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_032.webp",
         "bpm": 178,
         "genre": "touhou",
-        "updateAt": "Free Update #6: 2026-04-23",
+        "updateAt": { "kind": "free", "number": 6, "date": "2026-04-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -4358,7 +4358,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_036.webp",
         "bpm": 180,
         "genre": "touhou",
-        "updateAt": "Free Update #6: 2026-04-23",
+        "updateAt": { "kind": "free", "number": 6, "date": "2026-04-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -4502,7 +4502,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_035.webp",
         "bpm": 134,
         "genre": "touhou",
-        "updateAt": "Free Update #6: 2026-04-23",
+        "updateAt": { "kind": "free", "number": 6, "date": "2026-04-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -4643,7 +4643,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_033.webp",
         "bpm": 160,
         "genre": "touhou",
-        "updateAt": "Free Update #5: 2026-03-05",
+        "updateAt": { "kind": "free", "number": 5, "date": "2026-03-05" },
         "searchAliases": [],
         "charts": [
             {
@@ -4787,7 +4787,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_034.webp",
         "bpm": 158,
         "genre": "touhou",
-        "updateAt": "Free Update #4: 2026-02-05",
+        "updateAt": { "kind": "free", "number": 4, "date": "2026-02-05" },
         "searchAliases": [],
         "charts": [
             {
@@ -4930,7 +4930,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_037.webp",
         "bpm": 102,
         "genre": "touhou",
-        "updateAt": "Free Update #4: 2026-02-05",
+        "updateAt": { "kind": "free", "number": 4, "date": "2026-02-05" },
         "searchAliases": [],
         "charts": [
             {
@@ -5071,7 +5071,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_031.webp",
         "bpm": 173,
         "genre": "touhou",
-        "updateAt": "Free Update #3: 2026-01-18",
+        "updateAt": { "kind": "free", "number": 3, "date": "2026-01-18" },
         "searchAliases": [],
         "charts": [
             {
@@ -5211,7 +5211,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_030.webp",
         "bpm": 210,
         "genre": "touhou",
-        "updateAt": "Free Update #2: 2025-12-18",
+        "updateAt": { "kind": "free", "number": 2, "date": "2025-12-18" },
         "searchAliases": [],
         "charts": [
             {
@@ -5359,7 +5359,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_029.webp",
         "bpm": 160,
         "genre": "touhou",
-        "updateAt": "Free Update #1: 2025-10-23",
+        "updateAt": { "kind": "free", "number": 1, "date": "2025-10-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -5921,7 +5921,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_041.webp",
         "bpm": 170,
         "genre": "music-game",
-        "updateAt": "Free Update #5: 2026-03-05",
+        "updateAt": { "kind": "free", "number": 5, "date": "2026-03-05" },
         "searchAliases": [],
         "charts": [
             {
@@ -6059,7 +6059,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_042.webp",
         "bpm": 155,
         "genre": "music-game",
-        "updateAt": "Free Update #5: 2026-03-05",
+        "updateAt": { "kind": "free", "number": 5, "date": "2026-03-05" },
         "searchAliases": [],
         "charts": [
             {
@@ -6203,7 +6203,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_039.webp",
         "bpm": 170,
         "genre": "music-game",
-        "updateAt": "Free Update #4: 2026-02-05",
+        "updateAt": { "kind": "free", "number": 4, "date": "2026-02-05" },
         "searchAliases": [],
         "charts": [
             {
@@ -6342,7 +6342,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_040.webp",
         "bpm": 160,
         "genre": "music-game",
-        "updateAt": "Free Update #4: 2026-02-05",
+        "updateAt": { "kind": "free", "number": 4, "date": "2026-02-05" },
         "searchAliases": [],
         "charts": [
             {
@@ -6485,7 +6485,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_043.webp",
         "bpm": 137,
         "genre": "music-game",
-        "updateAt": "Free Update #3: 2026-01-18",
+        "updateAt": { "kind": "free", "number": 3, "date": "2026-01-18" },
         "searchAliases": [],
         "charts": [
             {
@@ -6625,7 +6625,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_038.webp",
         "bpm": 168,
         "genre": "music-game",
-        "updateAt": "Free Update #3: 2026-01-18",
+        "updateAt": { "kind": "free", "number": 3, "date": "2026-01-18" },
         "searchAliases": [],
         "charts": [
             {
@@ -7738,7 +7738,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_051.webp",
         "bpm": 160,
         "genre": "original",
-        "updateAt": "Free Update #1: 2025-10-23",
+        "updateAt": { "kind": "free", "number": 1, "date": "2025-10-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -7881,7 +7881,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_052.webp",
         "bpm": 180,
         "genre": "original",
-        "updateAt": "Free Update #6: 2026-04-23",
+        "updateAt": { "kind": "free", "number": 6, "date": "2026-04-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -8027,7 +8027,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_078.webp",
         "bpm": 140,
         "genre": "original",
-        "updateAt": "Free Update #7: 2026-06-11",
+        "updateAt": { "kind": "free", "number": 7, "date": "2026-06-11" },
         "searchAliases": [],
         "charts": [
             {
@@ -8171,7 +8171,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_053.webp",
         "bpm": 178,
         "genre": "original",
-        "updateAt": "Free Update #8: 2026-07-23",
+        "updateAt": { "kind": "free", "number": 8, "date": "2026-07-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -8309,7 +8309,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_082.webp",
         "bpm": 180,
         "genre": "original",
-        "updateAt": "Free Update #9: 2026-08-06",
+        "updateAt": { "kind": "free", "number": 9, "date": "2026-08-06" },
         "searchAliases": [
             "infinite stellar chronicle",
             "1nfinite stellar chronicle",
@@ -8455,7 +8455,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_085.webp",
         "bpm": 300,
         "genre": "original",
-        "updateAt": "Free Update #10: 2026-09-17",
+        "updateAt": { "kind": "free", "number": 10, "date": "2026-09-17" },
         "searchAliases": [],
         "charts": [
             {
@@ -8594,7 +8594,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_084.webp",
         "bpm": 170,
         "genre": "original",
-        "updateAt": "Free Update #10: 2026-09-17",
+        "updateAt": { "kind": "free", "number": 10, "date": "2026-09-17" },
         "searchAliases": [],
         "charts": [
             {
@@ -9308,7 +9308,7 @@
         "bpm": 171,
         "genre": "original",
         "pack": "aria 5-6",
-        "updateAt": "Free Update #6: 2026-04-23",
+        "updateAt": { "kind": "free", "number": 6, "date": "2026-04-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -9596,7 +9596,7 @@
         "bpm": 155,
         "genre": "original",
         "pack": "aria 4-14",
-        "updateAt": "Free Update #1: 2025-10-23",
+        "updateAt": { "kind": "free", "number": 1, "date": "2025-10-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -10313,7 +10313,7 @@
         "bpm": 192,
         "genre": "original",
         "pack": "aria 8-8",
-        "updateAt": "Free Update #8: 2026-07-23",
+        "updateAt": { "kind": "free", "number": 8, "date": "2026-07-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -10605,7 +10605,7 @@
         "bpm": 200,
         "genre": "original",
         "pack": "aria 6-6",
-        "updateAt": "Free Update #6: 2026-04-23",
+        "updateAt": { "kind": "free", "number": 6, "date": "2026-04-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -11735,7 +11735,7 @@
         "bpm": 208,
         "genre": "original",
         "pack": "aria 9-0",
-        "updateAt": "Free Update #10: 2026-09-17",
+        "updateAt": { "kind": "free", "number": 10, "date": "2026-09-17" },
         "searchAliases": [],
         "charts": [
             {
@@ -12018,7 +12018,7 @@
         "bpm": 158,
         "genre": "original",
         "pack": "aria 7-8",
-        "updateAt": "Free Update #7: 2026-06-11",
+        "updateAt": { "kind": "free", "number": 7, "date": "2026-06-11" },
         "searchAliases": [],
         "charts": [
             {
@@ -12306,7 +12306,7 @@
         "bpm": 145,
         "genre": "anime-pop",
         "pack": "Hit Song Music Pack",
-        "updateAt": "DLC Update #1: 2025-09-25",
+        "updateAt": { "kind": "dlc", "number": 1, "date": "2025-09-25" },
         "searchAliases": [],
         "charts": [
             {
@@ -12450,7 +12450,7 @@
         "bpm": 204,
         "genre": "anime-pop",
         "pack": "Hit Song Music Pack",
-        "updateAt": "DLC Update #1: 2025-09-25",
+        "updateAt": { "kind": "dlc", "number": 1, "date": "2025-09-25" },
         "searchAliases": [],
         "charts": [
             {
@@ -12592,7 +12592,7 @@
         "bpm": 160,
         "genre": "anime-pop",
         "pack": "Hit Song Music Pack",
-        "updateAt": "DLC Update #1: 2025-09-25",
+        "updateAt": { "kind": "dlc", "number": 1, "date": "2025-09-25" },
         "searchAliases": [],
         "charts": [
             {
@@ -12737,7 +12737,7 @@
         "bpm": 180,
         "genre": "anime-pop",
         "pack": "Hit Song Music Pack",
-        "updateAt": "DLC Update #1: 2025-09-25",
+        "updateAt": { "kind": "dlc", "number": 1, "date": "2025-09-25" },
         "searchAliases": [],
         "charts": [
             {
@@ -12880,7 +12880,7 @@
         "bpm": 172,
         "genre": "anime-pop",
         "pack": "Hit Song Music Pack",
-        "updateAt": "DLC Update #1: 2025-09-25",
+        "updateAt": { "kind": "dlc", "number": 1, "date": "2025-09-25" },
         "searchAliases": [],
         "charts": [
             {
@@ -13025,7 +13025,7 @@
         "bpm": 155,
         "genre": "anime-pop",
         "pack": "Hit Song Music Pack",
-        "updateAt": "DLC Update #1: 2025-09-25",
+        "updateAt": { "kind": "dlc", "number": 1, "date": "2025-09-25" },
         "searchAliases": [],
         "charts": [
             {
@@ -13170,7 +13170,7 @@
         "bpm": 132,
         "genre": "touhou",
         "pack": "Touhou Project Arrangements Music Pack",
-        "updateAt": "DLC Update #2: 2025-10-23",
+        "updateAt": { "kind": "dlc", "number": 2, "date": "2025-10-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -13314,7 +13314,7 @@
         "bpm": 170,
         "genre": "touhou",
         "pack": "Touhou Project Arrangements Music Pack",
-        "updateAt": "DLC Update #2: 2025-10-23",
+        "updateAt": { "kind": "dlc", "number": 2, "date": "2025-10-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -13459,7 +13459,7 @@
         "bpm": 182,
         "genre": "touhou",
         "pack": "Touhou Project Arrangements Music Pack",
-        "updateAt": "DLC Update #2: 2025-10-23",
+        "updateAt": { "kind": "dlc", "number": 2, "date": "2025-10-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -13603,7 +13603,7 @@
         "bpm": 185,
         "genre": "touhou",
         "pack": "Touhou Project Arrangements Music Pack",
-        "updateAt": "DLC Update #2: 2025-10-23",
+        "updateAt": { "kind": "dlc", "number": 2, "date": "2025-10-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -13745,7 +13745,7 @@
         "bpm": 165,
         "genre": "touhou",
         "pack": "Touhou Project Arrangements Music Pack",
-        "updateAt": "DLC Update #2: 2025-10-23",
+        "updateAt": { "kind": "dlc", "number": 2, "date": "2025-10-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -13889,7 +13889,7 @@
         "bpmMax": 153,
         "genre": "touhou",
         "pack": "Touhou Project Arrangements Music Pack",
-        "updateAt": "DLC Update #2: 2025-10-23",
+        "updateAt": { "kind": "dlc", "number": 2, "date": "2025-10-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -14029,7 +14029,7 @@
         "bpm": 146,
         "genre": "music-game",
         "pack": "Variety Music Pack",
-        "updateAt": "DLC Update #5: 2026-04-23",
+        "updateAt": { "kind": "dlc", "number": 5, "date": "2026-04-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -14169,7 +14169,7 @@
         "bpmMax": 191,
         "genre": "music-game",
         "pack": "Variety Music Pack",
-        "updateAt": "DLC Update #5: 2026-04-23",
+        "updateAt": { "kind": "dlc", "number": 5, "date": "2026-04-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -14309,7 +14309,7 @@
         "bpm": 143,
         "genre": "music-game",
         "pack": "Variety Music Pack",
-        "updateAt": "DLC Update #5: 2026-04-23",
+        "updateAt": { "kind": "dlc", "number": 5, "date": "2026-04-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -14448,7 +14448,7 @@
         "bpm": 155,
         "genre": "music-game",
         "pack": "Variety Music Pack",
-        "updateAt": "DLC Update #5: 2026-04-23",
+        "updateAt": { "kind": "dlc", "number": 5, "date": "2026-04-23" },
         "searchAliases": ["cosmic railroad"],
         "charts": [
             {
@@ -14591,7 +14591,7 @@
         "bpm": 90,
         "genre": "music-game",
         "pack": "Variety Music Pack",
-        "updateAt": "DLC Update #5: 2026-04-23",
+        "updateAt": { "kind": "dlc", "number": 5, "date": "2026-04-23" },
         "searchAliases": ["d0", "destroyer"],
         "charts": [
             {
@@ -14737,7 +14737,7 @@
         "bpmMax": 315,
         "genre": "music-game",
         "pack": "Variety Music Pack",
-        "updateAt": "DLC Update #5: 2026-04-23",
+        "updateAt": { "kind": "dlc", "number": 5, "date": "2026-04-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -14876,7 +14876,7 @@
         "bpm": 160,
         "genre": "music-game",
         "pack": "Variety Music Pack",
-        "updateAt": "DLC Update #5: 2026-04-23",
+        "updateAt": { "kind": "dlc", "number": 5, "date": "2026-04-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -15015,7 +15015,7 @@
         "bpm": 180,
         "genre": "music-game",
         "pack": "Variety Music Pack",
-        "updateAt": "DLC Update #5: 2026-04-23",
+        "updateAt": { "kind": "dlc", "number": 5, "date": "2026-04-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -15159,8 +15159,8 @@
         "coverSourceUrl": "https://groovecoaster.link/images/songs/fp/virtual-singer-1/senbonzakura/jacket.webp",
         "bpm": 154,
         "genre": "virtual-singer",
-        "pack": "Virtual Singer Music+Character Pack",
-        "updateAt": "DLC Update #3: 2025-11-13",
+        "pack": "Virtual Singer Music Pack",
+        "updateAt": { "kind": "dlc", "number": 3, "date": "2025-11-13" },
         "searchAliases": [],
         "charts": [
             {
@@ -15303,8 +15303,8 @@
         "coverSourceUrl": "https://groovecoaster.link/images/songs/fp/virtual-singer-1/renai-saiban/jacket.webp",
         "bpm": 134,
         "genre": "virtual-singer",
-        "pack": "Virtual Singer Music+Character Pack",
-        "updateAt": "DLC Update #3: 2025-11-13",
+        "pack": "Virtual Singer Music Pack",
+        "updateAt": { "kind": "dlc", "number": 3, "date": "2025-11-13" },
         "searchAliases": [],
         "charts": [
             {
@@ -15446,8 +15446,8 @@
         "coverSourceUrl": "https://groovecoaster.link/images/songs/fp/virtual-singer-1/magical-cure-love-shot/jacket.webp",
         "bpm": 192,
         "genre": "virtual-singer",
-        "pack": "Virtual Singer Music+Character Pack",
-        "updateAt": "DLC Update #3: 2025-11-13",
+        "pack": "Virtual Singer Music Pack",
+        "updateAt": { "kind": "dlc", "number": 3, "date": "2025-11-13" },
         "searchAliases": [],
         "charts": [
             {
@@ -15591,8 +15591,8 @@
         "coverSourceUrl": "https://groovecoaster.link/images/songs/fp/virtual-singer-1/tetoris/jacket.webp",
         "bpm": 170,
         "genre": "virtual-singer",
-        "pack": "Virtual Singer Music+Character Pack",
-        "updateAt": "DLC Update #3: 2025-11-13",
+        "pack": "Virtual Singer Music Pack",
+        "updateAt": { "kind": "dlc", "number": 3, "date": "2025-11-13" },
         "searchAliases": [],
         "charts": [
             {
@@ -15735,8 +15735,8 @@
         "coverSourceUrl": "https://groovecoaster.link/images/songs/fp/virtual-singer-1/monitoring/jacket.webp",
         "bpm": 132,
         "genre": "virtual-singer",
-        "pack": "Virtual Singer Music+Character Pack",
-        "updateAt": "DLC Update #3: 2025-11-13",
+        "pack": "Virtual Singer Music Pack",
+        "updateAt": { "kind": "dlc", "number": 3, "date": "2025-11-13" },
         "searchAliases": [],
         "charts": [
             {
@@ -15879,8 +15879,8 @@
         "coverSourceUrl": "https://groovecoaster.link/images/songs/fp/virtual-singer-1/lustrous/jacket.webp",
         "bpm": 148,
         "genre": "virtual-singer",
-        "pack": "Virtual Singer Music+Character Pack",
-        "updateAt": "DLC Update #3: 2025-11-13",
+        "pack": "Virtual Singer Music Pack",
+        "updateAt": { "kind": "dlc", "number": 3, "date": "2025-11-13" },
         "searchAliases": [],
         "charts": [
             {
@@ -16024,8 +16024,8 @@
         "coverSourceUrl": "https://groovecoaster.link/images/songs/fp/virtual-singer-2/liar-dancer/jacket.webp",
         "bpm": 170,
         "genre": "virtual-singer",
-        "pack": "Virtual Singer Vol.2 Music+Character Pack",
-        "updateAt": "DLC Update #6: 2026-07-23",
+        "pack": "Virtual Singer Vol.2 Music Pack",
+        "updateAt": { "kind": "dlc", "number": 6, "date": "2026-07-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -16168,8 +16168,8 @@
         "coverSourceUrl": "https://groovecoaster.link/images/songs/fp/virtual-singer-2/science/jacket.webp",
         "bpm": 188,
         "genre": "virtual-singer",
-        "pack": "Virtual Singer Vol.2 Music+Character Pack",
-        "updateAt": "DLC Update #6: 2026-07-23",
+        "pack": "Virtual Singer Vol.2 Music Pack",
+        "updateAt": { "kind": "dlc", "number": 6, "date": "2026-07-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -16313,8 +16313,8 @@
         "coverSourceUrl": "https://groovecoaster.link/images/songs/fp/virtual-singer-2/candy-cookie-chocolate/jacket.webp",
         "bpm": 173,
         "genre": "virtual-singer",
-        "pack": "Virtual Singer Vol.2 Music+Character Pack",
-        "updateAt": "DLC Update #6: 2026-07-23",
+        "pack": "Virtual Singer Vol.2 Music Pack",
+        "updateAt": { "kind": "dlc", "number": 6, "date": "2026-07-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -16458,8 +16458,8 @@
         "coverSourceUrl": "https://groovecoaster.link/images/songs/fp/virtual-singer-2/daidaidaidaidaikirai/jacket.webp",
         "bpm": 130,
         "genre": "virtual-singer",
-        "pack": "Virtual Singer Vol.2 Music+Character Pack",
-        "updateAt": "DLC Update #6: 2026-07-23",
+        "pack": "Virtual Singer Vol.2 Music Pack",
+        "updateAt": { "kind": "dlc", "number": 6, "date": "2026-07-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -16602,8 +16602,8 @@
         "coverSourceUrl": "https://groovecoaster.link/images/songs/fp/virtual-singer-2/jigen-tsushin/jacket.webp",
         "bpm": 150,
         "genre": "virtual-singer",
-        "pack": "Virtual Singer Vol.2 Music+Character Pack",
-        "updateAt": "DLC Update #6: 2026-07-23",
+        "pack": "Virtual Singer Vol.2 Music Pack",
+        "updateAt": { "kind": "dlc", "number": 6, "date": "2026-07-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -16747,8 +16747,8 @@
         "coverSourceUrl": "https://groovecoaster.link/images/songs/fp/virtual-singer-2/brain-rot/jacket.webp",
         "bpm": 135,
         "genre": "virtual-singer",
-        "pack": "Virtual Singer Vol.2 Music+Character Pack",
-        "updateAt": "DLC Update #6: 2026-07-23",
+        "pack": "Virtual Singer Vol.2 Music Pack",
+        "updateAt": { "kind": "dlc", "number": 6, "date": "2026-07-23" },
         "searchAliases": [],
         "charts": [
             {
@@ -16893,7 +16893,7 @@
         "bpm": 123,
         "genre": "vtuber",
         "pack": "VTuber Music Pack",
-        "updateAt": "DLC Update #4: 2025-12-18",
+        "updateAt": { "kind": "dlc", "number": 4, "date": "2025-12-18" },
         "searchAliases": [],
         "charts": [
             {
@@ -17038,7 +17038,7 @@
         "bpm": 170,
         "genre": "vtuber",
         "pack": "VTuber Music Pack",
-        "updateAt": "DLC Update #4: 2025-12-18",
+        "updateAt": { "kind": "dlc", "number": 4, "date": "2025-12-18" },
         "searchAliases": [],
         "charts": [
             {
@@ -17183,7 +17183,7 @@
         "bpm": 120,
         "genre": "vtuber",
         "pack": "VTuber Music Pack",
-        "updateAt": "DLC Update #4: 2025-12-18",
+        "updateAt": { "kind": "dlc", "number": 4, "date": "2025-12-18" },
         "searchAliases": [],
         "charts": [
             {
@@ -17325,7 +17325,7 @@
         "bpm": 194,
         "genre": "vtuber",
         "pack": "VTuber Music Pack",
-        "updateAt": "DLC Update #4: 2025-12-18",
+        "updateAt": { "kind": "dlc", "number": 4, "date": "2025-12-18" },
         "searchAliases": [],
         "charts": [
             {
@@ -17470,7 +17470,7 @@
         "bpm": 165,
         "genre": "vtuber",
         "pack": "VTuber Music Pack",
-        "updateAt": "DLC Update #4: 2025-12-18",
+        "updateAt": { "kind": "dlc", "number": 4, "date": "2025-12-18" },
         "searchAliases": [],
         "charts": [
             {
@@ -17615,7 +17615,7 @@
         "bpm": 148,
         "genre": "vtuber",
         "pack": "VTuber Music Pack",
-        "updateAt": "DLC Update #4: 2025-12-18",
+        "updateAt": { "kind": "dlc", "number": 4, "date": "2025-12-18" },
         "searchAliases": [],
         "charts": [
             {
@@ -17753,7 +17753,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_088.webp",
         "bpm": 180,
         "genre": "original",
-        "updateAt": "Free Update #11: 2026-10-08",
+        "updateAt": { "kind": "free", "number": 11, "date": "2026-10-08" },
         "searchAliases": [],
         "charts": [
             {
@@ -17894,7 +17894,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_087.webp",
         "bpm": 175,
         "genre": "original",
-        "updateAt": "Free Update #11: 2026-10-08",
+        "updateAt": { "kind": "free", "number": 11, "date": "2026-10-08" },
         "searchAliases": [],
         "charts": [
             {
@@ -18036,7 +18036,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_089.webp",
         "bpm": 0,
         "genre": "original",
-        "updateAt": "Free Update #11: 2026-10-08",
+        "updateAt": { "kind": "free", "number": 11, "date": "2026-10-08" },
         "searchAliases": [],
         "charts": [
             {
@@ -18182,7 +18182,7 @@
         "bpm": 175,
         "genre": "original",
         "pack": "aria 10-10",
-        "updateAt": "Free Update #11: 2026-10-08",
+        "updateAt": { "kind": "free", "number": 11, "date": "2026-10-08" },
         "searchAliases": [],
         "charts": [
             {

@@ -221,6 +221,10 @@
         "category": "分类",
         "pack": "曲包",
         "updateAt": "更新信息",
+        "updates": {
+            "free": "免费更新 #{number}：{date}",
+            "dlc": "DLC更新 #{number}：{date}"
+        },
         "charts": "谱面信息",
         "mode": "歌曲模式",
         "best": "最高成绩",

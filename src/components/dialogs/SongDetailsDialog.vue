@@ -20,10 +20,10 @@ import ScoreDeleteDialog from './ScoreDeleteDialog.vue'
 const basicChartFields: { key: keyof Chart; special?: keyof Chart }[] = [
     { key: 'combo' },
     { key: 'note', special: 'special' },
-    { key: 'circle', special: 'goldCircle' },
-    { key: 'hold', special: 'goldHold' },
-    { key: 'arrow', special: 'goldArrow' },
-    { key: 'square', special: 'goldSquare' },
+    { key: 'circle' },
+    { key: 'hold' },
+    { key: 'arrow' },
+    { key: 'square' },
 ]
 const advancedChartFields: typeof basicChartFields = [
     ...basicChartFields,
@@ -74,6 +74,14 @@ const vocalName = computed(() =>
 const packName = computed(() =>
     formatSongPack(song.value?.pack, songLanguage.value),
 )
+const updateName = computed(() => {
+    const update = song.value?.updateAt
+    if (!update) return ''
+    return t(`song.updates.${update.kind}`, {
+        number: update.number,
+        date: update.date,
+    })
+})
 function closeOnOutside(event: MouseEvent) {
     const element = dialog.value
     if (!element) return
@@ -150,9 +158,9 @@ defineExpose({ open })
                     <dt>{{ t('song.pack') }}</dt>
                     <dd>{{ packName }}</dd>
                 </div>
-                <div v-if="song.updateAt">
+                <div v-if="updateName">
                     <dt>{{ t('song.updateAt') }}</dt>
-                    <dd>{{ song.updateAt }}</dd>
+                    <dd>{{ updateName }}</dd>
                 </div>
             </dl>
             <div class="chart-heading">

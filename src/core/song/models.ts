@@ -11,6 +11,11 @@ export interface Chart {
     advNote?: number; leftRightCircle?: number; advHold?: number
     advArrow?: number; leftRightArrow?: number
 }
+export interface SongUpdate {
+    kind: 'free' | 'dlc'
+    number: number
+    date: string
+}
 export interface Song {
     id: string
     title: LocalizedText
@@ -21,7 +26,7 @@ export interface Song {
     bpm: number
     bpmMax?: number
     pack?: string
-    updateAt?: string
+    updateAt?: SongUpdate
     searchAliases?: string[]
     charts: Chart[]
 }
