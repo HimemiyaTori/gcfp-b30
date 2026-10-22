@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { computed } from 'vue'
+import { UserRound } from 'lucide-vue-next'
 import type { AccountProfile } from '../../db/accountContext'
 import { navigation } from '../../navigation'
 import AccountAvatar from '../common/AccountAvatar.vue'
 import DisplayControls from './DisplayControls.vue'
 const props = defineProps<{ account?: AccountProfile }>()
 const { t } = useI18n()
+// 纯前端构建没有账号入口，右上角不放头像
+const accountEnabled = import.meta.env.VITE_SERVER === '1'
 const name = computed(() => props.account ? props.account.nickname || props.account.email : '')
-const initial = computed(() => name.value ? Array.from(name.value)[0]?.toUpperCase() ?? 'N' : 'FP')
+const initial = computed(() => Array.from(name.value)[0]?.toUpperCase() || 'FP')
 const settingsLabel = navigation.find((item) => item.id === 'settings')!.label
 </script>
 
@@ -54,16 +57,19 @@ const settingsLabel = navigation.find((item) => item.id === 'settings')!.label
                 <DisplayControls />
             </div>
             <a
+                v-if="accountEnabled"
                 class="avatar-link"
                 href="#settings"
                 :aria-label="t(settingsLabel)"
                 :title="name || t(settingsLabel)"
             >
                 <AccountAvatar
+                    v-if="account"
                     class="avatar"
-                    :src="account?.avatarUrl"
+                    :src="account.avatarUrl"
                     :fallback="initial"
                 />
+                <span v-else class="avatar" aria-hidden="true"><UserRound :size="16" /></span>
             </a>
         </div>
     </header>

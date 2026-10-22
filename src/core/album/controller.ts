@@ -1,6 +1,6 @@
 import { reactive, watch } from 'vue'
 import { liveQuery } from 'dexie'
-import { database } from '../../db/database'
+import { database, databaseReady } from '../../db/database'
 import { initialAlbumState, type AlbumItem, type AlbumStage, type AlbumState } from '../../db/albumModels'
 import { scoreRepository } from '../../db/scoreRepository'
 import { saveRecognition } from '../../db/recognitionRepository'
@@ -324,6 +324,9 @@ function whenVisible(work: () => void) {
 export function initializeAlbum() {
     if (started) return
     started = true
+    void databaseReady.then(() => mountAlbum()).catch(() => { album.error = t('album.failed') })
+}
+function mountAlbum() {
     const failed = () => { album.error = t('album.failed') }
     liveQuery(async () => await database.albumState.get('album') ?? initialAlbumState()).subscribe({
         next: state => {

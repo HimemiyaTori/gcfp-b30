@@ -226,6 +226,9 @@
     font-size: 12px;
     font-weight: 700;
 }
+.topbar .avatar svg {
+    color: var(--accent);
+}
 main {
     max-width: 1500px;
     margin: auto;

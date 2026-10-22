@@ -60,3 +60,31 @@ export class ScoreDatabase extends Dexie {
     }
 }
 export const database = new ScoreDatabase(databaseName)
+
+// 早期按账号拆开的库并入唯一本地库，成功后删除，避免同一成绩留两份
+export const databaseReady = adoptSplitAccountLibraries(database)
+
+async function adoptSplitAccountLibraries(target: ScoreDatabase) {
+    if (typeof indexedDB === 'undefined' || !indexedDB.databases) return
+    const names = (await indexedDB.databases()).map(item => item.name || '').filter(name => name.startsWith('groove-archive-fp-account-'))
+    for (const name of names) {
+        const source = new ScoreDatabase(name)
+        try {
+            await source.open()
+            const history = await source.scoreHistory.toArray()
+            const items = await source.albumItems.toArray()
+            await target.transaction('rw', target.scoreHistory, target.albumItems, target.metadata, async () => {
+                for (const row of history) {
+                    const { id: _ignored, ...copy } = row
+                    await target.scoreHistory.add(copy)
+                }
+                for (const item of items) await target.albumItems.put(item)
+                if (history.length) await target.metadata.delete('calculation')
+            })
+            source.close()
+            await source.delete()
+        } catch {
+            source.close()
+        }
+    }
+}

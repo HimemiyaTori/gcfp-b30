@@ -4,7 +4,7 @@ import { scoreRepository } from '../db/scoreRepository'
 import type { ScoreRecord, ScoreRow } from '../db/models'
 import { getScoreRow } from '../core/score/display'
 import { songLanguage } from './useSettings'
-import { database } from '../db/database'
+import { database, databaseReady } from '../db/database'
 import { t } from '../i18n'
 export function useScoreList() {
     const records = shallowRef<ScoreRecord[]>([]), errorKey = ref(''), loading = ref(true)
@@ -19,6 +19,7 @@ export function useScoreList() {
         subscriptions.forEach(subscription => subscription.unsubscribe())
         subscriptions = []
         try {
+            await databaseReady
             await scoreRepository.initialize()
             if (disposed || current !== revision) return
             const ready = { scores: false, count: false }

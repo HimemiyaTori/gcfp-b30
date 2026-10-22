@@ -24,6 +24,7 @@ try {
     }
     await go('home')
     await page.waitForFunction(() => !document.body.textContent.includes('正在加载本地成绩'))
+    assert.equal(await page.locator('.avatar-link').count(), 0)
     assert.equal(await page.locator('.stats-grid').count(), 0)
 
     // 通过真实表单验证新增、锁谱、降分确认及错误后保留输入
