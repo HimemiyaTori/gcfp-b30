@@ -1,6 +1,6 @@
 import { AlbumError, DomainError } from '../errors'
 export interface Binding { status: 'active' | 'unbound'; configured: boolean; accountId?: string; bindingId?: string; nickname?: string; avatarUrl?: string }
-export interface AlbumMedia { mediaId: string; applicationId: string; capturedAt: number | null; contentLength: number; expiresAt: number; contentUri?: string; ticket: string }
+export interface AlbumMedia { mediaId: string; applicationId: string; capturedAt: number | null; contentLength: number; expiresAt: number; ticket: string }
 export interface MediaResponse { accountId: string; bindingId: string; avatarUrl?: string; media: AlbumMedia[] }
 export async function request<T>(path: string, method = 'GET', body?: object, signal?: AbortSignal): Promise<T> {
     signal?.throwIfAborted()
@@ -30,10 +30,10 @@ export function credentialLock<T>(work: () => Promise<T>, signal?: AbortSignal):
 export async function download(media: AlbumMedia, signal: AbortSignal) {
     let response: Response
     try {
-        response = await fetch(media.contentUri || '/api/album/content', media.contentUri ? { credentials: 'omit', referrerPolicy: 'no-referrer', signal, cache: 'no-store' } : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ticket: media.ticket }), signal, cache: 'no-store' })
+        response = await fetch('/api/album/content', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ticket: media.ticket }), signal, cache: 'no-store' })
     } catch { signal.throwIfAborted(); throw new AlbumError('download_failed') }
     if (!response.ok) {
-        const data = media.contentUri ? {} : await response.json().catch(() => ({}))
+        const data = await response.json().catch(() => ({}))
         const code = response.status === 429 ? 'rate_limited' : typeof data.error === 'string' ? data.error : response.status === 403 || response.status === 404 ? 'media_expired' : 'download_failed'
         throw new AlbumError(code, Date.now() + Math.max(0, Number(response.headers.get('retry-after')) || 0) * 1000)
     }

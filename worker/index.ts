@@ -107,7 +107,7 @@ export default {
                     const expiresAt = item.expiresAt * 1000
                     if (expiresAt <= Date.now()) continue
                     const ticket = await seal(env, TICKET, { url: item.contentUri, mediaId: item.id, accountId: session.accountId, bindingId: session.bindingId }, Math.min(expiresAt, Date.now() + 5 * 60000))
-                    selected.push({ mediaId: item.id, applicationId: item.applicationId, capturedAt: Number.isFinite(item.capturedAt) ? item.capturedAt * 1000 : null, contentLength: item.contentLength, expiresAt, ...(env.MEDIA_DIRECT === '1' ? { contentUri: item.contentUri } : {}), ticket })
+                    selected.push({ mediaId: item.id, applicationId: item.applicationId, capturedAt: Number.isFinite(item.capturedAt) ? item.capturedAt * 1000 : null, contentLength: item.contentLength, expiresAt, ticket })
                 }
                 await setCookie(headers, env, CORAL, cache, Math.max(1, Math.floor((cache.expiresAt - Date.now()) / 1000)))
                 const avatarUrl = cache.avatarUrl || session.avatarUrl

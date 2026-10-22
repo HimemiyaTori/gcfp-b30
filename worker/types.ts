@@ -8,7 +8,6 @@ export interface Env {
     NINTENDO_APP_VERSION?: string
     GCFP_APPLICATION_IDS?: string
     MEDIA_HOSTS?: string
-    MEDIA_DIRECT?: string
     APP_ORIGIN?: string
 }
 export class ApiError extends Error {
