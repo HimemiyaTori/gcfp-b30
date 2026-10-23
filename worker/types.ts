@@ -6,7 +6,6 @@ export interface Env extends Pick<CloudflareBindings, 'ASSETS' | 'API_LIMIT' | '
     NINTENDO_APP_VERSION?: string
     GCFP_APPLICATION_IDS?: string
     MEDIA_HOSTS?: string
-    MEDIA_DIRECT?: string
     APP_ORIGIN?: string
     BETTER_AUTH_API_KEY?: string
     RESEND_API_KEY?: string

@@ -8,8 +8,13 @@ export interface Chart {
     note?: number; special?: number; combo?: number
     circle?: number; goldCircle?: number; hold?: number; goldHold?: number
     arrow?: number; goldArrow?: number; square?: number; goldSquare?: number
-    advNote?: number; leftRightCircle?: number; advHold?: number
+    advCircle?: number; leftRightCircle?: number; advHold?: number
     advArrow?: number; leftRightArrow?: number
+}
+export interface SongUpdate {
+    kind: 'free' | 'dlc'
+    number: number
+    date: string
 }
 export interface Song {
     id: string
@@ -21,7 +26,7 @@ export interface Song {
     bpm: number
     bpmMax?: number
     pack?: string
-    updateAt?: string
+    updateAt?: SongUpdate
     searchAliases?: string[]
     charts: Chart[]
 }

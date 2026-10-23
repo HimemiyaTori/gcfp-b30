@@ -120,7 +120,7 @@ Excel 的读取位于 `src/core/excel/reader.ts`，生成位于 `template.ts`，
 
 若本地 `workerd` 出站连接失败，可在 Wrangler 已登录的情况下运行 `yarn wrangler dev --remote --ip 127.0.0.1 --port 8787 --upstream-protocol http`，将 Worker 运行于 Cloudflare 临时预览环境。远程代理会改写 Worker 收到的请求 URL，因此需在 `.dev.vars` 中添加 `APP_ORIGIN="http://127.0.0.1:8787"`，并用该地址打开页面。来源必须精确匹配协议、主机和端口，`localhost` 与 `127.0.0.1` 不能混用。该配置只指定可信来源，不启用跨域访问；正式直连部署可留空，默认仍校验实际请求 URL 的来源。远程模式使用 Cloudflare 上的远程绑定。
 
-原图默认经 Worker 有界流式中转；真实浏览器验证 CDN 可跨域读取后可设 `MEDIA_DIRECT=1`。Nintendo App 协议版本由 `NINTENDO_APP_VERSION` 配置。站内会话为 30 天，活跃访问按天续期；Nintendo 长期凭据及 Coral 缓存加密存入账号绑定，Coral 按上游有效期更新。更换 Nintendo 加密主密钥或版本会要求重新授权。绑定页提供第三方处理说明和源码链接，协议来源见 [worker/NOTICE.md](worker/NOTICE.md)。上线修改版需把源码链接改为实际部署版本。
+原图经 Worker 有界流式中转。Nintendo App 协议版本由 `NINTENDO_APP_VERSION` 配置。站内会话为 30 天，活跃访问按天续期；Nintendo 长期凭据及 Coral 缓存加密存入账号绑定，Coral 按上游有效期更新。更换 Nintendo 加密主密钥或版本会要求重新授权。绑定页提供第三方处理说明和源码链接，协议来源见 [worker/NOTICE.md](worker/NOTICE.md)。上线修改版需把源码链接改为实际部署版本。
 
 普通 `yarn build` / `yarn dev:local` 默认不启用账号与相册；`yarn build:server` / `yarn dev` 启用服务端能力。GitHub Pages 构建剔除账号和相册前端模块；Cloudflare 游客日常浏览不发 API 请求，主动进入账号区域才查询状态，已登录用户打开网页恢复会话与绑定。显示资料和绑定标记不含凭据。服务器故障不会影响本地成绩与手动导入。
 
@@ -137,6 +137,6 @@ yarn test:album
 yarn test:recognition
 ```
 
-`test:album-worker` 通过真实本地 HTTP 请求验收公开接口，Nintendo 和第三方服务为模拟依赖。`test:album-runtime` 在实际 Workerd 中运行同一套 HTTP 验收，覆盖声明 JSON 类型的加密响应、Base64/Base64url、登录单独加密、令牌失效恢复、限流、原图重定向和下载限制。加密请求的响应必须先解密，不能根据 Content-Type 判断为明文。上游错误会记录固定阶段、HTTP 状态或 Coral 错误码，不记录响应正文和凭据。`test:album` 使用仓库里的真实截图、浏览器 OCR 和 IndexedDB，验收风险确认、绑定教程、手动更新进度弹窗与自动录入、拍摄时间、账号信息、10 秒冷却、3 分钟内重开不更新、超时后打开网页自动更新、清空后不重新录入、失败重试及解除绑定；可通过 `ALBUM_URL` 指定带服务端开关的 Vite 地址。上述结果不代替真实授权、上游重放限制、媒体 ID、CDN 跨域和 Cloudflare 出口验证。当前 OCR 样本与逐张预期见 `tests/ocr-samples.json`。
+`test:album-worker` 通过真实本地 HTTP 请求验收公开接口，Nintendo 和第三方服务为模拟依赖。`test:album-runtime` 在实际 Workerd 中运行同一套 HTTP 验收，覆盖声明 JSON 类型的加密响应、Base64/Base64url、登录单独加密、令牌失效恢复、限流、原图重定向和下载限制。加密请求的响应必须先解密，不能根据 Content-Type 判断为明文。上游错误会记录固定阶段、HTTP 状态或 Coral 错误码，不记录响应正文和凭据。`test:album` 使用仓库里的真实截图、浏览器 OCR 和 IndexedDB，验收风险确认、绑定教程、手动更新进度弹窗与自动录入、拍摄时间、账号信息、10 秒冷却、3 分钟内重开不更新、超时后打开网页自动更新、清空后不重新录入、失败重试及解除绑定；可通过 `ALBUM_URL` 指定带服务端开关的 Vite 地址。上述结果不代替真实授权、上游重放限制、媒体 ID 和 Cloudflare 出口验证。当前 OCR 样本与逐张预期见 `tests/ocr-samples.json`。
 
-绑定后打开网页时，距上次更新满 3 分钟才自动读取相册，3 分钟内重复打开不更新；设置页「更新成绩」可手动更新，自动与手动更新共用 10 秒冷却，多个标签页共享冷却并只允许一个标签页更新。识别成功的截图直接录入，跳过 MISSION CLEAR、游玩中、非结算页及重复截图；拍摄时间缺失时按录入时间记录。手动与自动更新均通过右下角进度提示查看；点击提示或账号区域的查看入口可打开与首页共用的识别弹窗，关闭弹窗在后台继续。页面切换保留进行中的队列，未完成任务在下次更新时继续。临时下载失败或 OCR 超时下次更新最多自动重试两次，其余失败在设置页显示原因并可手动重试。账号区域显示 Nintendo 昵称、相册中可见的 GCFP 截图数、已录入的相册成绩数和最近更新时间。用户已确认 3A、3B 实际使用正常；CDN 直连须单独实测后启用，当前仍默认 Worker 中转。
+绑定后打开网页时，距上次更新满 3 分钟才自动读取相册，3 分钟内重复打开不更新；设置页「更新成绩」可手动更新，自动与手动更新共用 10 秒冷却，多个标签页共享冷却并只允许一个标签页更新。识别成功的截图直接录入，跳过 MISSION CLEAR、游玩中、非结算页及重复截图；拍摄时间缺失时按录入时间记录。手动与自动更新均通过右下角进度提示查看；点击提示或账号区域的查看入口可打开与首页共用的识别弹窗，关闭弹窗在后台继续。页面切换保留进行中的队列，未完成任务在下次更新时继续。临时下载失败或 OCR 超时下次更新最多自动重试两次，其余失败在设置页显示原因并可手动重试。账号区域显示 Nintendo 昵称、相册中可见的 GCFP 截图数、已录入的相册成绩数和最近更新时间。用户已确认 3A、3B 实际使用正常。

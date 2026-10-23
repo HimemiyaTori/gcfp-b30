@@ -343,8 +343,8 @@ interface Song {
     // 曲包：不存在时属于游戏内免费曲包；剧情解锁为「角色 章节」，如 "kakeru 1-2"、"aria 1-3"；其他值为 DLC 曲包名称
     pack?: string
 
-    // 歌曲更新时间，不存在为游戏发售时即有，一般格式为"DLC Update #3: 2025-11-13"或"Free Update #9: 2026-08-06"
-    updateAt?: string
+    // 歌曲更新信息，不存在为游戏发售时即有。kind 为 free 或 dlc，number 为次数，date 为 YYYY-MM-DD
+    updateAt?: { kind: 'free' | 'dlc'; number: number; date: string }
 
     searchAliases?: string[]
 
@@ -368,14 +368,16 @@ interface Chart {
     square?: number
     goldSquare?: number
 
-    // ADV 难度专用
-    advNote?: number
+    // ADV 模式独有
+    advCircle?: number
     leftRightCircle?: number
     advHold?: number
     advArrow?: number
     leftRightArrow?: number
 }
 ```
+
+`note` 为物量数，应等于 `circle + hold + arrow + advCircle + leftRightCircle + advHold + advArrow + leftRightArrow + square`。其中 `circle`、`hold`、`arrow` 都指 single。`special` 指连击数，不表示物量数。连击中 `advArrow` 按 2 倍计入，连击还包含 hold 和 advHold 的 duration，我们不记录 duration。adv 前缀官方称 dual。
 
 level 为谱面定数表示；整数代表普通等级，.5 代表游戏中的 + 等级。除明确展示定数的场景，UI 展示时要将 N.5 格式化为 N+。
 
@@ -387,7 +389,7 @@ level 为谱面定数表示；整数代表普通等级，.5 代表游戏中的 +
 | ---------------- | ---------------------- | -------------------- |
 | `anime-pop`      | アニメ・ポップス       | Anime / Pop          |
 | `vtuber`         | VTuber                 | VTuber               |
-| `virtual-singer` | バーチャル・シンガー   | Virtual Singer       |
+| `virtual-singer` | バーチャルシンガー     | Virtual Singer       |
 | `touhou`         | 東方アレンジ           | Touhou Project       |
 | `music-game`     | 音楽ゲーム・バラエティ | Music Game / Variety |
 | `original`       | オリジナル             | Original             |

@@ -1,7 +1,7 @@
 import { songCategories } from '../../data/categories'
 import rawSongs from '../../data/songs.json'
-import type { Chart, Song } from './models'
 import { t } from '../../i18n'
+import type { Chart, Song } from './models'
 export function validateLibrary(songs: Song[]) {
     const ids = new Set<string>(),
         chartIds = new Set<string>()
@@ -58,6 +58,14 @@ const storyRoutes = {
     kakeru: { ja: '閃道カケル', en: 'Sendou Kakeru' },
     aria: { ja: '氷芽川アリア', en: 'Himekawa Aria' },
 } as const
+const musicPacks: Record<string, string> = {
+    'Hit Song Music Pack': 'ヒットソング 楽曲パック',
+    'Touhou Project Arrangements Music Pack': '東方Projectアレンジ 楽曲パック',
+    'Variety Music Pack': 'バラエティ 楽曲パック',
+    'Virtual Singer Music Pack': 'バーチャルシンガー 楽曲パック',
+    'Virtual Singer Vol.2 Music Pack': 'バーチャルシンガー Vol.2 楽曲パック',
+    'VTuber Music Pack': 'VTuber 楽曲パック',
+}
 export const getSongTitle = (song: Song, lang: 'ja' | 'en') =>
     song.title[lang] || song.title.ja
 export const getSongArtist = (song: Song, lang: 'ja' | 'en') =>
@@ -68,8 +76,10 @@ export function formatSongPack(
 ) {
     const value = pack?.trim() ?? ''
     const matched = /^(kakeru|aria) (\d+-\d+)$/.exec(value)
-    if (!matched) return value
-    return `${storyRoutes[matched[1] as keyof typeof storyRoutes][language]}篇（${matched[2]}）`
+    if (matched)
+        return `${storyRoutes[matched[1] as keyof typeof storyRoutes][language]}篇（${matched[2]}）`
+    if (language === 'ja' && musicPacks[value]) return musicPacks[value]
+    return value
 }
 export const formatLevel = (level: number) =>
     Number.isInteger(level) ? String(level) : `${Math.floor(level)}+`
