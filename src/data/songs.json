@@ -27,8 +27,7 @@
                 "circle": 76,
                 "square": 13,
                 "hold": 10,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "1-basic-normal",
@@ -85,8 +84,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "1-advanced-normal",
@@ -172,9 +170,7 @@
                 "circle": 103,
                 "square": 33,
                 "hold": 0,
-                "arrow": 0,
-                "goldHold": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "2-basic-normal",
@@ -187,8 +183,7 @@
                 "circle": 114,
                 "square": 17,
                 "hold": 0,
-                "arrow": 56,
-                "goldHold": 0
+                "arrow": 56
             },
             {
                 "id": "2-basic-hard",
@@ -232,9 +227,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldHold": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "2-advanced-normal",
@@ -252,8 +245,7 @@
                 "advHold": 0,
                 "arrow": 56,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldHold": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "2-advanced-hard",
@@ -323,8 +315,7 @@
                 "circle": 53,
                 "square": 18,
                 "hold": 17,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "3-basic-normal",
@@ -381,8 +372,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "3-advanced-normal",
@@ -470,8 +460,7 @@
                 "circle": 78,
                 "square": 18,
                 "hold": 21,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "4-basic-normal",
@@ -528,8 +517,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "4-advanced-normal",
@@ -616,8 +604,7 @@
                 "circle": 70,
                 "square": 1,
                 "hold": 21,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "5-basic-normal",
@@ -674,8 +661,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "5-advanced-normal",
@@ -760,11 +746,11 @@
                 "level": 2,
                 "note": 98,
                 "combo": 251,
+                "special": null,
                 "circle": 57,
                 "square": 17,
                 "hold": 24,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "6-basic-normal",
@@ -773,6 +759,7 @@
                 "level": 5,
                 "note": 167,
                 "combo": 297,
+                "special": null,
                 "circle": 84,
                 "square": 11,
                 "hold": 31,
@@ -785,6 +772,7 @@
                 "level": 9,
                 "note": 320,
                 "combo": 420,
+                "special": null,
                 "circle": 183,
                 "square": 5,
                 "hold": 33,
@@ -797,6 +785,7 @@
                 "level": 12,
                 "note": 460,
                 "combo": 545,
+                "special": null,
                 "circle": 300,
                 "square": 10,
                 "hold": 37,
@@ -818,8 +807,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "6-advanced-normal",
@@ -904,11 +892,11 @@
                 "level": 2,
                 "note": 134,
                 "combo": 224,
+                "special": null,
                 "circle": 102,
                 "square": 9,
                 "hold": 23,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "7-basic-normal",
@@ -917,6 +905,7 @@
                 "level": 6,
                 "note": 243,
                 "combo": 341,
+                "special": null,
                 "circle": 137,
                 "square": 15,
                 "hold": 31,
@@ -929,6 +918,7 @@
                 "level": 9,
                 "note": 357,
                 "combo": 470,
+                "special": null,
                 "circle": 138,
                 "square": 16,
                 "hold": 39,
@@ -941,6 +931,7 @@
                 "level": 12.5,
                 "note": 534,
                 "combo": 651,
+                "special": null,
                 "circle": 261,
                 "square": 58,
                 "hold": 50,
@@ -962,8 +953,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "7-advanced-normal",
@@ -1048,11 +1038,11 @@
                 "level": 1,
                 "note": 124,
                 "combo": 228,
+                "special": null,
                 "circle": 97,
                 "square": 7,
                 "hold": 20,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "8-basic-normal",
@@ -1061,6 +1051,7 @@
                 "level": 4,
                 "note": 206,
                 "combo": 278,
+                "special": null,
                 "circle": 162,
                 "square": 12,
                 "hold": 23,
@@ -1073,6 +1064,7 @@
                 "level": 7,
                 "note": 364,
                 "combo": 444,
+                "special": null,
                 "circle": 284,
                 "square": 7,
                 "hold": 16,
@@ -1085,6 +1077,7 @@
                 "level": 9,
                 "note": 397,
                 "combo": 485,
+                "special": null,
                 "circle": 213,
                 "square": 12,
                 "hold": 33,
@@ -1106,8 +1099,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "8-advanced-normal",
@@ -1195,8 +1187,7 @@
                 "circle": 131,
                 "square": 22,
                 "hold": 7,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "9-basic-normal",
@@ -1253,8 +1244,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "9-advanced-normal",
@@ -1342,8 +1332,7 @@
                 "circle": 60,
                 "square": 33,
                 "hold": 20,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "10-basic-normal",
@@ -1400,8 +1389,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "10-advanced-normal",
@@ -1488,8 +1476,7 @@
                 "circle": 89,
                 "square": 12,
                 "hold": 14,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "11-basic-normal",
@@ -1546,8 +1533,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "11-advanced-normal",
@@ -1635,9 +1621,7 @@
                 "circle": 69,
                 "square": 0,
                 "hold": 24,
-                "arrow": 0,
-                "goldArrow": 0,
-                "goldSquare": 0
+                "arrow": 0
             },
             {
                 "id": "12-basic-normal",
@@ -1694,9 +1678,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0,
-                "goldSquare": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "12-advanced-normal",
@@ -1781,11 +1763,11 @@
                 "level": 2,
                 "note": 173,
                 "combo": 230,
+                "special": null,
                 "circle": 135,
                 "square": 23,
                 "hold": 15,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "13-basic-normal",
@@ -1794,6 +1776,7 @@
                 "level": 5,
                 "note": 340,
                 "combo": 388,
+                "special": null,
                 "circle": 251,
                 "square": 20,
                 "hold": 19,
@@ -1806,6 +1789,7 @@
                 "level": 8,
                 "note": 500,
                 "combo": 582,
+                "special": null,
                 "circle": 322,
                 "square": 16,
                 "hold": 36,
@@ -1818,6 +1802,7 @@
                 "level": 12,
                 "note": 635,
                 "combo": 745,
+                "special": null,
                 "circle": 361,
                 "square": 22,
                 "hold": 50,
@@ -1839,8 +1824,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "13-advanced-normal",
@@ -1925,11 +1909,11 @@
                 "level": 2,
                 "note": 184,
                 "combo": 324,
+                "special": null,
                 "circle": 130,
                 "square": 26,
                 "hold": 28,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "14-basic-normal",
@@ -1938,6 +1922,7 @@
                 "level": 6,
                 "note": 272,
                 "combo": 470,
+                "special": null,
                 "circle": 112,
                 "square": 16,
                 "hold": 48,
@@ -1950,6 +1935,7 @@
                 "level": 9,
                 "note": 403,
                 "combo": 623,
+                "special": null,
                 "circle": 196,
                 "square": 25,
                 "hold": 53,
@@ -1962,6 +1948,7 @@
                 "level": 13,
                 "note": 613,
                 "combo": 846,
+                "special": null,
                 "circle": 273,
                 "square": 84,
                 "hold": 44,
@@ -1983,8 +1970,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "14-advanced-normal",
@@ -2069,11 +2055,11 @@
                 "level": 4,
                 "note": 180,
                 "combo": 380,
+                "special": null,
                 "circle": 113,
                 "square": 29,
                 "hold": 38,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "15-basic-normal",
@@ -2082,6 +2068,7 @@
                 "level": 8,
                 "note": 347,
                 "combo": 516,
+                "special": null,
                 "circle": 179,
                 "square": 51,
                 "hold": 41,
@@ -2094,6 +2081,7 @@
                 "level": 9,
                 "note": 528,
                 "combo": 727,
+                "special": null,
                 "circle": 301,
                 "square": 10,
                 "hold": 61,
@@ -2106,6 +2094,7 @@
                 "level": 13,
                 "note": 744,
                 "combo": 910,
+                "special": null,
                 "circle": 383,
                 "square": 59,
                 "hold": 57,
@@ -2127,8 +2116,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "15-advanced-normal",
@@ -2213,11 +2201,11 @@
                 "level": 2,
                 "note": 144,
                 "combo": 284,
+                "special": null,
                 "circle": 109,
                 "square": 14,
                 "hold": 21,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "16-basic-normal",
@@ -2226,6 +2214,7 @@
                 "level": 6,
                 "note": 262,
                 "combo": 381,
+                "special": null,
                 "circle": 157,
                 "square": 15,
                 "hold": 32,
@@ -2238,6 +2227,7 @@
                 "level": 9,
                 "note": 443,
                 "combo": 543,
+                "special": null,
                 "circle": 268,
                 "square": 6,
                 "hold": 45,
@@ -2250,6 +2240,7 @@
                 "level": 11.5,
                 "note": 655,
                 "combo": 723,
+                "special": null,
                 "circle": 355,
                 "square": 15,
                 "hold": 52,
@@ -2271,8 +2262,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "16-advanced-normal",
@@ -2356,8 +2346,7 @@
                 "circle": 109,
                 "square": 18,
                 "hold": 24,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "17-basic-normal",
@@ -2414,8 +2403,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "17-advanced-normal",
@@ -2499,11 +2487,11 @@
                 "level": 3,
                 "note": 157,
                 "combo": 242,
+                "special": null,
                 "circle": 114,
                 "square": 34,
                 "hold": 9,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "18-basic-normal",
@@ -2512,6 +2500,7 @@
                 "level": 5,
                 "note": 296,
                 "combo": 376,
+                "special": null,
                 "circle": 170,
                 "square": 72,
                 "hold": 14,
@@ -2524,6 +2513,7 @@
                 "level": 7,
                 "note": 408,
                 "combo": 503,
+                "special": null,
                 "circle": 195,
                 "square": 30,
                 "hold": 20,
@@ -2536,6 +2526,7 @@
                 "level": 10,
                 "note": 501,
                 "combo": 600,
+                "special": null,
                 "circle": 254,
                 "square": 50,
                 "hold": 18,
@@ -2557,8 +2548,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "18-advanced-normal",
@@ -2642,11 +2632,11 @@
                 "level": 2,
                 "note": 122,
                 "combo": 270,
+                "special": null,
                 "circle": 79,
                 "square": 14,
                 "hold": 29,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "19-basic-normal",
@@ -2655,6 +2645,7 @@
                 "level": 4,
                 "note": 218,
                 "combo": 338,
+                "special": null,
                 "circle": 171,
                 "square": 1,
                 "hold": 32,
@@ -2667,6 +2658,7 @@
                 "level": 9,
                 "note": 425,
                 "combo": 537,
+                "special": null,
                 "circle": 312,
                 "square": 4,
                 "hold": 27,
@@ -2679,6 +2671,7 @@
                 "level": 12.5,
                 "note": 550,
                 "combo": 704,
+                "special": null,
                 "circle": 353,
                 "square": 31,
                 "hold": 43,
@@ -2700,8 +2693,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "19-advanced-normal",
@@ -2783,11 +2775,11 @@
                 "level": 2,
                 "note": 127,
                 "combo": 244,
+                "special": null,
                 "circle": 88,
                 "square": 16,
                 "hold": 23,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "20-basic-normal",
@@ -2796,6 +2788,7 @@
                 "level": 5,
                 "note": 250,
                 "combo": 308,
+                "special": null,
                 "circle": 161,
                 "square": 18,
                 "hold": 18,
@@ -2808,6 +2801,7 @@
                 "level": 10,
                 "note": 490,
                 "combo": 537,
+                "special": null,
                 "circle": 317,
                 "square": 29,
                 "hold": 13,
@@ -2820,6 +2814,7 @@
                 "level": 11,
                 "note": 570,
                 "combo": 689,
+                "special": null,
                 "circle": 284,
                 "square": 28,
                 "hold": 46,
@@ -2841,8 +2836,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "20-advanced-normal",
@@ -2926,11 +2920,11 @@
                 "level": 2,
                 "note": 130,
                 "combo": 251,
+                "special": null,
                 "circle": 94,
                 "square": 8,
                 "hold": 28,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "21-basic-normal",
@@ -2939,11 +2933,11 @@
                 "level": 5,
                 "note": 229,
                 "combo": 366,
+                "special": null,
                 "circle": 167,
                 "square": 0,
                 "hold": 56,
-                "arrow": 6,
-                "goldSquare": 0
+                "arrow": 6
             },
             {
                 "id": "21-basic-hard",
@@ -2952,6 +2946,7 @@
                 "level": 9,
                 "note": 311,
                 "combo": 467,
+                "special": null,
                 "circle": 280,
                 "square": 14,
                 "hold": 15,
@@ -2964,6 +2959,7 @@
                 "level": 11,
                 "note": 528,
                 "combo": 553,
+                "special": null,
                 "circle": 357,
                 "square": 67,
                 "hold": 16,
@@ -2985,8 +2981,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "21-advanced-normal",
@@ -3004,8 +2999,7 @@
                 "advHold": 0,
                 "arrow": 6,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldSquare": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "21-advanced-hard",
@@ -3072,8 +3066,7 @@
                 "circle": 92,
                 "square": 30,
                 "hold": 26,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "22-basic-normal",
@@ -3130,8 +3123,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "22-advanced-normal",
@@ -3215,11 +3207,11 @@
                 "level": 1,
                 "note": 91,
                 "combo": 177,
+                "special": null,
                 "circle": 63,
                 "square": 8,
                 "hold": 20,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "23-basic-normal",
@@ -3228,6 +3220,7 @@
                 "level": 3,
                 "note": 164,
                 "combo": 226,
+                "special": null,
                 "circle": 125,
                 "square": 3,
                 "hold": 20,
@@ -3240,6 +3233,7 @@
                 "level": 7,
                 "note": 340,
                 "combo": 388,
+                "special": null,
                 "circle": 285,
                 "square": 8,
                 "hold": 16,
@@ -3252,6 +3246,7 @@
                 "level": 11,
                 "note": 507,
                 "combo": 558,
+                "special": null,
                 "circle": 348,
                 "square": 54,
                 "hold": 21,
@@ -3273,8 +3268,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "23-advanced-normal",
@@ -3361,8 +3355,7 @@
                 "circle": 114,
                 "square": 1,
                 "hold": 39,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "24-basic-normal",
@@ -3419,8 +3412,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "24-advanced-normal",
@@ -3504,11 +3496,11 @@
                 "level": 2,
                 "note": 227,
                 "combo": 227,
+                "special": null,
                 "circle": 86,
                 "square": 26,
                 "hold": 115,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "25-basic-normal",
@@ -3517,6 +3509,7 @@
                 "level": 5,
                 "note": 200,
                 "combo": 313,
+                "special": null,
                 "circle": 144,
                 "square": 5,
                 "hold": 41,
@@ -3529,6 +3522,7 @@
                 "level": 9,
                 "note": 449,
                 "combo": 502,
+                "special": null,
                 "circle": 337,
                 "square": 24,
                 "hold": 26,
@@ -3541,6 +3535,7 @@
                 "level": 12.5,
                 "note": 549,
                 "combo": 585,
+                "special": null,
                 "circle": 351,
                 "square": 58,
                 "hold": 20,
@@ -3562,8 +3557,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "25-advanced-normal",
@@ -3646,11 +3640,11 @@
                 "level": 4,
                 "note": 191,
                 "combo": 379,
+                "special": null,
                 "circle": 135,
                 "square": 16,
                 "hold": 40,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "26-basic-normal",
@@ -3659,6 +3653,7 @@
                 "level": 6,
                 "note": 377,
                 "combo": 478,
+                "special": null,
                 "circle": 274,
                 "square": 61,
                 "hold": 26,
@@ -3671,6 +3666,7 @@
                 "level": 10,
                 "note": 536,
                 "combo": 639,
+                "special": null,
                 "circle": 370,
                 "square": 55,
                 "hold": 17,
@@ -3683,6 +3679,7 @@
                 "level": 12.5,
                 "note": 788,
                 "combo": 876,
+                "special": null,
                 "circle": 528,
                 "square": 70,
                 "hold": 15,
@@ -3704,8 +3701,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "26-advanced-normal",
@@ -3793,8 +3789,7 @@
                 "circle": 164,
                 "square": 23,
                 "hold": 35,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "27-basic-normal",
@@ -3851,8 +3846,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "27-advanced-normal",
@@ -3936,11 +3930,11 @@
                 "level": 3,
                 "note": 184,
                 "combo": 360,
+                "special": null,
                 "circle": 118,
                 "square": 27,
                 "hold": 39,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "28-basic-normal",
@@ -3949,6 +3943,7 @@
                 "level": 7,
                 "note": 343,
                 "combo": 489,
+                "special": null,
                 "circle": 244,
                 "square": 6,
                 "hold": 29,
@@ -3961,6 +3956,7 @@
                 "level": 11,
                 "note": 601,
                 "combo": 695,
+                "special": null,
                 "circle": 450,
                 "square": 32,
                 "hold": 23,
@@ -3973,6 +3969,7 @@
                 "level": 13,
                 "note": 921,
                 "combo": 1001,
+                "special": null,
                 "circle": 629,
                 "square": 42,
                 "hold": 26,
@@ -3994,8 +3991,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "28-advanced-normal",
@@ -4080,11 +4076,11 @@
                 "level": 2,
                 "note": 120,
                 "combo": 208,
+                "special": null,
                 "circle": 96,
                 "square": 7,
                 "hold": 17,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "29-basic-normal",
@@ -4093,6 +4089,7 @@
                 "level": 5,
                 "note": 205,
                 "combo": 301,
+                "special": null,
                 "circle": 127,
                 "square": 15,
                 "hold": 33,
@@ -4105,6 +4102,7 @@
                 "level": 8,
                 "note": 404,
                 "combo": 456,
+                "special": null,
                 "circle": 286,
                 "square": 32,
                 "hold": 22,
@@ -4117,6 +4115,7 @@
                 "level": 11.5,
                 "note": 522,
                 "combo": 574,
+                "special": null,
                 "circle": 336,
                 "square": 24,
                 "hold": 18,
@@ -4138,8 +4137,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "29-advanced-normal",
@@ -4224,11 +4222,11 @@
                 "level": 2,
                 "note": 325,
                 "combo": 325,
+                "special": null,
                 "circle": 100,
                 "square": 34,
                 "hold": 191,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "30-basic-normal",
@@ -4237,6 +4235,7 @@
                 "level": 4,
                 "note": 231,
                 "combo": 386,
+                "special": null,
                 "circle": 186,
                 "square": 3,
                 "hold": 30,
@@ -4249,6 +4248,7 @@
                 "level": 8,
                 "note": 382,
                 "combo": 568,
+                "special": null,
                 "circle": 233,
                 "square": 15,
                 "hold": 38,
@@ -4261,6 +4261,7 @@
                 "level": 12,
                 "note": 517,
                 "combo": 699,
+                "special": null,
                 "circle": 319,
                 "square": 30,
                 "hold": 46,
@@ -4282,8 +4283,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "30-advanced-normal",
@@ -4368,11 +4368,11 @@
                 "level": 3,
                 "note": 140,
                 "combo": 270,
+                "special": null,
                 "circle": 96,
                 "square": 17,
                 "hold": 27,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "31-basic-normal",
@@ -4381,6 +4381,7 @@
                 "level": 6,
                 "note": 224,
                 "combo": 346,
+                "special": null,
                 "circle": 134,
                 "square": 22,
                 "hold": 30,
@@ -4393,6 +4394,7 @@
                 "level": 9,
                 "note": 382,
                 "combo": 496,
+                "special": null,
                 "circle": 210,
                 "square": 23,
                 "hold": 37,
@@ -4405,6 +4407,7 @@
                 "level": 12,
                 "note": 488,
                 "combo": 656,
+                "special": null,
                 "circle": 212,
                 "square": 35,
                 "hold": 56,
@@ -4426,8 +4429,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "31-advanced-normal",
@@ -4512,11 +4514,11 @@
                 "level": 1,
                 "note": 121,
                 "combo": 256,
+                "special": null,
                 "circle": 88,
                 "square": 4,
                 "hold": 29,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "32-basic-normal",
@@ -4525,6 +4527,7 @@
                 "level": 4,
                 "note": 176,
                 "combo": 314,
+                "special": null,
                 "circle": 115,
                 "square": 6,
                 "hold": 35,
@@ -4537,6 +4540,7 @@
                 "level": 8,
                 "note": 407,
                 "combo": 502,
+                "special": null,
                 "circle": 299,
                 "square": 12,
                 "hold": 24,
@@ -4549,6 +4553,7 @@
                 "level": 11.5,
                 "note": 635,
                 "combo": 715,
+                "special": null,
                 "circle": 352,
                 "square": 68,
                 "hold": 33,
@@ -4570,8 +4575,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "32-advanced-normal",
@@ -4653,11 +4657,11 @@
                 "level": 2,
                 "note": 111,
                 "combo": 216,
+                "special": null,
                 "circle": 80,
                 "square": 7,
                 "hold": 24,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "33-basic-normal",
@@ -4666,6 +4670,7 @@
                 "level": 6,
                 "note": 211,
                 "combo": 312,
+                "special": null,
                 "circle": 147,
                 "square": 12,
                 "hold": 31,
@@ -4678,6 +4683,7 @@
                 "level": 10,
                 "note": 368,
                 "combo": 463,
+                "special": null,
                 "circle": 214,
                 "square": 7,
                 "hold": 32,
@@ -4690,6 +4696,7 @@
                 "level": 12,
                 "note": 494,
                 "combo": 588,
+                "special": null,
                 "circle": 249,
                 "square": 37,
                 "hold": 35,
@@ -4711,8 +4718,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "33-advanced-normal",
@@ -4797,11 +4803,11 @@
                 "level": 2,
                 "note": 139,
                 "combo": 278,
+                "special": null,
                 "circle": 97,
                 "square": 14,
                 "hold": 28,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "34-basic-normal",
@@ -4810,6 +4816,7 @@
                 "level": 5,
                 "note": 245,
                 "combo": 400,
+                "special": null,
                 "circle": 139,
                 "square": 12,
                 "hold": 38,
@@ -4822,6 +4829,7 @@
                 "level": 9,
                 "note": 399,
                 "combo": 578,
+                "special": null,
                 "circle": 190,
                 "square": 14,
                 "hold": 46,
@@ -4834,6 +4842,7 @@
                 "level": 12,
                 "note": 614,
                 "combo": 789,
+                "special": null,
                 "circle": 294,
                 "square": 49,
                 "hold": 42,
@@ -4855,8 +4864,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "34-advanced-normal",
@@ -4940,11 +4948,11 @@
                 "level": 1,
                 "note": 104,
                 "combo": 180,
+                "special": null,
                 "circle": 89,
                 "square": 2,
                 "hold": 13,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "35-basic-normal",
@@ -4953,6 +4961,7 @@
                 "level": 3,
                 "note": 172,
                 "combo": 265,
+                "special": null,
                 "circle": 130,
                 "square": 4,
                 "hold": 24,
@@ -4965,6 +4974,7 @@
                 "level": 7,
                 "note": 341,
                 "combo": 427,
+                "special": null,
                 "circle": 205,
                 "square": 8,
                 "hold": 26,
@@ -4977,6 +4987,7 @@
                 "level": 11.5,
                 "note": 486,
                 "combo": 565,
+                "special": null,
                 "circle": 251,
                 "square": 23,
                 "hold": 47,
@@ -4998,8 +5009,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "35-advanced-normal",
@@ -5081,11 +5091,11 @@
                 "level": 2,
                 "note": 141,
                 "combo": 228,
+                "special": null,
                 "circle": 118,
                 "square": 6,
                 "hold": 17,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "36-basic-normal",
@@ -5094,6 +5104,7 @@
                 "level": 5,
                 "note": 240,
                 "combo": 339,
+                "special": null,
                 "circle": 180,
                 "square": 16,
                 "hold": 26,
@@ -5106,6 +5117,7 @@
                 "level": 10,
                 "note": 468,
                 "combo": 544,
+                "special": null,
                 "circle": 337,
                 "square": 13,
                 "hold": 19,
@@ -5118,6 +5130,7 @@
                 "level": 12,
                 "note": 548,
                 "combo": 645,
+                "special": null,
                 "circle": 322,
                 "square": 22,
                 "hold": 26,
@@ -5139,8 +5152,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "36-advanced-normal",
@@ -5225,8 +5237,7 @@
                 "circle": 140,
                 "square": 7,
                 "hold": 25,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "37-basic-normal",
@@ -5283,8 +5294,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "37-advanced-normal",
@@ -5369,11 +5379,11 @@
                 "level": 1,
                 "note": 123,
                 "combo": 220,
+                "special": null,
                 "circle": 96,
                 "square": 6,
                 "hold": 21,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "38-basic-normal",
@@ -5382,6 +5392,7 @@
                 "level": 7,
                 "note": 214,
                 "combo": 323,
+                "special": null,
                 "circle": 112,
                 "square": 12,
                 "hold": 28,
@@ -5394,6 +5405,7 @@
                 "level": 9,
                 "note": 398,
                 "combo": 529,
+                "special": null,
                 "circle": 216,
                 "square": 11,
                 "hold": 43,
@@ -5406,6 +5418,7 @@
                 "level": 12.5,
                 "note": 613,
                 "combo": 738,
+                "special": null,
                 "circle": 305,
                 "square": 43,
                 "hold": 41,
@@ -5427,8 +5440,7 @@
                 "advHold": 1,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "38-advanced-normal",
@@ -5508,11 +5520,11 @@
                 "level": 3,
                 "note": 173,
                 "combo": 225,
+                "special": null,
                 "circle": 133,
                 "square": 24,
                 "hold": 16,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "39-basic-normal",
@@ -5521,6 +5533,7 @@
                 "level": 6,
                 "note": 292,
                 "combo": 371,
+                "special": null,
                 "circle": 214,
                 "square": 18,
                 "hold": 26,
@@ -5533,6 +5546,7 @@
                 "level": 10,
                 "note": 538,
                 "combo": 579,
+                "special": null,
                 "circle": 391,
                 "square": 31,
                 "hold": 14,
@@ -5545,6 +5559,7 @@
                 "level": 12,
                 "note": 723,
                 "combo": 763,
+                "special": null,
                 "circle": 500,
                 "square": 29,
                 "hold": 13,
@@ -5566,8 +5581,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "39-advanced-normal",
@@ -5649,11 +5663,11 @@
                 "level": 2,
                 "note": 129,
                 "combo": 285,
+                "special": null,
                 "circle": 88,
                 "square": 4,
                 "hold": 37,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "40-basic-normal",
@@ -5662,11 +5676,11 @@
                 "level": 4,
                 "note": 204,
                 "combo": 364,
+                "special": null,
                 "circle": 138,
                 "square": 0,
                 "hold": 58,
-                "arrow": 8,
-                "goldSquare": 0
+                "arrow": 8
             },
             {
                 "id": "40-basic-hard",
@@ -5675,6 +5689,7 @@
                 "level": 8,
                 "note": 439,
                 "combo": 582,
+                "special": null,
                 "circle": 320,
                 "square": 8,
                 "hold": 60,
@@ -5687,6 +5702,7 @@
                 "level": 12,
                 "note": 718,
                 "combo": 825,
+                "special": null,
                 "circle": 444,
                 "square": 80,
                 "hold": 49,
@@ -5708,8 +5724,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "40-advanced-normal",
@@ -5727,8 +5742,7 @@
                 "advHold": 12,
                 "arrow": 8,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldSquare": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "40-advanced-hard",
@@ -5793,11 +5807,11 @@
                 "level": 1,
                 "note": 138,
                 "combo": 241,
+                "special": null,
                 "circle": 107,
                 "square": 6,
                 "hold": 25,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "41-basic-normal",
@@ -5806,6 +5820,7 @@
                 "level": 4,
                 "note": 236,
                 "combo": 355,
+                "special": null,
                 "circle": 203,
                 "square": 3,
                 "hold": 26,
@@ -5818,6 +5833,7 @@
                 "level": 9,
                 "note": 436,
                 "combo": 557,
+                "special": null,
                 "circle": 351,
                 "square": 48,
                 "hold": 21,
@@ -5830,6 +5846,7 @@
                 "level": 12,
                 "note": 775,
                 "combo": 864,
+                "special": null,
                 "circle": 508,
                 "square": 117,
                 "hold": 16,
@@ -5851,8 +5868,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "41-advanced-normal",
@@ -5931,11 +5947,11 @@
                 "level": 3,
                 "note": 145,
                 "combo": 217,
+                "special": null,
                 "circle": 124,
                 "square": 7,
                 "hold": 14,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "42-basic-normal",
@@ -5944,6 +5960,7 @@
                 "level": 6,
                 "note": 244,
                 "combo": 340,
+                "special": null,
                 "circle": 152,
                 "square": 7,
                 "hold": 25,
@@ -5956,6 +5973,7 @@
                 "level": 10,
                 "note": 417,
                 "combo": 476,
+                "special": null,
                 "circle": 258,
                 "square": 8,
                 "hold": 21,
@@ -5968,6 +5986,7 @@
                 "level": 13,
                 "note": 676,
                 "combo": 739,
+                "special": null,
                 "circle": 425,
                 "square": 26,
                 "hold": 34,
@@ -5989,8 +6008,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "42-advanced-normal",
@@ -6069,11 +6087,11 @@
                 "level": 2,
                 "note": 151,
                 "combo": 253,
+                "special": null,
                 "circle": 126,
                 "square": 3,
                 "hold": 22,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "43-basic-normal",
@@ -6082,6 +6100,7 @@
                 "level": 5,
                 "note": 273,
                 "combo": 349,
+                "special": null,
                 "circle": 237,
                 "square": 5,
                 "hold": 19,
@@ -6094,6 +6113,7 @@
                 "level": 9,
                 "note": 475,
                 "combo": 501,
+                "special": null,
                 "circle": 344,
                 "square": 20,
                 "hold": 6,
@@ -6106,6 +6126,7 @@
                 "level": 13,
                 "note": 762,
                 "combo": 809,
+                "special": null,
                 "circle": 512,
                 "square": 63,
                 "hold": 8,
@@ -6127,8 +6148,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "43-advanced-normal",
@@ -6213,11 +6233,11 @@
                 "level": 2,
                 "note": 128,
                 "combo": 229,
+                "special": null,
                 "circle": 101,
                 "square": 7,
                 "hold": 20,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "44-basic-normal",
@@ -6226,6 +6246,7 @@
                 "level": 4,
                 "note": 223,
                 "combo": 354,
+                "special": null,
                 "circle": 171,
                 "square": 10,
                 "hold": 38,
@@ -6238,6 +6259,7 @@
                 "level": 9,
                 "note": 428,
                 "combo": 534,
+                "special": null,
                 "circle": 281,
                 "square": 8,
                 "hold": 41,
@@ -6250,6 +6272,7 @@
                 "level": 12,
                 "note": 672,
                 "combo": 738,
+                "special": null,
                 "circle": 402,
                 "square": 38,
                 "hold": 27,
@@ -6271,8 +6294,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "44-advanced-normal",
@@ -6352,11 +6374,11 @@
                 "level": 2,
                 "note": 164,
                 "combo": 322,
+                "special": null,
                 "circle": 129,
                 "square": 1,
                 "hold": 34,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "45-basic-normal",
@@ -6365,6 +6387,7 @@
                 "level": 4,
                 "note": 247,
                 "combo": 364,
+                "special": null,
                 "circle": 183,
                 "square": 1,
                 "hold": 29,
@@ -6377,6 +6400,7 @@
                 "level": 7,
                 "note": 397,
                 "combo": 497,
+                "special": null,
                 "circle": 284,
                 "square": 3,
                 "hold": 14,
@@ -6389,6 +6413,7 @@
                 "level": 12.5,
                 "note": 562,
                 "combo": 719,
+                "special": null,
                 "circle": 344,
                 "square": 27,
                 "hold": 30,
@@ -6410,8 +6435,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "45-advanced-normal",
@@ -6495,11 +6519,11 @@
                 "level": 2,
                 "note": 132,
                 "combo": 200,
+                "special": null,
                 "circle": 109,
                 "square": 10,
                 "hold": 13,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "46-basic-normal",
@@ -6508,6 +6532,7 @@
                 "level": 5,
                 "note": 212,
                 "combo": 287,
+                "special": null,
                 "circle": 161,
                 "square": 12,
                 "hold": 22,
@@ -6520,6 +6545,7 @@
                 "level": 9,
                 "note": 358,
                 "combo": 411,
+                "special": null,
                 "circle": 211,
                 "square": 10,
                 "hold": 23,
@@ -6532,6 +6558,7 @@
                 "level": 11.5,
                 "note": 535,
                 "combo": 587,
+                "special": null,
                 "circle": 315,
                 "square": 36,
                 "hold": 27,
@@ -6553,8 +6580,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "46-advanced-normal",
@@ -6635,11 +6661,11 @@
                 "level": 3,
                 "note": 151,
                 "combo": 203,
+                "special": null,
                 "circle": 133,
                 "square": 9,
                 "hold": 9,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "47-basic-normal",
@@ -6648,6 +6674,7 @@
                 "level": 7,
                 "note": 286,
                 "combo": 368,
+                "special": null,
                 "circle": 241,
                 "square": 3,
                 "hold": 15,
@@ -6660,6 +6687,7 @@
                 "level": 9,
                 "note": 462,
                 "combo": 514,
+                "special": null,
                 "circle": 365,
                 "square": 7,
                 "hold": 10,
@@ -6672,6 +6700,7 @@
                 "level": 13.5,
                 "note": 820,
                 "combo": 875,
+                "special": null,
                 "circle": 436,
                 "square": 58,
                 "hold": 22,
@@ -6693,8 +6722,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "47-advanced-normal",
@@ -6775,11 +6803,11 @@
                 "level": 1,
                 "note": 115,
                 "combo": 171,
+                "special": null,
                 "circle": 99,
                 "square": 8,
                 "hold": 8,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "48-basic-normal",
@@ -6788,6 +6816,7 @@
                 "level": 4,
                 "note": 213,
                 "combo": 262,
+                "special": null,
                 "circle": 125,
                 "square": 8,
                 "hold": 14,
@@ -6800,6 +6829,7 @@
                 "level": 5,
                 "note": 274,
                 "combo": 387,
+                "special": null,
                 "circle": 165,
                 "square": 23,
                 "hold": 28,
@@ -6812,6 +6842,7 @@
                 "level": 9,
                 "note": 382,
                 "combo": 420,
+                "special": null,
                 "circle": 172,
                 "square": 46,
                 "hold": 18,
@@ -6833,8 +6864,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "48-advanced-normal",
@@ -6916,8 +6946,7 @@
                 "circle": 127,
                 "square": 24,
                 "hold": 8,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "49-basic-normal",
@@ -6974,8 +7003,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "49-advanced-normal",
@@ -7054,11 +7082,11 @@
                 "level": 5,
                 "note": 146,
                 "combo": 246,
+                "special": null,
                 "circle": 114,
                 "square": 17,
                 "hold": 15,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "50-basic-normal",
@@ -7067,6 +7095,7 @@
                 "level": 7,
                 "note": 229,
                 "combo": 329,
+                "special": null,
                 "circle": 166,
                 "square": 14,
                 "hold": 13,
@@ -7079,6 +7108,7 @@
                 "level": 9,
                 "note": 306,
                 "combo": 385,
+                "special": null,
                 "circle": 217,
                 "square": 11,
                 "hold": 11,
@@ -7091,6 +7121,7 @@
                 "level": 13.5,
                 "note": 541,
                 "combo": 615,
+                "special": null,
                 "circle": 334,
                 "square": 24,
                 "hold": 11,
@@ -7112,8 +7143,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "50-advanced-normal",
@@ -7192,11 +7222,11 @@
                 "level": 5,
                 "note": 134,
                 "combo": 276,
+                "special": null,
                 "circle": 81,
                 "square": 20,
                 "hold": 33,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "51-basic-normal",
@@ -7205,6 +7235,7 @@
                 "level": 7,
                 "note": 270,
                 "combo": 393,
+                "special": null,
                 "circle": 118,
                 "square": 26,
                 "hold": 42,
@@ -7217,6 +7248,7 @@
                 "level": 10.5,
                 "note": 429,
                 "combo": 520,
+                "special": null,
                 "circle": 230,
                 "square": 22,
                 "hold": 28,
@@ -7229,6 +7261,7 @@
                 "level": 13,
                 "note": 559,
                 "combo": 659,
+                "special": null,
                 "circle": 247,
                 "square": 87,
                 "hold": 35,
@@ -7250,8 +7283,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "51-advanced-normal",
@@ -7330,11 +7362,11 @@
                 "level": 4,
                 "note": 144,
                 "combo": 331,
+                "special": null,
                 "circle": 105,
                 "square": 8,
                 "hold": 31,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "52-basic-normal",
@@ -7343,6 +7375,7 @@
                 "level": 7,
                 "note": 261,
                 "combo": 425,
+                "special": null,
                 "circle": 186,
                 "square": 8,
                 "hold": 32,
@@ -7355,6 +7388,7 @@
                 "level": 9,
                 "note": 394,
                 "combo": 592,
+                "special": null,
                 "circle": 261,
                 "square": 6,
                 "hold": 51,
@@ -7367,6 +7401,7 @@
                 "level": 12.5,
                 "note": 605,
                 "combo": 860,
+                "special": null,
                 "circle": 374,
                 "square": 14,
                 "hold": 63,
@@ -7388,8 +7423,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "52-advanced-normal",
@@ -7467,11 +7501,11 @@
                 "level": 2,
                 "note": 120,
                 "combo": 244,
+                "special": null,
                 "circle": 85,
                 "square": 6,
                 "hold": 29,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "53-basic-normal",
@@ -7480,6 +7514,7 @@
                 "level": 5,
                 "note": 234,
                 "combo": 369,
+                "special": null,
                 "circle": 171,
                 "square": 14,
                 "hold": 48,
@@ -7492,6 +7527,7 @@
                 "level": 9,
                 "note": 439,
                 "combo": 444,
+                "special": null,
                 "circle": 273,
                 "square": 34,
                 "hold": 2,
@@ -7504,6 +7540,7 @@
                 "level": 11.5,
                 "note": 605,
                 "combo": 608,
+                "special": null,
                 "circle": 445,
                 "square": 49,
                 "hold": 1,
@@ -7525,8 +7562,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "53-advanced-normal",
@@ -7604,11 +7640,11 @@
                 "level": 3,
                 "note": 247,
                 "combo": 247,
+                "special": null,
                 "circle": 134,
                 "square": 21,
                 "hold": 92,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "54-basic-normal",
@@ -7617,6 +7653,7 @@
                 "level": 6,
                 "note": 292,
                 "combo": 380,
+                "special": null,
                 "circle": 205,
                 "square": 20,
                 "hold": 30,
@@ -7629,6 +7666,7 @@
                 "level": 10.5,
                 "note": 490,
                 "combo": 526,
+                "special": null,
                 "circle": 361,
                 "square": 26,
                 "hold": 17,
@@ -7641,6 +7679,7 @@
                 "level": 12.5,
                 "note": 660,
                 "combo": 691,
+                "special": null,
                 "circle": 477,
                 "square": 33,
                 "hold": 14,
@@ -7662,8 +7701,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "54-advanced-normal",
@@ -7748,11 +7786,11 @@
                 "level": 1,
                 "note": 111,
                 "combo": 267,
+                "special": null,
                 "circle": 75,
                 "square": 12,
                 "hold": 24,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "55-basic-normal",
@@ -7761,6 +7799,7 @@
                 "level": 5,
                 "note": 207,
                 "combo": 329,
+                "special": null,
                 "circle": 149,
                 "square": 12,
                 "hold": 28,
@@ -7773,6 +7812,7 @@
                 "level": 9,
                 "note": 374,
                 "combo": 472,
+                "special": null,
                 "circle": 304,
                 "square": 7,
                 "hold": 14,
@@ -7785,6 +7825,7 @@
                 "level": 13,
                 "note": 595,
                 "combo": 671,
+                "special": null,
                 "circle": 407,
                 "square": 26,
                 "hold": 9,
@@ -7806,8 +7847,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "55-advanced-normal",
@@ -7891,11 +7931,11 @@
                 "level": 2,
                 "note": 149,
                 "combo": 288,
+                "special": null,
                 "circle": 114,
                 "square": 9,
                 "hold": 26,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "56-basic-normal",
@@ -7904,11 +7944,11 @@
                 "level": 7,
                 "note": 241,
                 "combo": 337,
+                "special": null,
                 "circle": 175,
                 "square": 0,
                 "hold": 23,
-                "arrow": 43,
-                "goldSquare": 0
+                "arrow": 43
             },
             {
                 "id": "56-basic-hard",
@@ -7917,6 +7957,7 @@
                 "level": 9,
                 "note": 340,
                 "combo": 478,
+                "special": null,
                 "circle": 247,
                 "square": 6,
                 "hold": 29,
@@ -7929,6 +7970,7 @@
                 "level": 11,
                 "note": 451,
                 "combo": 574,
+                "special": null,
                 "circle": 245,
                 "square": 37,
                 "hold": 34,
@@ -7950,8 +7992,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "56-advanced-normal",
@@ -7969,8 +8010,7 @@
                 "advHold": 2,
                 "arrow": 43,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldSquare": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "56-advanced-hard",
@@ -8037,11 +8077,11 @@
                 "level": 1,
                 "note": 111,
                 "combo": 177,
+                "special": null,
                 "circle": 73,
                 "square": 24,
                 "hold": 14,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "57-basic-normal",
@@ -8050,6 +8090,7 @@
                 "level": 5,
                 "note": 197,
                 "combo": 253,
+                "special": null,
                 "circle": 134,
                 "square": 15,
                 "hold": 18,
@@ -8062,6 +8103,7 @@
                 "level": 9,
                 "note": 377,
                 "combo": 394,
+                "special": null,
                 "circle": 223,
                 "square": 14,
                 "hold": 4,
@@ -8074,6 +8116,7 @@
                 "level": 12.5,
                 "note": 623,
                 "combo": 659,
+                "special": null,
                 "circle": 401,
                 "square": 12,
                 "hold": 15,
@@ -8095,8 +8138,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "57-advanced-normal",
@@ -8181,11 +8223,11 @@
                 "level": 2,
                 "note": 165,
                 "combo": 361,
+                "special": null,
                 "circle": 106,
                 "square": 18,
                 "hold": 41,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "58-basic-normal",
@@ -8194,6 +8236,7 @@
                 "level": 5,
                 "note": 279,
                 "combo": 489,
+                "special": null,
                 "circle": 161,
                 "square": 18,
                 "hold": 54,
@@ -8206,6 +8249,7 @@
                 "level": 7,
                 "note": 383,
                 "combo": 616,
+                "special": null,
                 "circle": 204,
                 "square": 24,
                 "hold": 49,
@@ -8218,6 +8262,7 @@
                 "level": 11,
                 "note": 485,
                 "combo": 669,
+                "special": null,
                 "circle": 263,
                 "square": 17,
                 "hold": 38,
@@ -8239,8 +8284,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "58-advanced-normal",
@@ -8323,11 +8367,11 @@
                 "level": 2,
                 "note": 184,
                 "combo": 305,
+                "special": null,
                 "circle": 158,
                 "square": 1,
                 "hold": 25,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "59-basic-normal",
@@ -8336,6 +8380,7 @@
                 "level": 6,
                 "note": 325,
                 "combo": 453,
+                "special": null,
                 "circle": 236,
                 "square": 22,
                 "hold": 33,
@@ -8348,6 +8393,7 @@
                 "level": 9,
                 "note": 562,
                 "combo": 629,
+                "special": null,
                 "circle": 400,
                 "square": 18,
                 "hold": 19,
@@ -8360,6 +8406,7 @@
                 "level": 13.5,
                 "note": 902,
                 "combo": 975,
+                "special": null,
                 "circle": 614,
                 "square": 15,
                 "hold": 26,
@@ -8381,8 +8428,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "59-advanced-normal",
@@ -8465,11 +8511,11 @@
                 "level": 3,
                 "note": 142,
                 "combo": 342,
+                "special": null,
                 "circle": 114,
                 "square": 6,
                 "hold": 22,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "60-basic-normal",
@@ -8478,6 +8524,7 @@
                 "level": 6,
                 "note": 289,
                 "combo": 429,
+                "special": null,
                 "circle": 219,
                 "square": 10,
                 "hold": 26,
@@ -8490,6 +8537,7 @@
                 "level": 9,
                 "note": 529,
                 "combo": 604,
+                "special": null,
                 "circle": 369,
                 "square": 10,
                 "hold": 21,
@@ -8502,6 +8550,7 @@
                 "level": 13,
                 "note": 827,
                 "combo": 898,
+                "special": null,
                 "circle": 444,
                 "square": 24,
                 "hold": 10,
@@ -8523,8 +8572,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "60-advanced-normal",
@@ -8604,11 +8652,11 @@
                 "level": 3,
                 "note": 131,
                 "combo": 215,
+                "special": null,
                 "circle": 108,
                 "square": 7,
                 "hold": 16,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "61-basic-normal",
@@ -8617,6 +8665,7 @@
                 "level": 6,
                 "note": 241,
                 "combo": 321,
+                "special": null,
                 "circle": 187,
                 "square": 11,
                 "hold": 30,
@@ -8629,6 +8678,7 @@
                 "level": 9,
                 "note": 452,
                 "combo": 509,
+                "special": null,
                 "circle": 276,
                 "square": 36,
                 "hold": 19,
@@ -8641,6 +8691,7 @@
                 "level": 12,
                 "note": 551,
                 "combo": 669,
+                "special": null,
                 "circle": 274,
                 "square": 76,
                 "hold": 35,
@@ -8662,8 +8713,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "61-advanced-normal",
@@ -8748,11 +8798,11 @@
                 "level": 3,
                 "note": 171,
                 "combo": 344,
+                "special": null,
                 "circle": 118,
                 "square": 18,
                 "hold": 35,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "62-basic-normal",
@@ -8761,6 +8811,7 @@
                 "level": 5,
                 "note": 302,
                 "combo": 469,
+                "special": null,
                 "circle": 186,
                 "square": 23,
                 "hold": 41,
@@ -8786,6 +8837,7 @@
                 "level": 12.5,
                 "note": 744,
                 "combo": 826,
+                "special": null,
                 "circle": 516,
                 "square": 55,
                 "hold": 27,
@@ -8807,8 +8859,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "62-advanced-normal",
@@ -8892,11 +8943,11 @@
                 "level": 2,
                 "note": 126,
                 "combo": 200,
+                "special": null,
                 "circle": 108,
                 "square": 1,
                 "hold": 17,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "63-basic-normal",
@@ -8905,6 +8956,7 @@
                 "level": 4,
                 "note": 203,
                 "combo": 255,
+                "special": null,
                 "circle": 177,
                 "square": 5,
                 "hold": 16,
@@ -8917,6 +8969,7 @@
                 "level": 8,
                 "note": 368,
                 "combo": 419,
+                "special": null,
                 "circle": 275,
                 "square": 4,
                 "hold": 20,
@@ -8929,6 +8982,7 @@
                 "level": 11,
                 "note": 554,
                 "combo": 611,
+                "special": null,
                 "circle": 290,
                 "square": 82,
                 "hold": 21,
@@ -8950,8 +9004,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "63-advanced-normal",
@@ -9035,11 +9088,11 @@
                 "level": 2,
                 "note": 147,
                 "combo": 227,
+                "special": null,
                 "circle": 117,
                 "square": 12,
                 "hold": 18,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "64-basic-normal",
@@ -9048,6 +9101,7 @@
                 "level": 5,
                 "note": 260,
                 "combo": 338,
+                "special": null,
                 "circle": 175,
                 "square": 21,
                 "hold": 26,
@@ -9060,6 +9114,7 @@
                 "level": 9,
                 "note": 451,
                 "combo": 499,
+                "special": null,
                 "circle": 248,
                 "square": 63,
                 "hold": 15,
@@ -9072,6 +9127,7 @@
                 "level": 11.5,
                 "note": 607,
                 "combo": 654,
+                "special": null,
                 "circle": 356,
                 "square": 125,
                 "hold": 17,
@@ -9093,8 +9149,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "64-advanced-normal",
@@ -9179,11 +9234,11 @@
                 "level": 1,
                 "note": 190,
                 "combo": 318,
+                "special": null,
                 "circle": 118,
                 "square": 42,
                 "hold": 30,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "65-basic-normal",
@@ -9192,6 +9247,7 @@
                 "level": 8,
                 "note": 329,
                 "combo": 448,
+                "special": null,
                 "circle": 191,
                 "square": 66,
                 "hold": 38,
@@ -9204,6 +9260,7 @@
                 "level": 10.5,
                 "note": 481,
                 "combo": 585,
+                "special": null,
                 "circle": 342,
                 "square": 29,
                 "hold": 33,
@@ -9216,6 +9273,7 @@
                 "level": 13,
                 "note": 706,
                 "combo": 791,
+                "special": null,
                 "circle": 446,
                 "square": 70,
                 "hold": 28,
@@ -9237,8 +9295,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "65-advanced-normal",
@@ -9318,11 +9375,11 @@
                 "level": 3,
                 "note": 152,
                 "combo": 265,
+                "special": null,
                 "circle": 115,
                 "square": 13,
                 "hold": 24,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "66-basic-normal",
@@ -9331,6 +9388,7 @@
                 "level": 7,
                 "note": 293,
                 "combo": 365,
+                "special": null,
                 "circle": 201,
                 "square": 13,
                 "hold": 23,
@@ -9343,6 +9401,7 @@
                 "level": 10,
                 "note": 494,
                 "combo": 557,
+                "special": null,
                 "circle": 324,
                 "square": 16,
                 "hold": 25,
@@ -9355,6 +9414,7 @@
                 "level": 12.5,
                 "note": 705,
                 "combo": 810,
+                "special": null,
                 "circle": 408,
                 "square": 44,
                 "hold": 42,
@@ -9376,8 +9436,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "66-advanced-normal",
@@ -9462,11 +9521,11 @@
                 "level": 4,
                 "note": 148,
                 "combo": 453,
+                "special": null,
                 "circle": 93,
                 "square": 10,
                 "hold": 45,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "67-basic-normal",
@@ -9475,6 +9534,7 @@
                 "level": 6,
                 "note": 303,
                 "combo": 547,
+                "special": null,
                 "circle": 204,
                 "square": 26,
                 "hold": 36,
@@ -9487,6 +9547,7 @@
                 "level": 10,
                 "note": 488,
                 "combo": 717,
+                "special": null,
                 "circle": 346,
                 "square": 8,
                 "hold": 44,
@@ -9499,6 +9560,7 @@
                 "level": 12.5,
                 "note": 673,
                 "combo": 889,
+                "special": null,
                 "circle": 391,
                 "square": 51,
                 "hold": 50,
@@ -9520,8 +9582,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "67-advanced-normal",
@@ -9606,11 +9667,11 @@
                 "level": 2,
                 "note": 126,
                 "combo": 309,
+                "special": null,
                 "circle": 72,
                 "square": 15,
                 "hold": 39,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "68-basic-normal",
@@ -9619,6 +9680,7 @@
                 "level": 6,
                 "note": 242,
                 "combo": 375,
+                "special": null,
                 "circle": 114,
                 "square": 13,
                 "hold": 37,
@@ -9631,6 +9693,7 @@
                 "level": 8,
                 "note": 419,
                 "combo": 560,
+                "special": null,
                 "circle": 240,
                 "square": 13,
                 "hold": 48,
@@ -9643,6 +9706,7 @@
                 "level": 12.5,
                 "note": 600,
                 "combo": 725,
+                "special": null,
                 "circle": 340,
                 "square": 25,
                 "hold": 34,
@@ -9664,8 +9728,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "68-advanced-normal",
@@ -9750,11 +9813,11 @@
                 "level": 4,
                 "note": 182,
                 "combo": 360,
+                "special": null,
                 "circle": 140,
                 "square": 5,
                 "hold": 37,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "69-basic-normal",
@@ -9763,6 +9826,7 @@
                 "level": 6,
                 "note": 282,
                 "combo": 374,
+                "special": null,
                 "circle": 214,
                 "square": 11,
                 "hold": 20,
@@ -9775,6 +9839,7 @@
                 "level": 9,
                 "note": 429,
                 "combo": 532,
+                "special": null,
                 "circle": 253,
                 "square": 31,
                 "hold": 26,
@@ -9787,6 +9852,7 @@
                 "level": 13,
                 "note": 643,
                 "combo": 714,
+                "special": null,
                 "circle": 387,
                 "square": 67,
                 "hold": 16,
@@ -9808,8 +9874,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "69-advanced-normal",
@@ -9893,11 +9958,11 @@
                 "level": 2,
                 "note": 120,
                 "combo": 304,
+                "special": null,
                 "circle": 75,
                 "square": 21,
                 "hold": 24,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "70-basic-normal",
@@ -9906,6 +9971,7 @@
                 "level": 5,
                 "note": 253,
                 "combo": 394,
+                "special": null,
                 "circle": 158,
                 "square": 31,
                 "hold": 28,
@@ -9918,11 +9984,11 @@
                 "level": 9,
                 "note": 418,
                 "combo": 584,
+                "special": null,
                 "circle": 235,
                 "square": 0,
                 "hold": 54,
-                "arrow": 129,
-                "goldSquare": 0
+                "arrow": 129
             },
             {
                 "id": "70-basic-master",
@@ -9931,6 +9997,7 @@
                 "level": 13,
                 "note": 666,
                 "combo": 1030,
+                "special": null,
                 "circle": 316,
                 "square": 60,
                 "hold": 77,
@@ -9952,8 +10019,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "70-advanced-normal",
@@ -9989,8 +10055,7 @@
                 "advHold": 6,
                 "arrow": 129,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldSquare": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "70-advanced-master",
@@ -10034,12 +10099,11 @@
                 "level": 4,
                 "note": 106,
                 "combo": 388,
+                "special": null,
                 "circle": 98,
                 "square": 8,
                 "hold": 0,
-                "arrow": 0,
-                "goldHold": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "71-basic-normal",
@@ -10048,6 +10112,7 @@
                 "level": 6,
                 "note": 260,
                 "combo": 480,
+                "special": null,
                 "circle": 189,
                 "square": 16,
                 "hold": 44,
@@ -10060,6 +10125,7 @@
                 "level": 11,
                 "note": 510,
                 "combo": 654,
+                "special": null,
                 "circle": 319,
                 "square": 61,
                 "hold": 38,
@@ -10072,6 +10138,7 @@
                 "level": 13.5,
                 "note": 808,
                 "combo": 959,
+                "special": null,
                 "circle": 577,
                 "square": 59,
                 "hold": 34,
@@ -10093,9 +10160,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldHold": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "71-advanced-normal",
@@ -10179,11 +10244,11 @@
                 "level": 2,
                 "note": 145,
                 "combo": 340,
+                "special": null,
                 "circle": 102,
                 "square": 8,
                 "hold": 35,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "72-basic-normal",
@@ -10192,6 +10257,7 @@
                 "level": 4,
                 "note": 234,
                 "combo": 443,
+                "special": null,
                 "circle": 135,
                 "square": 41,
                 "hold": 50,
@@ -10204,6 +10270,7 @@
                 "level": 9,
                 "note": 397,
                 "combo": 570,
+                "special": null,
                 "circle": 258,
                 "square": 14,
                 "hold": 59,
@@ -10216,6 +10283,7 @@
                 "level": 12.5,
                 "note": 673,
                 "combo": 799,
+                "special": null,
                 "circle": 366,
                 "square": 27,
                 "hold": 53,
@@ -10237,8 +10305,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "72-advanced-normal",
@@ -10323,12 +10390,11 @@
                 "level": 3,
                 "note": 131,
                 "combo": 406,
+                "special": null,
                 "circle": 80,
                 "square": 0,
                 "hold": 51,
-                "arrow": 0,
-                "goldArrow": 0,
-                "goldSquare": 0
+                "arrow": 0
             },
             {
                 "id": "73-basic-normal",
@@ -10337,6 +10403,7 @@
                 "level": 7,
                 "note": 275,
                 "combo": 470,
+                "special": null,
                 "circle": 208,
                 "square": 4,
                 "hold": 49,
@@ -10349,6 +10416,7 @@
                 "level": 10,
                 "note": 477,
                 "combo": 616,
+                "special": null,
                 "circle": 330,
                 "square": 26,
                 "hold": 38,
@@ -10361,6 +10429,7 @@
                 "level": 12.5,
                 "note": 698,
                 "combo": 808,
+                "special": null,
                 "circle": 452,
                 "square": 37,
                 "hold": 26,
@@ -10382,9 +10451,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0,
-                "goldSquare": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "73-advanced-normal",
@@ -10464,12 +10531,11 @@
                 "level": 3,
                 "note": 108,
                 "combo": 228,
+                "special": null,
                 "circle": 81,
                 "square": 0,
                 "hold": 27,
-                "arrow": 0,
-                "goldArrow": 0,
-                "goldSquare": 0
+                "arrow": 0
             },
             {
                 "id": "74-basic-normal",
@@ -10478,11 +10544,11 @@
                 "level": 4,
                 "note": 171,
                 "combo": 252,
+                "special": null,
                 "circle": 143,
                 "square": 0,
                 "hold": 20,
-                "arrow": 8,
-                "goldSquare": 0
+                "arrow": 8
             },
             {
                 "id": "74-basic-hard",
@@ -10491,11 +10557,11 @@
                 "level": 8,
                 "note": 363,
                 "combo": 434,
+                "special": null,
                 "circle": 266,
                 "square": 0,
                 "hold": 18,
-                "arrow": 79,
-                "goldSquare": 0
+                "arrow": 79
             },
             {
                 "id": "74-basic-master",
@@ -10504,6 +10570,7 @@
                 "level": 11,
                 "note": 517,
                 "combo": 571,
+                "special": null,
                 "circle": 355,
                 "square": 22,
                 "hold": 17,
@@ -10525,9 +10592,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0,
-                "goldSquare": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "74-advanced-normal",
@@ -10545,8 +10610,7 @@
                 "advHold": 3,
                 "arrow": 8,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldSquare": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "74-advanced-hard",
@@ -10564,8 +10628,7 @@
                 "advHold": 9,
                 "arrow": 79,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldSquare": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "74-advanced-master",
@@ -10615,11 +10678,11 @@
                 "level": 3,
                 "note": 151,
                 "combo": 410,
+                "special": null,
                 "circle": 96,
                 "square": 8,
                 "hold": 47,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "75-basic-normal",
@@ -10628,6 +10691,7 @@
                 "level": 6,
                 "note": 253,
                 "combo": 485,
+                "special": null,
                 "circle": 163,
                 "square": 9,
                 "hold": 71,
@@ -10640,6 +10704,7 @@
                 "level": 10.5,
                 "note": 539,
                 "combo": 645,
+                "special": null,
                 "circle": 398,
                 "square": 24,
                 "hold": 33,
@@ -10652,6 +10717,7 @@
                 "level": 13,
                 "note": 707,
                 "combo": 815,
+                "special": null,
                 "circle": 425,
                 "square": 63,
                 "hold": 30,
@@ -10673,8 +10739,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "75-advanced-normal",
@@ -10754,11 +10819,11 @@
                 "level": 1,
                 "note": 114,
                 "combo": 236,
+                "special": null,
                 "circle": 77,
                 "square": 24,
                 "hold": 13,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "76-basic-normal",
@@ -10767,6 +10832,7 @@
                 "level": 4,
                 "note": 177,
                 "combo": 287,
+                "special": null,
                 "circle": 116,
                 "square": 12,
                 "hold": 11,
@@ -10779,6 +10845,7 @@
                 "level": 7,
                 "note": 341,
                 "combo": 521,
+                "special": null,
                 "circle": 166,
                 "square": 17,
                 "hold": 34,
@@ -10791,6 +10858,7 @@
                 "level": 11.5,
                 "note": 515,
                 "combo": 751,
+                "special": null,
                 "circle": 261,
                 "square": 50,
                 "hold": 43,
@@ -10812,8 +10880,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "76-advanced-normal",
@@ -10892,11 +10959,11 @@
                 "level": 4,
                 "note": 196,
                 "combo": 414,
+                "special": null,
                 "circle": 120,
                 "square": 39,
                 "hold": 37,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "77-basic-normal",
@@ -10905,6 +10972,7 @@
                 "level": 7,
                 "note": 320,
                 "combo": 562,
+                "special": null,
                 "circle": 187,
                 "square": 33,
                 "hold": 48,
@@ -10917,6 +10985,7 @@
                 "level": 11.5,
                 "note": 627,
                 "combo": 753,
+                "special": null,
                 "circle": 341,
                 "square": 30,
                 "hold": 34,
@@ -10929,6 +10998,7 @@
                 "level": 13,
                 "note": 818,
                 "combo": 986,
+                "special": null,
                 "circle": 385,
                 "square": 24,
                 "hold": 76,
@@ -10950,8 +11020,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "77-advanced-normal",
@@ -11036,11 +11105,11 @@
                 "level": 3,
                 "note": 250,
                 "combo": 311,
+                "special": null,
                 "circle": 200,
                 "square": 42,
                 "hold": 8,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "78-basic-normal",
@@ -11049,6 +11118,7 @@
                 "level": 6,
                 "note": 325,
                 "combo": 390,
+                "special": null,
                 "circle": 172,
                 "square": 33,
                 "hold": 10,
@@ -11061,6 +11131,7 @@
                 "level": 10,
                 "note": 490,
                 "combo": 606,
+                "special": null,
                 "circle": 276,
                 "square": 22,
                 "hold": 41,
@@ -11073,6 +11144,7 @@
                 "level": 12,
                 "note": 543,
                 "combo": 671,
+                "special": null,
                 "circle": 192,
                 "square": 61,
                 "hold": 22,
@@ -11094,8 +11166,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "78-advanced-normal",
@@ -11175,11 +11246,11 @@
                 "level": 3,
                 "note": 179,
                 "combo": 331,
+                "special": null,
                 "circle": 129,
                 "square": 27,
                 "hold": 23,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "79-basic-normal",
@@ -11188,6 +11259,7 @@
                 "level": 6,
                 "note": 299,
                 "combo": 397,
+                "special": null,
                 "circle": 154,
                 "square": 24,
                 "hold": 16,
@@ -11200,6 +11272,7 @@
                 "level": 10.5,
                 "note": 482,
                 "combo": 601,
+                "special": null,
                 "circle": 300,
                 "square": 8,
                 "hold": 24,
@@ -11212,6 +11285,7 @@
                 "level": 13,
                 "note": 852,
                 "combo": 940,
+                "special": null,
                 "circle": 541,
                 "square": 16,
                 "hold": 17,
@@ -11233,8 +11307,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "79-advanced-normal",
@@ -11319,11 +11392,11 @@
                 "level": 1,
                 "note": 139,
                 "combo": 306,
+                "special": null,
                 "circle": 104,
                 "square": 8,
                 "hold": 27,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "80-basic-normal",
@@ -11332,6 +11405,7 @@
                 "level": 5,
                 "note": 435,
                 "combo": 443,
+                "special": null,
                 "circle": 146,
                 "square": 54,
                 "hold": 217,
@@ -11344,6 +11418,7 @@
                 "level": 8,
                 "note": 392,
                 "combo": 578,
+                "special": null,
                 "circle": 242,
                 "square": 53,
                 "hold": 56,
@@ -11356,6 +11431,7 @@
                 "level": 11,
                 "note": 569,
                 "combo": 742,
+                "special": null,
                 "circle": 357,
                 "square": 98,
                 "hold": 51,
@@ -11377,8 +11453,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "80-advanced-normal",
@@ -11463,11 +11538,11 @@
                 "level": 3,
                 "note": 169,
                 "combo": 301,
+                "special": null,
                 "circle": 108,
                 "square": 33,
                 "hold": 28,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "81-basic-normal",
@@ -11476,6 +11551,7 @@
                 "level": 6,
                 "note": 300,
                 "combo": 406,
+                "special": null,
                 "circle": 176,
                 "square": 24,
                 "hold": 37,
@@ -11488,6 +11564,7 @@
                 "level": 10.5,
                 "note": 541,
                 "combo": 603,
+                "special": null,
                 "circle": 320,
                 "square": 16,
                 "hold": 22,
@@ -11500,6 +11577,7 @@
                 "level": 12.5,
                 "note": 717,
                 "combo": 829,
+                "special": null,
                 "circle": 373,
                 "square": 35,
                 "hold": 57,
@@ -11521,8 +11599,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "81-advanced-normal",
@@ -11601,11 +11678,11 @@
                 "level": 3,
                 "note": 160,
                 "combo": 317,
+                "special": null,
                 "circle": 107,
                 "square": 20,
                 "hold": 33,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "82-basic-normal",
@@ -11614,6 +11691,7 @@
                 "level": 6,
                 "note": 290,
                 "combo": 424,
+                "special": null,
                 "circle": 166,
                 "square": 29,
                 "hold": 43,
@@ -11626,6 +11704,7 @@
                 "level": 10.5,
                 "note": 503,
                 "combo": 618,
+                "special": null,
                 "circle": 241,
                 "square": 44,
                 "hold": 46,
@@ -11638,6 +11717,7 @@
                 "level": 13,
                 "note": 725,
                 "combo": 856,
+                "special": null,
                 "circle": 370,
                 "square": 49,
                 "hold": 67,
@@ -11659,8 +11739,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "82-advanced-normal",
@@ -11745,11 +11824,11 @@
                 "level": 4,
                 "note": 231,
                 "combo": 432,
+                "special": null,
                 "circle": 177,
                 "square": 21,
                 "hold": 33,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "83-basic-normal",
@@ -11758,6 +11837,7 @@
                 "level": 7,
                 "note": 377,
                 "combo": 599,
+                "special": null,
                 "circle": 198,
                 "square": 42,
                 "hold": 46,
@@ -11770,6 +11850,7 @@
                 "level": 10.5,
                 "note": 608,
                 "combo": 796,
+                "special": null,
                 "circle": 308,
                 "square": 32,
                 "hold": 42,
@@ -11782,6 +11863,7 @@
                 "level": 13.5,
                 "note": 924,
                 "combo": 1116,
+                "special": null,
                 "circle": 577,
                 "square": 43,
                 "hold": 40,
@@ -11803,8 +11885,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "83-advanced-normal",
@@ -11888,11 +11969,11 @@
                 "level": 1,
                 "note": 94,
                 "combo": 228,
+                "special": null,
                 "circle": 68,
                 "square": 10,
                 "hold": 16,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "84-basic-normal",
@@ -11901,6 +11982,7 @@
                 "level": 4,
                 "note": 203,
                 "combo": 350,
+                "special": null,
                 "circle": 140,
                 "square": 8,
                 "hold": 24,
@@ -11913,6 +11995,7 @@
                 "level": 7,
                 "note": 350,
                 "combo": 475,
+                "special": null,
                 "circle": 201,
                 "square": 4,
                 "hold": 28,
@@ -11925,6 +12008,7 @@
                 "level": 10.5,
                 "note": 502,
                 "combo": 621,
+                "special": null,
                 "circle": 265,
                 "square": 56,
                 "hold": 18,
@@ -11946,8 +12030,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "84-advanced-normal",
@@ -12028,11 +12111,11 @@
                 "level": 3,
                 "note": 304,
                 "combo": 304,
+                "special": null,
                 "circle": 157,
                 "square": 23,
                 "hold": 124,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "85-basic-normal",
@@ -12041,6 +12124,7 @@
                 "level": 6,
                 "note": 265,
                 "combo": 397,
+                "special": null,
                 "circle": 199,
                 "square": 4,
                 "hold": 41,
@@ -12053,6 +12137,7 @@
                 "level": 9,
                 "note": 510,
                 "combo": 577,
+                "special": null,
                 "circle": 326,
                 "square": 20,
                 "hold": 12,
@@ -12065,6 +12150,7 @@
                 "level": 13.5,
                 "note": 808,
                 "combo": 898,
+                "special": null,
                 "circle": 495,
                 "square": 21,
                 "hold": 24,
@@ -12086,8 +12172,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "85-advanced-normal",
@@ -12171,11 +12256,11 @@
                 "level": 2,
                 "note": 117,
                 "combo": 297,
+                "special": null,
                 "circle": 72,
                 "square": 6,
                 "hold": 39,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "86-basic-normal",
@@ -12184,6 +12269,7 @@
                 "level": 4,
                 "note": 201,
                 "combo": 411,
+                "special": null,
                 "circle": 139,
                 "square": 13,
                 "hold": 41,
@@ -12196,6 +12282,7 @@
                 "level": 8,
                 "note": 356,
                 "combo": 587,
+                "special": null,
                 "circle": 266,
                 "square": 4,
                 "hold": 47,
@@ -12208,6 +12295,7 @@
                 "level": 12,
                 "note": 490,
                 "combo": 657,
+                "special": null,
                 "circle": 346,
                 "square": 26,
                 "hold": 38,
@@ -12229,8 +12317,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "86-advanced-normal",
@@ -12316,11 +12403,11 @@
                 "level": 1,
                 "note": 118,
                 "combo": 232,
+                "special": null,
                 "circle": 79,
                 "square": 18,
                 "hold": 21,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "87-basic-normal",
@@ -12329,6 +12416,7 @@
                 "level": 5,
                 "note": 245,
                 "combo": 346,
+                "special": null,
                 "circle": 123,
                 "square": 12,
                 "hold": 30,
@@ -12341,6 +12429,7 @@
                 "level": 7,
                 "note": 335,
                 "combo": 472,
+                "special": null,
                 "circle": 174,
                 "square": 8,
                 "hold": 39,
@@ -12353,6 +12442,7 @@
                 "level": 11,
                 "note": 489,
                 "combo": 595,
+                "special": null,
                 "circle": 257,
                 "square": 34,
                 "hold": 31,
@@ -12374,8 +12464,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "87-advanced-normal",
@@ -12460,11 +12549,11 @@
                 "level": 3,
                 "note": 114,
                 "combo": 246,
+                "special": null,
                 "circle": 93,
                 "square": 6,
                 "hold": 15,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "88-basic-normal",
@@ -12473,6 +12562,7 @@
                 "level": 5,
                 "note": 208,
                 "combo": 339,
+                "special": null,
                 "circle": 179,
                 "square": 1,
                 "hold": 22,
@@ -12485,6 +12575,7 @@
                 "level": 6,
                 "note": 325,
                 "combo": 446,
+                "special": null,
                 "circle": 253,
                 "square": 3,
                 "hold": 25,
@@ -12497,6 +12588,7 @@
                 "level": 10,
                 "note": 505,
                 "combo": 571,
+                "special": null,
                 "circle": 367,
                 "square": 24,
                 "hold": 19,
@@ -12518,8 +12610,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "88-advanced-normal",
@@ -12602,11 +12693,11 @@
                 "level": 2,
                 "note": 117,
                 "combo": 281,
+                "special": null,
                 "circle": 67,
                 "square": 21,
                 "hold": 29,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "89-basic-normal",
@@ -12615,6 +12706,7 @@
                 "level": 4,
                 "note": 229,
                 "combo": 363,
+                "special": null,
                 "circle": 105,
                 "square": 10,
                 "hold": 35,
@@ -12627,6 +12719,7 @@
                 "level": 7,
                 "note": 427,
                 "combo": 496,
+                "special": null,
                 "circle": 275,
                 "square": 6,
                 "hold": 22,
@@ -12639,6 +12732,7 @@
                 "level": 10.5,
                 "note": 532,
                 "combo": 609,
+                "special": null,
                 "circle": 269,
                 "square": 71,
                 "hold": 28,
@@ -12660,8 +12754,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "89-advanced-normal",
@@ -12747,11 +12840,11 @@
                 "level": 1,
                 "note": 119,
                 "combo": 197,
+                "special": null,
                 "circle": 85,
                 "square": 17,
                 "hold": 17,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "90-basic-normal",
@@ -12760,6 +12853,7 @@
                 "level": 4,
                 "note": 225,
                 "combo": 348,
+                "special": null,
                 "circle": 139,
                 "square": 19,
                 "hold": 28,
@@ -12772,6 +12866,7 @@
                 "level": 6,
                 "note": 315,
                 "combo": 460,
+                "special": null,
                 "circle": 190,
                 "square": 21,
                 "hold": 40,
@@ -12784,6 +12879,7 @@
                 "level": 10,
                 "note": 416,
                 "combo": 584,
+                "special": null,
                 "circle": 219,
                 "square": 39,
                 "hold": 39,
@@ -12805,8 +12901,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "90-advanced-normal",
@@ -12890,11 +12985,11 @@
                 "level": 2,
                 "note": 140,
                 "combo": 268,
+                "special": null,
                 "circle": 109,
                 "square": 5,
                 "hold": 26,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "91-basic-normal",
@@ -12903,6 +12998,7 @@
                 "level": 5,
                 "note": 252,
                 "combo": 351,
+                "special": null,
                 "circle": 206,
                 "square": 8,
                 "hold": 26,
@@ -12915,6 +13011,7 @@
                 "level": 8,
                 "note": 505,
                 "combo": 584,
+                "special": null,
                 "circle": 406,
                 "square": 5,
                 "hold": 22,
@@ -12927,6 +13024,7 @@
                 "level": 10.5,
                 "note": 613,
                 "combo": 682,
+                "special": null,
                 "circle": 466,
                 "square": 19,
                 "hold": 26,
@@ -12948,8 +13046,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "91-advanced-normal",
@@ -13035,11 +13132,11 @@
                 "level": 3,
                 "note": 163,
                 "combo": 207,
+                "special": null,
                 "circle": 117,
                 "square": 37,
                 "hold": 9,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "92-basic-normal",
@@ -13048,6 +13145,7 @@
                 "level": 5,
                 "note": 265,
                 "combo": 301,
+                "special": null,
                 "circle": 134,
                 "square": 69,
                 "hold": 14,
@@ -13060,6 +13158,7 @@
                 "level": 8,
                 "note": 465,
                 "combo": 519,
+                "special": null,
                 "circle": 313,
                 "square": 44,
                 "hold": 25,
@@ -13072,6 +13171,7 @@
                 "level": 11.5,
                 "note": 641,
                 "combo": 711,
+                "special": null,
                 "circle": 404,
                 "square": 56,
                 "hold": 30,
@@ -13093,8 +13193,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "92-advanced-normal",
@@ -13180,11 +13279,11 @@
                 "level": 2,
                 "note": 156,
                 "combo": 218,
+                "special": null,
                 "circle": 132,
                 "square": 12,
                 "hold": 12,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "93-basic-normal",
@@ -13193,6 +13292,7 @@
                 "level": 6,
                 "note": 309,
                 "combo": 380,
+                "special": null,
                 "circle": 211,
                 "square": 9,
                 "hold": 26,
@@ -13205,6 +13305,7 @@
                 "level": 10.5,
                 "note": 488,
                 "combo": 580,
+                "special": null,
                 "circle": 250,
                 "square": 17,
                 "hold": 41,
@@ -13217,6 +13318,7 @@
                 "level": 12,
                 "note": 616,
                 "combo": 748,
+                "special": null,
                 "circle": 285,
                 "square": 25,
                 "hold": 80,
@@ -13238,8 +13340,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "93-advanced-normal",
@@ -13324,11 +13425,11 @@
                 "level": 2,
                 "note": 134,
                 "combo": 276,
+                "special": null,
                 "circle": 80,
                 "square": 24,
                 "hold": 30,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "94-basic-normal",
@@ -13337,6 +13438,7 @@
                 "level": 6,
                 "note": 243,
                 "combo": 397,
+                "special": null,
                 "circle": 117,
                 "square": 51,
                 "hold": 44,
@@ -13349,6 +13451,7 @@
                 "level": 10.5,
                 "note": 455,
                 "combo": 548,
+                "special": null,
                 "circle": 178,
                 "square": 110,
                 "hold": 30,
@@ -13361,6 +13464,7 @@
                 "level": 13,
                 "note": 711,
                 "combo": 865,
+                "special": null,
                 "circle": 402,
                 "square": 72,
                 "hold": 60,
@@ -13382,8 +13486,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "94-advanced-normal",
@@ -13469,11 +13572,11 @@
                 "level": 3,
                 "note": 156,
                 "combo": 302,
+                "special": null,
                 "circle": 108,
                 "square": 12,
                 "hold": 36,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "95-basic-normal",
@@ -13482,6 +13585,7 @@
                 "level": 5,
                 "note": 287,
                 "combo": 432,
+                "special": null,
                 "circle": 179,
                 "square": 38,
                 "hold": 39,
@@ -13494,6 +13598,7 @@
                 "level": 9,
                 "note": 536,
                 "combo": 638,
+                "special": null,
                 "circle": 384,
                 "square": 46,
                 "hold": 36,
@@ -13506,6 +13611,7 @@
                 "level": 12,
                 "note": 745,
                 "combo": 867,
+                "special": null,
                 "circle": 479,
                 "square": 59,
                 "hold": 36,
@@ -13527,8 +13633,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "95-advanced-normal",
@@ -13613,11 +13718,11 @@
                 "level": 2,
                 "note": 135,
                 "combo": 311,
+                "special": null,
                 "circle": 93,
                 "square": 3,
                 "hold": 39,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "96-basic-normal",
@@ -13626,6 +13731,7 @@
                 "level": 4,
                 "note": 231,
                 "combo": 385,
+                "special": null,
                 "circle": 177,
                 "square": 5,
                 "hold": 38,
@@ -13638,6 +13744,7 @@
                 "level": 8,
                 "note": 432,
                 "combo": 579,
+                "special": null,
                 "circle": 276,
                 "square": 6,
                 "hold": 32,
@@ -13650,6 +13757,7 @@
                 "level": 12,
                 "note": 609,
                 "combo": 768,
+                "special": null,
                 "circle": 389,
                 "square": 8,
                 "hold": 48,
@@ -13671,8 +13779,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "96-advanced-normal",
@@ -13755,11 +13862,11 @@
                 "level": 4,
                 "note": 140,
                 "combo": 219,
+                "special": null,
                 "circle": 112,
                 "square": 10,
                 "hold": 18,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "97-basic-normal",
@@ -13768,6 +13875,7 @@
                 "level": 6,
                 "note": 278,
                 "combo": 366,
+                "special": null,
                 "circle": 149,
                 "square": 18,
                 "hold": 33,
@@ -13780,6 +13888,7 @@
                 "level": 10,
                 "note": 444,
                 "combo": 504,
+                "special": null,
                 "circle": 236,
                 "square": 8,
                 "hold": 25,
@@ -13792,6 +13901,7 @@
                 "level": 12.5,
                 "note": 569,
                 "combo": 723,
+                "special": null,
                 "circle": 289,
                 "square": 11,
                 "hold": 74,
@@ -13813,8 +13923,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "97-advanced-normal",
@@ -13899,11 +14008,11 @@
                 "level": 2,
                 "note": 146,
                 "combo": 238,
+                "special": null,
                 "circle": 117,
                 "square": 10,
                 "hold": 19,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "98-basic-normal",
@@ -13912,6 +14021,7 @@
                 "level": 6,
                 "note": 237,
                 "combo": 317,
+                "special": null,
                 "circle": 202,
                 "square": 12,
                 "hold": 21,
@@ -13937,6 +14047,7 @@
                 "level": 12.5,
                 "note": 606,
                 "combo": 699,
+                "special": null,
                 "circle": 427,
                 "square": 15,
                 "hold": 21,
@@ -13958,8 +14069,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "98-advanced-normal",
@@ -14039,11 +14149,11 @@
                 "level": 3,
                 "note": 133,
                 "combo": 207,
+                "special": null,
                 "circle": 108,
                 "square": 9,
                 "hold": 16,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "99-basic-normal",
@@ -14052,6 +14162,7 @@
                 "level": 7,
                 "note": 238,
                 "combo": 309,
+                "special": null,
                 "circle": 144,
                 "square": 26,
                 "hold": 24,
@@ -14064,6 +14175,7 @@
                 "level": 9,
                 "note": 399,
                 "combo": 487,
+                "special": null,
                 "circle": 203,
                 "square": 24,
                 "hold": 38,
@@ -14076,6 +14188,7 @@
                 "level": 13,
                 "note": 614,
                 "combo": 703,
+                "special": null,
                 "circle": 327,
                 "square": 34,
                 "hold": 54,
@@ -14097,8 +14210,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "99-advanced-normal",
@@ -14179,11 +14291,11 @@
                 "level": 3,
                 "note": 145,
                 "combo": 387,
+                "special": null,
                 "circle": 91,
                 "square": 10,
                 "hold": 44,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "100-basic-normal",
@@ -14192,6 +14304,7 @@
                 "level": 5,
                 "note": 268,
                 "combo": 508,
+                "special": null,
                 "circle": 174,
                 "square": 20,
                 "hold": 67,
@@ -14204,6 +14317,7 @@
                 "level": 10,
                 "note": 539,
                 "combo": 755,
+                "special": null,
                 "circle": 370,
                 "square": 4,
                 "hold": 47,
@@ -14216,6 +14330,7 @@
                 "level": 13.5,
                 "note": 954,
                 "combo": 1038,
+                "special": null,
                 "circle": 563,
                 "square": 30,
                 "hold": 20,
@@ -14237,8 +14352,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "100-advanced-normal",
@@ -14319,11 +14433,11 @@
                 "level": 2,
                 "note": 122,
                 "combo": 213,
+                "special": null,
                 "circle": 86,
                 "square": 17,
                 "hold": 19,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "101-basic-normal",
@@ -14332,6 +14446,7 @@
                 "level": 4,
                 "note": 210,
                 "combo": 289,
+                "special": null,
                 "circle": 130,
                 "square": 18,
                 "hold": 18,
@@ -14344,6 +14459,7 @@
                 "level": 8,
                 "note": 329,
                 "combo": 390,
+                "special": null,
                 "circle": 219,
                 "square": 11,
                 "hold": 20,
@@ -14356,6 +14472,7 @@
                 "level": 12,
                 "note": 467,
                 "combo": 513,
+                "special": null,
                 "circle": 266,
                 "square": 31,
                 "hold": 21,
@@ -14377,8 +14494,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "101-advanced-normal",
@@ -14458,11 +14574,11 @@
                 "level": 3,
                 "note": 147,
                 "combo": 283,
+                "special": null,
                 "circle": 108,
                 "square": 15,
                 "hold": 24,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "102-basic-normal",
@@ -14471,6 +14587,7 @@
                 "level": 6,
                 "note": 257,
                 "combo": 407,
+                "special": null,
                 "circle": 156,
                 "square": 23,
                 "hold": 37,
@@ -14483,6 +14600,7 @@
                 "level": 10.5,
                 "note": 486,
                 "combo": 615,
+                "special": null,
                 "circle": 270,
                 "square": 30,
                 "hold": 30,
@@ -14495,6 +14613,7 @@
                 "level": 13.5,
                 "note": 786,
                 "combo": 995,
+                "special": null,
                 "circle": 397,
                 "square": 82,
                 "hold": 75,
@@ -14516,8 +14635,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "102-advanced-normal",
@@ -14601,11 +14719,11 @@
                 "level": 2,
                 "note": 121,
                 "combo": 203,
+                "special": null,
                 "circle": 94,
                 "square": 7,
                 "hold": 20,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "103-basic-normal",
@@ -14614,6 +14732,7 @@
                 "level": 5,
                 "note": 240,
                 "combo": 324,
+                "special": null,
                 "circle": 172,
                 "square": 7,
                 "hold": 31,
@@ -14626,6 +14745,7 @@
                 "level": 10.5,
                 "note": 490,
                 "combo": 575,
+                "special": null,
                 "circle": 353,
                 "square": 19,
                 "hold": 41,
@@ -14638,6 +14758,7 @@
                 "level": 13.5,
                 "note": 690,
                 "combo": 810,
+                "special": null,
                 "circle": 404,
                 "square": 40,
                 "hold": 69,
@@ -14659,8 +14780,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "103-advanced-normal",
@@ -14747,11 +14867,11 @@
                 "level": 5,
                 "note": 202,
                 "combo": 366,
+                "special": null,
                 "circle": 139,
                 "square": 24,
                 "hold": 39,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "104-basic-normal",
@@ -14760,6 +14880,7 @@
                 "level": 8,
                 "note": 369,
                 "combo": 469,
+                "special": null,
                 "circle": 236,
                 "square": 2,
                 "hold": 33,
@@ -14772,6 +14893,7 @@
                 "level": 11.5,
                 "note": 625,
                 "combo": 743,
+                "special": null,
                 "circle": 302,
                 "square": 58,
                 "hold": 46,
@@ -14784,6 +14906,7 @@
                 "level": 13.5,
                 "note": 874,
                 "combo": 1000,
+                "special": null,
                 "circle": 406,
                 "square": 85,
                 "hold": 92,
@@ -14805,8 +14928,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "104-advanced-normal",
@@ -14886,11 +15008,11 @@
                 "level": 2,
                 "note": 166,
                 "combo": 246,
+                "special": null,
                 "circle": 138,
                 "square": 8,
                 "hold": 20,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "105-basic-normal",
@@ -14899,6 +15021,7 @@
                 "level": 6,
                 "note": 310,
                 "combo": 374,
+                "special": null,
                 "circle": 254,
                 "square": 11,
                 "hold": 30,
@@ -14911,6 +15034,7 @@
                 "level": 9,
                 "note": 500,
                 "combo": 515,
+                "special": null,
                 "circle": 363,
                 "square": 35,
                 "hold": 10,
@@ -14923,6 +15047,7 @@
                 "level": 13,
                 "note": 718,
                 "combo": 744,
+                "special": null,
                 "circle": 426,
                 "square": 61,
                 "hold": 15,
@@ -14944,8 +15069,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "105-advanced-normal",
@@ -15025,11 +15149,11 @@
                 "level": 4,
                 "note": 204,
                 "combo": 338,
+                "special": null,
                 "circle": 183,
                 "square": 3,
                 "hold": 18,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "106-basic-normal",
@@ -15038,6 +15162,7 @@
                 "level": 6,
                 "note": 341,
                 "combo": 476,
+                "special": null,
                 "circle": 298,
                 "square": 3,
                 "hold": 24,
@@ -15050,6 +15175,7 @@
                 "level": 10.5,
                 "note": 534,
                 "combo": 680,
+                "special": null,
                 "circle": 413,
                 "square": 14,
                 "hold": 17,
@@ -15062,6 +15188,7 @@
                 "level": 13.5,
                 "note": 924,
                 "combo": 1075,
+                "special": null,
                 "circle": 568,
                 "square": 60,
                 "hold": 26,
@@ -15083,8 +15210,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "106-advanced-normal",
@@ -15170,11 +15296,11 @@
                 "level": 2,
                 "note": 123,
                 "combo": 156,
+                "special": null,
                 "circle": 104,
                 "square": 10,
                 "hold": 9,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "107-basic-normal",
@@ -15183,6 +15309,7 @@
                 "level": 6,
                 "note": 217,
                 "combo": 258,
+                "special": null,
                 "circle": 163,
                 "square": 9,
                 "hold": 20,
@@ -15195,6 +15322,7 @@
                 "level": 9,
                 "note": 358,
                 "combo": 385,
+                "special": null,
                 "circle": 239,
                 "square": 5,
                 "hold": 14,
@@ -15207,6 +15335,7 @@
                 "level": 11,
                 "note": 473,
                 "combo": 504,
+                "special": null,
                 "circle": 318,
                 "square": 4,
                 "hold": 15,
@@ -15228,8 +15357,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "107-advanced-normal",
@@ -15314,11 +15442,11 @@
                 "level": 1,
                 "note": 114,
                 "combo": 200,
+                "special": null,
                 "circle": 84,
                 "square": 9,
                 "hold": 21,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "108-basic-normal",
@@ -15327,6 +15455,7 @@
                 "level": 4,
                 "note": 296,
                 "combo": 296,
+                "special": null,
                 "circle": 136,
                 "square": 38,
                 "hold": 95,
@@ -15339,6 +15468,7 @@
                 "level": 7,
                 "note": 327,
                 "combo": 407,
+                "special": null,
                 "circle": 193,
                 "square": 13,
                 "hold": 31,
@@ -15351,6 +15481,7 @@
                 "level": 11,
                 "note": 463,
                 "combo": 513,
+                "special": null,
                 "circle": 216,
                 "square": 48,
                 "hold": 20,
@@ -15372,8 +15503,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "108-advanced-normal",
@@ -15457,11 +15587,11 @@
                 "level": 3,
                 "note": 165,
                 "combo": 363,
+                "special": null,
                 "circle": 127,
                 "square": 5,
                 "hold": 33,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "109-basic-normal",
@@ -15470,6 +15600,7 @@
                 "level": 7,
                 "note": 314,
                 "combo": 510,
+                "special": null,
                 "circle": 202,
                 "square": 4,
                 "hold": 37,
@@ -15482,6 +15613,7 @@
                 "level": 10.5,
                 "note": 530,
                 "combo": 728,
+                "special": null,
                 "circle": 284,
                 "square": 22,
                 "hold": 44,
@@ -15494,6 +15626,7 @@
                 "level": 12.5,
                 "note": 618,
                 "combo": 865,
+                "special": null,
                 "circle": 273,
                 "square": 67,
                 "hold": 66,
@@ -15515,8 +15648,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "109-advanced-normal",
@@ -15602,11 +15734,11 @@
                 "level": 3,
                 "note": 213,
                 "combo": 261,
+                "special": null,
                 "circle": 197,
                 "square": 6,
                 "hold": 10,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "110-basic-normal",
@@ -15615,6 +15747,7 @@
                 "level": 6,
                 "note": 380,
                 "combo": 404,
+                "special": null,
                 "circle": 278,
                 "square": 8,
                 "hold": 9,
@@ -15627,6 +15760,7 @@
                 "level": 9,
                 "note": 513,
                 "combo": 597,
+                "special": null,
                 "circle": 316,
                 "square": 16,
                 "hold": 46,
@@ -15639,6 +15773,7 @@
                 "level": 11.5,
                 "note": 666,
                 "combo": 714,
+                "special": null,
                 "circle": 421,
                 "square": 35,
                 "hold": 22,
@@ -15660,8 +15795,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "110-advanced-normal",
@@ -15746,11 +15880,11 @@
                 "level": 2,
                 "note": 113,
                 "combo": 180,
+                "special": null,
                 "circle": 81,
                 "square": 16,
                 "hold": 16,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "111-basic-normal",
@@ -15759,6 +15893,7 @@
                 "level": 4,
                 "note": 215,
                 "combo": 271,
+                "special": null,
                 "circle": 167,
                 "square": 18,
                 "hold": 21,
@@ -15771,6 +15906,7 @@
                 "level": 9,
                 "note": 377,
                 "combo": 404,
+                "special": null,
                 "circle": 253,
                 "square": 34,
                 "hold": 12,
@@ -15783,6 +15919,7 @@
                 "level": 12,
                 "note": 563,
                 "combo": 608,
+                "special": null,
                 "circle": 409,
                 "square": 25,
                 "hold": 21,
@@ -15804,8 +15941,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "111-advanced-normal",
@@ -15890,11 +16026,11 @@
                 "level": 2,
                 "note": 109,
                 "combo": 269,
+                "special": null,
                 "circle": 68,
                 "square": 11,
                 "hold": 30,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "112-basic-normal",
@@ -15903,6 +16039,7 @@
                 "level": 5,
                 "note": 222,
                 "combo": 359,
+                "special": null,
                 "circle": 127,
                 "square": 25,
                 "hold": 30,
@@ -15915,6 +16052,7 @@
                 "level": 8,
                 "note": 353,
                 "combo": 458,
+                "special": null,
                 "circle": 243,
                 "square": 47,
                 "hold": 25,
@@ -15927,6 +16065,7 @@
                 "level": 11,
                 "note": 488,
                 "combo": 603,
+                "special": null,
                 "circle": 275,
                 "square": 15,
                 "hold": 29,
@@ -15948,8 +16087,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "112-advanced-normal",
@@ -16035,11 +16173,11 @@
                 "level": 2,
                 "note": 184,
                 "combo": 274,
+                "special": null,
                 "circle": 149,
                 "square": 16,
                 "hold": 19,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "113-basic-normal",
@@ -16048,6 +16186,7 @@
                 "level": 6,
                 "note": 327,
                 "combo": 449,
+                "special": null,
                 "circle": 192,
                 "square": 8,
                 "hold": 44,
@@ -16060,6 +16199,7 @@
                 "level": 8,
                 "note": 500,
                 "combo": 587,
+                "special": null,
                 "circle": 295,
                 "square": 16,
                 "hold": 33,
@@ -16072,6 +16212,7 @@
                 "level": 11.5,
                 "note": 624,
                 "combo": 750,
+                "special": null,
                 "circle": 316,
                 "square": 48,
                 "hold": 53,
@@ -16093,8 +16234,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "113-advanced-normal",
@@ -16179,11 +16319,11 @@
                 "level": 2,
                 "note": 158,
                 "combo": 215,
+                "special": null,
                 "circle": 130,
                 "square": 16,
                 "hold": 12,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "114-basic-normal",
@@ -16192,6 +16332,7 @@
                 "level": 4,
                 "note": 304,
                 "combo": 373,
+                "special": null,
                 "circle": 261,
                 "square": 3,
                 "hold": 22,
@@ -16204,6 +16345,7 @@
                 "level": 7,
                 "note": 544,
                 "combo": 562,
+                "special": null,
                 "circle": 446,
                 "square": 8,
                 "hold": 9,
@@ -16216,6 +16358,7 @@
                 "level": 11.5,
                 "note": 612,
                 "combo": 643,
+                "special": null,
                 "circle": 391,
                 "square": 32,
                 "hold": 14,
@@ -16237,8 +16380,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "114-advanced-normal",
@@ -16324,11 +16466,11 @@
                 "level": 3,
                 "note": 181,
                 "combo": 293,
+                "special": null,
                 "circle": 155,
                 "square": 1,
                 "hold": 25,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "115-basic-normal",
@@ -16337,6 +16479,7 @@
                 "level": 6,
                 "note": 329,
                 "combo": 371,
+                "special": null,
                 "circle": 274,
                 "square": 1,
                 "hold": 16,
@@ -16349,6 +16492,7 @@
                 "level": 9,
                 "note": 564,
                 "combo": 576,
+                "special": null,
                 "circle": 466,
                 "square": 10,
                 "hold": 6,
@@ -16361,6 +16505,7 @@
                 "level": 12,
                 "note": 626,
                 "combo": 641,
+                "special": null,
                 "circle": 393,
                 "square": 13,
                 "hold": 8,
@@ -16382,8 +16527,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "115-advanced-normal",
@@ -16469,11 +16613,11 @@
                 "level": 2,
                 "note": 176,
                 "combo": 276,
+                "special": null,
                 "circle": 129,
                 "square": 20,
                 "hold": 27,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "116-basic-normal",
@@ -16482,6 +16626,7 @@
                 "level": 7,
                 "note": 289,
                 "combo": 395,
+                "special": null,
                 "circle": 151,
                 "square": 17,
                 "hold": 38,
@@ -16494,6 +16639,7 @@
                 "level": 9,
                 "note": 428,
                 "combo": 529,
+                "special": null,
                 "circle": 258,
                 "square": 16,
                 "hold": 40,
@@ -16506,6 +16652,7 @@
                 "level": 12,
                 "note": 589,
                 "combo": 705,
+                "special": null,
                 "circle": 282,
                 "square": 42,
                 "hold": 70,
@@ -16527,8 +16674,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "116-advanced-normal",
@@ -16613,11 +16759,11 @@
                 "level": 2,
                 "note": 151,
                 "combo": 237,
+                "special": null,
                 "circle": 113,
                 "square": 15,
                 "hold": 23,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "117-basic-normal",
@@ -16626,6 +16772,7 @@
                 "level": 4,
                 "note": 210,
                 "combo": 284,
+                "special": null,
                 "circle": 148,
                 "square": 6,
                 "hold": 25,
@@ -16638,6 +16785,7 @@
                 "level": 8,
                 "note": 409,
                 "combo": 438,
+                "special": null,
                 "circle": 282,
                 "square": 18,
                 "hold": 14,
@@ -16650,6 +16798,7 @@
                 "level": 12.5,
                 "note": 523,
                 "combo": 610,
+                "special": null,
                 "circle": 251,
                 "square": 76,
                 "hold": 45,
@@ -16671,8 +16820,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "117-advanced-normal",
@@ -16758,11 +16906,11 @@
                 "level": 3,
                 "note": 119,
                 "combo": 189,
+                "special": null,
                 "circle": 85,
                 "square": 18,
                 "hold": 16,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "118-basic-normal",
@@ -16771,6 +16919,7 @@
                 "level": 6,
                 "note": 222,
                 "combo": 318,
+                "special": null,
                 "circle": 113,
                 "square": 29,
                 "hold": 33,
@@ -16783,6 +16932,7 @@
                 "level": 8,
                 "note": 362,
                 "combo": 452,
+                "special": null,
                 "circle": 190,
                 "square": 28,
                 "hold": 31,
@@ -16795,6 +16945,7 @@
                 "level": 12,
                 "note": 428,
                 "combo": 539,
+                "special": null,
                 "circle": 131,
                 "square": 58,
                 "hold": 48,
@@ -16816,8 +16967,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "118-advanced-normal",
@@ -16903,11 +17053,11 @@
                 "level": 1,
                 "note": 109,
                 "combo": 178,
+                "special": null,
                 "circle": 87,
                 "square": 12,
                 "hold": 10,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "119-basic-normal",
@@ -16916,6 +17066,7 @@
                 "level": 4,
                 "note": 183,
                 "combo": 228,
+                "special": null,
                 "circle": 111,
                 "square": 22,
                 "hold": 8,
@@ -16928,6 +17079,7 @@
                 "level": 7,
                 "note": 279,
                 "combo": 339,
+                "special": null,
                 "circle": 111,
                 "square": 20,
                 "hold": 24,
@@ -16940,6 +17092,7 @@
                 "level": 9,
                 "note": 322,
                 "combo": 405,
+                "special": null,
                 "circle": 120,
                 "square": 14,
                 "hold": 38,
@@ -16961,8 +17114,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "119-advanced-normal",
@@ -17048,11 +17200,11 @@
                 "level": 2,
                 "note": 113,
                 "combo": 224,
+                "special": null,
                 "circle": 91,
                 "square": 6,
                 "hold": 16,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "120-basic-normal",
@@ -17061,6 +17213,7 @@
                 "level": 6,
                 "note": 179,
                 "combo": 306,
+                "special": null,
                 "circle": 104,
                 "square": 8,
                 "hold": 20,
@@ -17086,6 +17239,7 @@
                 "level": 12.5,
                 "note": 551,
                 "combo": 600,
+                "special": null,
                 "circle": 333,
                 "square": 39,
                 "hold": 16,
@@ -17107,8 +17261,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "120-advanced-normal",
@@ -17193,11 +17346,11 @@
                 "level": 2,
                 "note": 128,
                 "combo": 223,
+                "special": null,
                 "circle": 87,
                 "square": 18,
                 "hold": 23,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "121-basic-normal",
@@ -17206,6 +17359,7 @@
                 "level": 5,
                 "note": 213,
                 "combo": 290,
+                "special": null,
                 "circle": 144,
                 "square": 12,
                 "hold": 28,
@@ -17218,6 +17372,7 @@
                 "level": 8,
                 "note": 402,
                 "combo": 440,
+                "special": null,
                 "circle": 243,
                 "square": 29,
                 "hold": 18,
@@ -17230,6 +17385,7 @@
                 "level": 12,
                 "note": 585,
                 "combo": 650,
+                "special": null,
                 "circle": 368,
                 "square": 14,
                 "hold": 35,
@@ -17251,8 +17407,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "121-advanced-normal",
@@ -17335,11 +17490,11 @@
                 "level": 3,
                 "note": 146,
                 "combo": 347,
+                "special": null,
                 "circle": 114,
                 "square": 3,
                 "hold": 29,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "122-basic-normal",
@@ -17348,6 +17503,7 @@
                 "level": 6,
                 "note": 265,
                 "combo": 431,
+                "special": null,
                 "circle": 201,
                 "square": 5,
                 "hold": 31,
@@ -17360,6 +17516,7 @@
                 "level": 8,
                 "note": 455,
                 "combo": 626,
+                "special": null,
                 "circle": 336,
                 "square": 6,
                 "hold": 27,
@@ -17372,6 +17529,7 @@
                 "level": 12,
                 "note": 609,
                 "combo": 742,
+                "special": null,
                 "circle": 354,
                 "square": 39,
                 "hold": 25,
@@ -17393,8 +17551,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "122-advanced-normal",
@@ -17480,11 +17637,11 @@
                 "level": 2,
                 "note": 136,
                 "combo": 230,
+                "special": null,
                 "circle": 112,
                 "square": 8,
                 "hold": 16,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "123-basic-normal",
@@ -17493,6 +17650,7 @@
                 "level": 4,
                 "note": 213,
                 "combo": 294,
+                "special": null,
                 "circle": 179,
                 "square": 1,
                 "hold": 19,
@@ -17505,6 +17663,7 @@
                 "level": 9,
                 "note": 371,
                 "combo": 449,
+                "special": null,
                 "circle": 259,
                 "square": 19,
                 "hold": 22,
@@ -17517,6 +17676,7 @@
                 "level": 11.5,
                 "note": 466,
                 "combo": 562,
+                "special": null,
                 "circle": 295,
                 "square": 40,
                 "hold": 29,
@@ -17538,8 +17698,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "123-advanced-normal",
@@ -17625,11 +17784,11 @@
                 "level": 2,
                 "note": 153,
                 "combo": 209,
+                "special": null,
                 "circle": 138,
                 "square": 6,
                 "hold": 9,
-                "arrow": 0,
-                "goldArrow": 0
+                "arrow": 0
             },
             {
                 "id": "124-basic-normal",
@@ -17638,6 +17797,7 @@
                 "level": 4,
                 "note": 224,
                 "combo": 282,
+                "special": null,
                 "circle": 122,
                 "square": 10,
                 "hold": 14,
@@ -17650,6 +17810,7 @@
                 "level": 9,
                 "note": 365,
                 "combo": 416,
+                "special": null,
                 "circle": 221,
                 "square": 22,
                 "hold": 7,
@@ -17662,6 +17823,7 @@
                 "level": 11.5,
                 "note": 521,
                 "combo": 598,
+                "special": null,
                 "circle": 241,
                 "square": 32,
                 "hold": 40,
@@ -17683,8 +17845,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "124-advanced-normal",
@@ -17764,11 +17925,11 @@
                 "level": 2,
                 "note": 133,
                 "combo": 250,
-                "special": 0,
-                "circle": 0,
-                "square": 0,
-                "hold": 0,
-                "arrow": 0
+                "special": null,
+                "circle": null,
+                "square": null,
+                "hold": null,
+                "arrow": null
             },
             {
                 "id": "125-basic-normal",
@@ -17777,11 +17938,11 @@
                 "level": 7,
                 "note": 243,
                 "combo": 332,
-                "special": 0,
-                "circle": 0,
-                "square": 0,
-                "hold": 0,
-                "arrow": 0
+                "special": null,
+                "circle": null,
+                "square": null,
+                "hold": null,
+                "arrow": null
             },
             {
                 "id": "125-basic-hard",
@@ -17790,11 +17951,11 @@
                 "level": 10.5,
                 "note": 519,
                 "combo": 591,
-                "special": 0,
-                "circle": 0,
-                "square": 0,
-                "hold": 0,
-                "arrow": 0
+                "special": null,
+                "circle": null,
+                "square": null,
+                "hold": null,
+                "arrow": null
             },
             {
                 "id": "125-basic-master",
@@ -17803,11 +17964,11 @@
                 "level": 13.5,
                 "note": 745,
                 "combo": 831,
-                "special": 0,
-                "circle": 0,
-                "square": 0,
-                "hold": 0,
-                "arrow": 0
+                "special": null,
+                "circle": null,
+                "square": null,
+                "hold": null,
+                "arrow": null
             },
             {
                 "id": "125-advanced-easy",
@@ -17904,11 +18065,11 @@
                 "level": 3,
                 "note": 152,
                 "combo": 245,
-                "special": 0,
-                "circle": 0,
-                "square": 0,
-                "hold": 0,
-                "arrow": 0
+                "special": null,
+                "circle": null,
+                "square": null,
+                "hold": null,
+                "arrow": null
             },
             {
                 "id": "126-basic-normal",
@@ -17917,11 +18078,11 @@
                 "level": 7,
                 "note": 235,
                 "combo": 365,
-                "special": 0,
-                "circle": 0,
-                "square": 0,
-                "hold": 0,
-                "arrow": 0
+                "special": null,
+                "circle": null,
+                "square": null,
+                "hold": null,
+                "arrow": null
             },
             {
                 "id": "126-basic-hard",
@@ -17930,11 +18091,11 @@
                 "level": 9.5,
                 "note": 387,
                 "combo": 469,
-                "special": 0,
-                "circle": 0,
-                "square": 0,
-                "hold": 0,
-                "arrow": 0
+                "special": null,
+                "circle": null,
+                "square": null,
+                "hold": null,
+                "arrow": null
             },
             {
                 "id": "126-basic-master",
@@ -17943,11 +18104,11 @@
                 "level": 12,
                 "note": 529,
                 "combo": 784,
-                "special": 0,
-                "circle": 0,
-                "square": 0,
-                "hold": 0,
-                "arrow": 0
+                "special": null,
+                "circle": null,
+                "square": null,
+                "hold": null,
+                "arrow": null
             },
             {
                 "id": "126-advanced-easy",
@@ -18032,7 +18193,7 @@
             "ja": "Tsuchiya Shohei (ZUNTATA)"
         },
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_089.webp",
-        "bpm": 0,
+        "bpm": 150,
         "genre": "original",
         "updateAt": { "kind": "free", "number": 11, "date": "2026-10-08" },
         "searchAliases": [],
@@ -18044,12 +18205,11 @@
                 "level": 2,
                 "note": 119,
                 "combo": 213,
-                "special": 0,
-                "circle": 0,
-                "square": 0,
-                "hold": 0,
-                "arrow": 0,
-                "goldArrow": 0
+                "special": null,
+                "circle": null,
+                "square": null,
+                "hold": null,
+                "arrow": null
             },
             {
                 "id": "127-basic-normal",
@@ -18058,11 +18218,11 @@
                 "level": 4,
                 "note": 219,
                 "combo": 323,
-                "special": 0,
-                "circle": 0,
-                "square": 0,
-                "hold": 0,
-                "arrow": 0
+                "special": null,
+                "circle": null,
+                "square": null,
+                "hold": null,
+                "arrow": null
             },
             {
                 "id": "127-basic-hard",
@@ -18071,11 +18231,11 @@
                 "level": 8,
                 "note": 417,
                 "combo": 442,
-                "special": 0,
-                "circle": 0,
-                "square": 0,
-                "hold": 0,
-                "arrow": 0
+                "special": null,
+                "circle": null,
+                "square": null,
+                "hold": null,
+                "arrow": null
             },
             {
                 "id": "127-basic-master",
@@ -18084,11 +18244,11 @@
                 "level": 10.5,
                 "note": 471,
                 "combo": 575,
-                "special": 0,
-                "circle": 0,
-                "square": 0,
-                "hold": 0,
-                "arrow": 0
+                "special": null,
+                "circle": null,
+                "square": null,
+                "hold": null,
+                "arrow": null
             },
             {
                 "id": "127-advanced-easy",
@@ -18106,8 +18266,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "127-advanced-normal",
@@ -18191,11 +18350,10 @@
                 "note": 130,
                 "combo": 238,
                 "special": 35,
-                "circle": 0,
-                "square": 0,
-                "hold": 0,
-                "arrow": 0,
-                "goldArrow": 0
+                "circle": null,
+                "square": null,
+                "hold": null,
+                "arrow": null
             },
             {
                 "id": "128-basic-normal",
@@ -18205,10 +18363,10 @@
                 "note": 220,
                 "combo": 293,
                 "special": 51,
-                "circle": 0,
-                "square": 0,
-                "hold": 0,
-                "arrow": 0
+                "circle": null,
+                "square": null,
+                "hold": null,
+                "arrow": null
             },
             {
                 "id": "128-basic-hard",
@@ -18218,10 +18376,10 @@
                 "note": 369,
                 "combo": 446,
                 "special": 87,
-                "circle": 0,
-                "square": 0,
-                "hold": 0,
-                "arrow": 0
+                "circle": null,
+                "square": null,
+                "hold": null,
+                "arrow": null
             },
             {
                 "id": "128-basic-master",
@@ -18231,10 +18389,10 @@
                 "note": 619,
                 "combo": 675,
                 "special": 104,
-                "circle": 0,
-                "square": 0,
-                "hold": 0,
-                "arrow": 0
+                "circle": null,
+                "square": null,
+                "hold": null,
+                "arrow": null
             },
             {
                 "id": "128-advanced-easy",
@@ -18252,8 +18410,7 @@
                 "advHold": 0,
                 "arrow": 0,
                 "advArrow": 0,
-                "leftRightArrow": 0,
-                "goldArrow": 0
+                "leftRightArrow": 0
             },
             {
                 "id": "128-advanced-normal",
