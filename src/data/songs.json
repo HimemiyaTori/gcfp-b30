@@ -17926,10 +17926,10 @@
                 "note": 133,
                 "combo": 250,
                 "special": null,
-                "circle": null,
-                "square": null,
-                "hold": null,
-                "arrow": null
+                "circle": 110,
+                "square": 0,
+                "hold": 23,
+                "arrow": 0
             },
             {
                 "id": "125-basic-normal",
@@ -17939,10 +17939,10 @@
                 "note": 243,
                 "combo": 332,
                 "special": null,
-                "circle": null,
-                "square": null,
-                "hold": null,
-                "arrow": null
+                "circle": 188,
+                "square": 6,
+                "hold": 34,
+                "arrow": 15
             },
             {
                 "id": "125-basic-hard",
@@ -17952,10 +17952,10 @@
                 "note": 519,
                 "combo": 591,
                 "special": null,
-                "circle": null,
-                "square": null,
-                "hold": null,
-                "arrow": null
+                "circle": 398,
+                "square": 9,
+                "hold": 20,
+                "arrow": 92
             },
             {
                 "id": "125-basic-master",
@@ -17965,10 +17965,10 @@
                 "note": 745,
                 "combo": 831,
                 "special": null,
-                "circle": null,
-                "square": null,
-                "hold": null,
-                "arrow": null
+                "circle": 435,
+                "square": 62,
+                "hold": 29,
+                "arrow": 219
             },
             {
                 "id": "125-advanced-easy",
@@ -18066,10 +18066,10 @@
                 "note": 152,
                 "combo": 245,
                 "special": null,
-                "circle": null,
-                "square": null,
-                "hold": null,
-                "arrow": null
+                "circle": 112,
+                "square": 19,
+                "hold": 21,
+                "arrow": 0
             },
             {
                 "id": "126-basic-normal",
@@ -18079,10 +18079,10 @@
                 "note": 235,
                 "combo": 365,
                 "special": null,
-                "circle": null,
-                "square": null,
-                "hold": null,
-                "arrow": null
+                "circle": 132,
+                "square": 16,
+                "hold": 41,
+                "arrow": 46
             },
             {
                 "id": "126-basic-hard",
@@ -18092,10 +18092,10 @@
                 "note": 387,
                 "combo": 469,
                 "special": null,
-                "circle": null,
-                "square": null,
-                "hold": null,
-                "arrow": null
+                "circle": 214,
+                "square": 24,
+                "hold": 31,
+                "arrow": 118
             },
             {
                 "id": "126-basic-master",
@@ -18105,10 +18105,10 @@
                 "note": 529,
                 "combo": 784,
                 "special": null,
-                "circle": null,
-                "square": null,
-                "hold": null,
-                "arrow": null
+                "circle": 207,
+                "square": 88,
+                "hold": 77,
+                "arrow": 157
             },
             {
                 "id": "126-advanced-easy",
@@ -18206,10 +18206,10 @@
                 "note": 119,
                 "combo": 213,
                 "special": null,
-                "circle": null,
-                "square": null,
-                "hold": null,
-                "arrow": null
+                "circle": 91,
+                "square": 8,
+                "hold": 20,
+                "arrow": 0
             },
             {
                 "id": "127-basic-normal",
@@ -18219,10 +18219,10 @@
                 "note": 219,
                 "combo": 323,
                 "special": null,
-                "circle": null,
-                "square": null,
-                "hold": null,
-                "arrow": null
+                "circle": 158,
+                "square": 12,
+                "hold": 45,
+                "arrow": 4
             },
             {
                 "id": "127-basic-hard",
@@ -18232,10 +18232,10 @@
                 "note": 417,
                 "combo": 442,
                 "special": null,
-                "circle": null,
-                "square": null,
-                "hold": null,
-                "arrow": null
+                "circle": 328,
+                "square": 12,
+                "hold": 14,
+                "arrow": 63
             },
             {
                 "id": "127-basic-master",
@@ -18245,10 +18245,10 @@
                 "note": 471,
                 "combo": 575,
                 "special": null,
-                "circle": null,
-                "square": null,
-                "hold": null,
-                "arrow": null
+                "circle": 101,
+                "square": 16,
+                "hold": 24,
+                "arrow": 330
             },
             {
                 "id": "127-advanced-easy",
@@ -18350,10 +18350,10 @@
                 "note": 130,
                 "combo": 238,
                 "special": 35,
-                "circle": null,
-                "square": null,
-                "hold": null,
-                "arrow": null
+                "circle": 106,
+                "square": 4,
+                "hold": 20,
+                "arrow": 0
             },
             {
                 "id": "128-basic-normal",
@@ -18363,10 +18363,10 @@
                 "note": 220,
                 "combo": 293,
                 "special": 51,
-                "circle": null,
-                "square": null,
-                "hold": null,
-                "arrow": null
+                "circle": 196,
+                "square": 4,
+                "hold": 16,
+                "arrow": 4
             },
             {
                 "id": "128-basic-hard",
@@ -18376,10 +18376,10 @@
                 "note": 369,
                 "combo": 446,
                 "special": 87,
-                "circle": null,
-                "square": null,
-                "hold": null,
-                "arrow": null
+                "circle": 293,
+                "square": 19,
+                "hold": 18,
+                "arrow": 39
             },
             {
                 "id": "128-basic-master",
@@ -18389,10 +18389,10 @@
                 "note": 619,
                 "combo": 675,
                 "special": 104,
-                "circle": null,
-                "square": null,
-                "hold": null,
-                "arrow": null
+                "circle": 446,
+                "square": 18,
+                "hold": 11,
+                "arrow": 144
             },
             {
                 "id": "128-advanced-easy",
