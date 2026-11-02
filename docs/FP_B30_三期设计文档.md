@@ -298,7 +298,7 @@ GCFP applicationId 已配置，并随 3A、3B 通过用户实际使用验证；�
 
 ### 7.5 识别判定与状态
 
-相册复用首页 OCR 的页面、曲名、谱面及字段校验，成功即直接录入；无法得到合法成绩时显示识别失败并允许重试，不新增待确认或置信度审核。MISSION CLEAR / MISSON CLEAR、游玩中和未游玩占位继续跳过，FC/AP 未知统一按 false。
+相册复用首页 OCR 的页面、曲名、谱面及字段校验，成功即直接录入；无法得到合法成绩时显示识别失败并允许重试，不新增待确认或置信度审核。MISSION CLEAR / MISSION FAILED、游玩中和未游玩占位继续跳过，FC/AP 未知统一按 false。
 
 当前主流程为 `discovered → downloading → recognizing → pending_commit → imported / skipped`，另有 retry_wait、failed、expired、canceled。旧 `needs_review / rejected` 只兼容既有记录，不作为新交互。仅媒体已发现、已下载或 OCR 已结束不能标记 imported，必须在历史事务提交成功后标记；写入低分历史也算 imported。
 
@@ -652,7 +652,7 @@ Worker 负担为绑定、凭据续期、相册列表读取与筛选；CDN 不允
 - 相册截图的成绩日期、历史排序使用拍摄时间；补录、编辑与删除只按既有规则更新本机今天的快照，过去日期冻结
 - 同一 mediaId 或已成功处理 hash 不重复。清空后旧代次任务不能写回；相册处理记录已删除，当前仍可见的截图可以重新录入。不增加人工保护或待确认
 - 3A 即验证跨标签页清空、解绑和换绑后旧任务或候选不能提交；旧 Coral 缓存不能用于新绑定
-- 非 GCFP、视频、MISSION CLEAR、游玩中和未游玩占位跳过
+- 非 GCFP、视频、MISSION CLEAR、MISSION FAILED、游玩中和未游玩占位跳过
 - CDN 跨域失败、空相册、Cookie 失效、URL 过期、超大图和 OCR 错误可区分
 - 刷新/关闭/挂起在下载、OCR、入库各阶段均能下次恢复
 - 关闭所有页面后无相册请求和 OCR；持续可见但无新访问事件也不周期轮询

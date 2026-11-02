@@ -1452,7 +1452,7 @@ ROI 位于 `src/core/ocr/recognizer.ts` 的 `regions`，表中为 1280×720 基�
 
 结算 Score 按基准原尺寸识别，其他文字 ROI 放大两倍。选曲页等级若默认检测没有文字，则放宽检测阈值再认一次，避免细笔画的 7 被漏掉。结算页读取本次大号 Score，不读取 HIGH SCORE。选曲页读取右侧 HIGH SCORE；难度不能仅由等级反推，先用四张难度卡片高亮位置确定难度，再与左侧等级、模式和曲库交叉验证。颜色阈值与最小差距在识别器中集中配置，无法唯一确认时失败。
 
-状态 `MISSION CLEAR`在读取曲名／分数前直接跳过，不新建、不更新任何成绩。FULL CHAIN → FC，ALL PERFECT → AP + FC，CLEAR / FAILED → 无 FC / AP。FULL CHAIN、ALL PERFECT、MISSION CLEAR 若只错一个字符仍接受，例如少一个 L 的 FULCHAIN；其余未知或不完整状态失败，不把它默认为 CLEAR。选曲页 0 分且无完成状态视为未游玩占位并跳过。结算页等级区域向左加宽，以盖住 10+ 的首位。
+状态 `MISSION CLEAR`、`MISSION FAILED` 在读取曲名／分数前直接跳过，不新建、不更新任何成绩。FULL CHAIN → FC，ALL PERFECT → AP + FC，CLEAR / FAILED → 无 FC / AP。FULL CHAIN、ALL PERFECT、MISSION CLEAR、MISSION FAILED 若只错一个字符仍接受，例如少一个 L 的 FULCHAIN；其余未知或不完整状态失败，不把它默认为 CLEAR。选曲页 0 分且无完成状态视为未游玩占位并跳过。结算页等级区域向左加宽，以盖住 10+ 的首位。
 
 数字进行 NFKC、空白移除及 O→0、I/l→1 校正。有逗号时严格校验千位分组，避免漏识别数字后组成合法低分；非法字符、超范围分数均失败。曲名仅以日英标题和已有别名进行 Fuse 匹配，不使用艺术家匹配；精确匹配优先，模糊候选分值 ≤0.20、与次候选差距 ≥0.08。模式、难度、等级必须唯一对应库内谱面。文字识别最低置信度为 0.65，置信度不持久化。
 

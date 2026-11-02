@@ -64,6 +64,7 @@ function nearLongStatus(value: string) {
         ['FULLCHAIN', 'fc'],
         ['ALLPERFECT', 'ap'],
         ['MISSIONCLEAR', 'mission'],
+        ['MISSIONFAILED', 'mission'],
     ] as const
 
     // 长状态词允许2字符容错
@@ -75,7 +76,6 @@ function nearLongStatus(value: string) {
 }
 export function parseStatus(text: string) {
     const value = compact(text)
-    if (/^MISSI?ONCLEAR$/.test(value)) return 'mission'
     if (value === 'ALLPERFECT' || value === 'AP') return 'ap'
     if (value === 'FULLCHAIN' || value === 'FC') return 'fc'
     if (value === 'CLEAR' || value === 'FAILED' || value === 'FAIL')

@@ -17,6 +17,7 @@
     },
     { "path": "result/en-misson-1.jpg", "skip": "故事模式" },
     { "path": "result/en-misson-2.jpg", "skip": "故事模式" },
+    { "path": "result/en-misson-failed.jpg", "skip": "故事模式" },
     {
         "path": "result/en-adv-normal5-ap.jpg",
         "chartId": "1-advanced-normal",
