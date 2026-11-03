@@ -2045,7 +2045,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_024.webp",
         "bpm": 220,
         "genre": "virtual-singer",
-        "updateAt": { "kind": "free", "number": 3, "date": "2026-01-18" },
+        "updateAt": { "kind": "free", "number": 3, "date": "2026-01-08" },
         "searchAliases": [],
         "charts": [
             {
@@ -5081,7 +5081,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_031.webp",
         "bpm": 173,
         "genre": "touhou",
-        "updateAt": { "kind": "free", "number": 3, "date": "2026-01-18" },
+        "updateAt": { "kind": "free", "number": 3, "date": "2026-01-08" },
         "searchAliases": [],
         "charts": [
             {
@@ -6509,7 +6509,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_043.webp",
         "bpm": 137,
         "genre": "music-game",
-        "updateAt": { "kind": "free", "number": 3, "date": "2026-01-18" },
+        "updateAt": { "kind": "free", "number": 3, "date": "2026-01-08" },
         "searchAliases": [],
         "charts": [
             {
@@ -6651,7 +6651,7 @@
         "coverSourceUrl": "https://groovecoaster.com/fp/images/GCFP_music_038.webp",
         "bpm": 168,
         "genre": "music-game",
-        "updateAt": { "kind": "free", "number": 3, "date": "2026-01-18" },
+        "updateAt": { "kind": "free", "number": 3, "date": "2026-01-08" },
         "searchAliases": [],
         "charts": [
             {
