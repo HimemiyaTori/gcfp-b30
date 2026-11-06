@@ -1,6 +1,6 @@
 # Groove Archive · FP 成绩管理
 
-一期已完成验收，二期已接入 Excel、B30 成绩图、历史成绩与 Rating 趋势、曲库查询及多语言界面。现有曲库为 124 首歌曲、992 张谱面，保留维护者提供的原始数据与稳定 ID。
+一期已完成验收，二期已接入 Excel、B30 成绩图、历史成绩与 Rating 趋势、曲库查询及多语言界面。现有曲库为 132 首歌曲、1056 张谱面，保留维护者提供的原始数据与稳定 ID。
 
 本地功能以 [二期设计文档](docs/FP_B30_二期设计文档.md) 为基线，账号与历史同步开发按 [三期设计文档](docs/FP_B30_三期设计文档.md) 推进；共同业务规则和一期验收记录见 [一期设计与验收归档](docs/FP_B30_一期设计文档.md)。
 
@@ -42,7 +42,7 @@ yarn build
 
 曲库位于 `src/data/songs.json`，模型及展示 helper 位于 `src/core/song/`，搜索位于 `src/core/search/`。Song ID 分配后不变，Chart ID 为 `{songId}-{mode}-{difficulty}`；不得因排序、改名或下架重新分配／删除 ID。分类字段使用 genre；英文缺失回退日文，歌手可选。封面只维护 coverSourceUrl，不再保存本地封面路径。
 
-BASIC 谱面的物量构成可由同曲同难度的 ADVANCED 谱面推导：BASIC 与 ADVANCED 节奏相同，ADVANCED 独有的 dual 与左右指定音符在 BASIC 中合并为基础类型，即 BASIC 的 `circle = circle + advCircle + leftRightCircle`、`hold = hold + advHold`、`arrow = arrow + advArrow + leftRightArrow`（等号右侧均为 ADVANCED 字段），`square` 两模式相同。推导结果可作录入校验：四项之和应等于 BASIC 谱面的 `note`。该关系已对其余 124 首共 496 张 BASIC 谱面逐张验证全部成立；外部数据源缺少 BASIC 构成而 ADVANCED 构成完整时，可按此推导补录（2026-10-08 更新的 125～128 号四首即按此补录）。`special` 不适用此推导：Easy／Normal 的 BASIC 值与 ADVANCED 相同，但 Hard／Master 的 BASIC 值常小于 ADVANCED 且差值无规律，不得以 ADVANCED 的值代替，缺失时保留 null，待外部数据源更新或实机确认后再补。
+BASIC 谱面的物量构成可由同曲同难度的 ADVANCED 谱面推导：BASIC 与 ADVANCED 节奏相同，ADVANCED 独有的 dual 与左右指定音符在 BASIC 中合并为基础类型，即 BASIC 的 `circle = circle + advCircle + leftRightCircle`、`hold = hold + advHold`、`arrow = arrow + advArrow + leftRightArrow`（等号右侧均为 ADVANCED 字段），`square` 两模式相同。推导结果可作录入校验：四项之和应等于 BASIC 谱面的 `note`。该关系已对其余 128 首共 512 张 BASIC 谱面逐张验证全部成立；外部数据源缺少 BASIC 构成而 ADVANCED 构成完整时，可按此推导补录。`special` 不适用此推导：Easy／Normal 的 BASIC 值与 ADVANCED 相同，但 Hard／Master 的 BASIC 值常小于 ADVANCED 且差值无规律，不得以 ADVANCED 的值代替，缺失时保留 null。
 
 曲库变更须递增 `src/data/metadata.json` 的 songLibraryVersion；Rating 规则变更须递增 ratingRuleVersion。详细写入、搜索与更新规则见一期设计文档第 20 节。本次接入未逐首重新核验社区资料。
 
@@ -52,7 +52,7 @@ BASIC 谱面的物量构成可由同曲同难度的 ADVANCED 谱面推导：BASI
 
 测试围绕用户操作、真实文件和资源交互；内部计算、解析和状态逻辑通过代码审查检查。`yarn test` 只运行 6 项 XLSX 文件验收，包含模板生成、双模式文件往返、删减及重排模板、错误文件和输入单元格、文件及行列限制，不维护数字、布尔值和日期的解析边界枚举。`yarn build` 执行 Vue／TypeScript 检查及生产构建。
 
-OCR 真实样本验证以 `tests/ocr-samples.json` 的逐张标注为准，当前有 22 张：result 11 张、select 8 张、playing 3 张，默认位于 `tests/score images/{result,select,playing}`，也可设置 `OCR_SAMPLES_DIR` 指向包含这三个子目录的样本目录。启动 `yarn dev:local` 后运行 `yarn test:ocr`（默认系统 Edge）。通过页面实际上传，检查 16 张有效成绩、6 张跳过及批量处理后的 12 条谱面最佳成绩；脚本额外追加首张重复截图，共上传 23 张，验证不相邻去重。样本数量和成绩预期从清单生成，缺少图片会在启动浏览器前列出缺失文件。模型和本地运行时为较大资源，首次加载可能较慢。实现范围及 ROI 见一期设计文档第 21 节。
+OCR 真实样本验证以 `tests/ocr-samples.json` 的逐张标注为准，默认位于 `tests/score images/{result,select,playing}`，也可设置 `OCR_SAMPLES_DIR` 指向包含这三个子目录的样本目录。启动 `yarn dev:local` 后运行 `yarn test:ocr`（默认系统 Edge）。脚本额外追加首张重复截图，验证不相邻去重。样本数量和成绩预期从清单生成，缺少图片会在启动浏览器前列出缺失文件。模型和本地运行时为较大资源，首次加载可能较慢。实现范围及 ROI 见一期设计文档第 21 节。
 
 ## 模块结构
 
