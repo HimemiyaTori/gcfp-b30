@@ -1391,7 +1391,7 @@ T01～T04 的数值、坐标和性能限制通过真实样本及运行结果确�
 - 加载曲库时校验重复 ID、组合唯一性、模式／难度、分类及整数／半整数等级。成绩写入必须验证歌曲与谱面关联。
 - 英文标题／歌手缺失时回退日文，vocal 与本地封面 coverUrl 可选；分类源字段统一为 genre，页面 category 为展示映射。
 - BASIC 与同曲同难度 ADVANCED 谱面节奏相同，物量构成可互相换算（2026-11-03 补记）：ADVANCED 独有的 dual 与左右指定音符在 BASIC 中合并为基础类型，即 BASIC 的 `circle = circle + advCircle + leftRightCircle`、`hold = hold + advHold`、`arrow = arrow + advArrow + leftRightArrow`（等号右侧均为 ADVANCED 字段），`square` 两模式相同。该关系已对当时全库 124 首共 496 张 BASIC 谱面逐张验证全部成立，推导值之和同时可作校验，应等于 BASIC 谱面的 `note`；外部数据源缺少 BASIC 构成而 ADVANCED 构成完整时可按此推导补录，125～128 号四首的 BASIC 构成即按此补录。
-- `special` 不适用上述换算：已知数据中 Easy／Normal 的 BASIC 值与 ADVANCED 相同，但 Hard／Master 的 BASIC 值常小于 ADVANCED 且差值无规律（已知 Master 全部更小），不得以 ADVANCED 的值填充 BASIC，缺失时保留空值，待外部数据源更新或实机确认后再补。
+- `special` 不适用上述物量换算：但 EASY／NORMAL 的 BASIC 与 ADVANCED 对应谱面值一致。HARD／MASTER 的 BASIC 值常小于 ADVANCED 且差值无规律，缺失时保留 null。
 
 ### 20.2 搜索（T07）
 

@@ -42,7 +42,7 @@ yarn build
 
 曲库位于 `src/data/songs.json`，模型及展示 helper 位于 `src/core/song/`，搜索位于 `src/core/search/`。Song ID 分配后不变，Chart ID 为 `{songId}-{mode}-{difficulty}`；不得因排序、改名或下架重新分配／删除 ID。分类字段使用 genre；英文缺失回退日文，歌手可选。封面只维护 coverSourceUrl，不再保存本地封面路径。
 
-BASIC 谱面的物量构成可由同曲同难度的 ADVANCED 谱面推导：BASIC 与 ADVANCED 节奏相同，ADVANCED 独有的 dual 与左右指定音符在 BASIC 中合并为基础类型，即 BASIC 的 `circle = circle + advCircle + leftRightCircle`、`hold = hold + advHold`、`arrow = arrow + advArrow + leftRightArrow`（等号右侧均为 ADVANCED 字段），`square` 两模式相同。推导结果可作录入校验：四项之和应等于 BASIC 谱面的 `note`。该关系已对其余 128 首共 512 张 BASIC 谱面逐张验证全部成立；外部数据源缺少 BASIC 构成而 ADVANCED 构成完整时，可按此推导补录。`special` 不适用此推导：Easy／Normal 的 BASIC 值与 ADVANCED 相同，但 Hard／Master 的 BASIC 值常小于 ADVANCED 且差值无规律，不得以 ADVANCED 的值代替，缺失时保留 null。
+BASIC 谱面的物量构成可由同曲同难度的 ADVANCED 谱面推导：BASIC 与 ADVANCED 节奏相同，ADVANCED 独有的 dual 与左右指定音符在 BASIC 中合并为基础类型，即 BASIC 的 `circle = circle + advCircle + leftRightCircle`、`hold = hold + advHold`、`arrow = arrow + advArrow + leftRightArrow`（等号右侧均为 ADVANCED 字段），`square` 两模式相同。推导结果可作录入校验：四项之和应等于 BASIC 谱面的 `note`。该关系已对其余 128 首共 512 张 BASIC 谱面逐张验证全部成立；外部数据源缺少 BASIC 构成而 ADVANCED 构成完整时，可按此推导补录。`special` 不适用此物量推导：但 EASY／NORMAL 的 BASIC 与 ADVANCED 对应谱面 `special` 值一致。HARD／MASTER 的 BASIC 值常小于 ADVANCED 且差值无规律，缺失时保留 null。
 
 曲库变更须递增 `src/data/metadata.json` 的 songLibraryVersion；Rating 规则变更须递增 ratingRuleVersion。详细写入、搜索与更新规则见一期设计文档第 20 节。本次接入未逐首重新核验社区资料。
 
