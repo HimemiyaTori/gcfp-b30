@@ -1,7 +1,92 @@
 import { songCategories } from '../../data/categories'
 import rawSongs from '../../data/songs.json'
 import { t } from '../../i18n'
-import type { Chart, Song } from './models'
+import type {
+    Chart,
+    ChartDifficulty,
+    ChartMode,
+    Song,
+    StoredDifficulty,
+    StoredSong,
+} from './models'
+const difficulties = ['easy', 'normal', 'hard', 'master'] as const
+const modes = ['basic', 'advanced'] as const
+function sumRecorded(values: Array<number | null>) {
+    let total = 0
+    for (const value of values) {
+        if (value == null) return null
+        total += value
+    }
+    return total
+}
+// 同一难度的物量只存一份，读入时展开成 basic 与 advanced 两张谱面
+function expandChart(
+    songId: string,
+    mode: ChartMode,
+    difficulty: ChartDifficulty,
+    source: StoredDifficulty,
+) {
+    const notes = source.notes
+    const stats = source[mode]
+    const chart: Chart = {
+        id: `${songId}-${mode}-${difficulty}`,
+        mode,
+        difficulty,
+        level: stats.level,
+        note: sumRecorded([
+            notes.circle,
+            notes.advCircle,
+            notes.leftRightCircle,
+            notes.square,
+            notes.hold,
+            notes.advHold,
+            notes.arrow,
+            notes.advArrow,
+            notes.leftRightArrow,
+        ]),
+        combo: stats.combo,
+        special: stats.special,
+        circle:
+            mode === 'basic'
+                ? sumRecorded([
+                      notes.circle,
+                      notes.advCircle,
+                      notes.leftRightCircle,
+                  ])
+                : notes.circle,
+        square: notes.square,
+        hold:
+            mode === 'basic'
+                ? sumRecorded([notes.hold, notes.advHold])
+                : notes.hold,
+        arrow:
+            mode === 'basic'
+                ? sumRecorded([
+                      notes.arrow,
+                      notes.advArrow,
+                      notes.leftRightArrow,
+                  ])
+                : notes.arrow,
+    }
+    if (mode === 'advanced') {
+        chart.advCircle = notes.advCircle
+        chart.leftRightCircle = notes.leftRightCircle
+        chart.advHold = notes.advHold
+        chart.advArrow = notes.advArrow
+        chart.leftRightArrow = notes.leftRightArrow
+    }
+    return chart
+}
+function expandLibrary(songs: StoredSong[]) {
+    return songs.map((song) => ({
+        ...song,
+        charts: modes.flatMap((mode) =>
+            difficulties.map((difficulty) =>
+                expandChart(song.id, mode, difficulty, song.charts[difficulty]),
+            ),
+        ),
+    }))
+}
 export function validateLibrary(songs: Song[]) {
     const ids = new Set<string>(),
         chartIds = new Set<string>()
@@ -53,7 +138,9 @@ export function createSongService(songs: Song[]) {
         },
     }
 }
-export const songService = createSongService(rawSongs as Song[])
+export const songService = createSongService(
+    expandLibrary(rawSongs as StoredSong[]),
+)
 const storyRoutes = {
     kakeru: { ja: '閃道カケル', en: 'Sendou Kakeru' },
     aria: { ja: '氷芽川アリア', en: 'Himekawa Aria' },
