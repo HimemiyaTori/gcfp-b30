@@ -14656,19 +14656,19 @@
             },
             "master": {
                 "notes": {
-                    "circle": null,
-                    "advCircle": null,
-                    "leftRightCircle": null,
-                    "square": null,
-                    "hold": null,
-                    "advHold": null,
-                    "arrow": null,
-                    "advArrow": null,
-                    "leftRightArrow": null
+                    "circle": 373,
+                    "advCircle": 42,
+                    "leftRightCircle": 17,
+                    "square": 92,
+                    "hold": 27,
+                    "advHold": 16,
+                    "arrow": 287,
+                    "advArrow": 45,
+                    "leftRightArrow": 20
                 },
                 "basic": {
                     "level": 14,
-                    "combo": null,
+                    "combo": 1097,
                     "special": null
                 },
                 "advanced": {
